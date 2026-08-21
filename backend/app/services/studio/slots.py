@@ -72,12 +72,14 @@ SLOT_SCENES: dict[str, str] = {
     # caught mid-motion beside it, and the top third held empty - measured: a
     # busy frame with no reserved space swallowed the headline completely.
     "tiktok_cover": (
-        "the top third of the frame held completely empty as flat negative space for the "
-        "headline; below it a low hero angle looking up at the product standing tall, its own "
-        "material caught mid-motion beside it - a pour, a splash, a drift of steam or a scatter "
-        "of its raw ingredient - frozen as it arcs through the key light on {surface}, {light}, "
-        "one element far behind in deep bokeh, nothing important in the bottom fifth or along "
-        "the right edge"
+        "one full-bleed photograph filling the whole frame with no band, border or panel of flat "
+        "colour, generous empty space kept in its top third where only clean out-of-focus "
+        "background shows and no object stands, so the headline sits directly over the "
+        "photograph; below that a low hero angle looking up at the product standing tall, its own "
+        "material in motion and physically touching it - a pour, a splash, a drift of steam or a "
+        "scatter of its raw ingredient - frozen as it arcs through the key light on {surface}, "
+        "{light}, one element far behind in deep bokeh, nothing important in the bottom fifth or "
+        "along the right edge"
     ),
     # Shop tile. The buyer taps this to inspect the product, so it is the plain
     # truth of the object: no props, no words, nothing to distrust. Beautiful,
@@ -92,10 +94,10 @@ SLOT_SCENES: dict[str, str] = {
     # the light is aimed at the card and everything else falls away.
     "tiktok_promo": (
         "the product standing in the lower half of the frame on {surface}, {light}, a hard-edged "
-        "beam of the key light landing on one clean flat rectangular card floating just above it "
-        "so the card is the brightest thing in the picture, everything behind falling off into "
-        "shadow, the face of the card held completely empty for the offer text, nothing important "
-        "in the bottom fifth or along the right edge"
+        "beam of the key light landing on one clean flat rectangular card standing just above and "
+        "behind it so the card is the brightest thing in the picture, everything else falling off "
+        "into shadow, the face of the card left completely empty for the offer text, nothing "
+        "important in the bottom fifth or along the right edge"
     ),
 
     # --- Shopee -------------------------------------------------------
@@ -122,11 +124,13 @@ SLOT_SCENES: dict[str, str] = {
     # catalogue page. A tight overlapping row with one unit turned forward
     # reads as a family and gives the frame depth.
     "shopee_collection": (
-        "the top third of the frame held completely empty as flat negative space for the "
-        "headline; below it three of the product in a tight overlapping row, the nearest turned "
-        "three-quarters and closest to the lens, the two behind stepped back and falling out of "
-        "focus, the product's own material caught mid-motion between them - a pour, a splash or a "
-        "scatter of its raw ingredient - catching the key light on {surface}, {light}"
+        "one full-bleed photograph filling the whole frame with no band, border or panel of flat "
+        "colour, generous empty space kept in its top third where only clean out-of-focus "
+        "background shows, so the headline sits directly over the photograph; below that three of "
+        "the product in a tight overlapping row, the nearest turned three-quarters and closest to "
+        "the lens, the two behind stepped back and falling out of focus, the product's own "
+        "material in motion between them - a pour, a splash or a scatter of its raw ingredient - "
+        "catching the key light on {surface}, {light}"
     ),
     # Wide banner. The product holds one side and cedes the other to the copy,
     # and the light does the handover: the shadow and the ingredient trail lead
@@ -134,8 +138,8 @@ SLOT_SCENES: dict[str, str] = {
     "shopee_banner": (
         "the product standing in the left third of the frame, turned three-quarters, a long "
         "shadow and a trail of its own raw ingredient running away from it across {surface} into "
-        "the right of the picture, {light}, the right half falling into an even uncluttered "
-        "gradient and held completely empty for the promotion text"
+        "the right of the picture, {light}, the right half of the same photograph falling into an "
+        "even uncluttered gradient with no object in it, left empty for the promotion text"
     ),
 }
 

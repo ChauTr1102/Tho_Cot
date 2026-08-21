@@ -95,9 +95,9 @@ LOOKS: dict[str, Look] = {
     "clinical_lab": Look(
         lens="100mm macro at f/8, focus-stacked so the label stays sharp corner to corner",
         light=(
-            "a large diffusion scrim overhead, a white clamshell bounce below filling the shadow "
-            "to almost nothing, and a gridded strip softbox hidden behind the product throwing a "
-            "cold edge light through the liquid"
+            "a large diffusion scrim overhead and a white clamshell bounce below, both out of frame, "
+            "filling the shadow to almost nothing, and a gridded strip softbox hidden behind the "
+            "product throwing a cold edge light through the liquid"
         ),
         surface=(
             "a pale grey-to-white gradient sweep, a low frosted acrylic riser at its centre, a "
@@ -119,8 +119,8 @@ LOOKS: dict[str, Look] = {
         lens="50mm at f/2.0 at eye level across the table, the far side of the room out of focus",
         light=(
             "one soft window as the only key, from camera-left and slightly behind, broken by a "
-            "cookie so a dappled leaf shadow falls across the table, a black flag opposite for "
-            "negative fill so the shadow side stays rich instead of grey"
+            "cookie so a dappled leaf shadow falls across the table, a black flag just out of frame "
+            "opposite for negative fill so the shadow side stays rich instead of grey"
         ),
         surface=(
             "a linen-covered oak table beside that window, a folded napkin, a ceramic cup ringed "
@@ -165,7 +165,7 @@ LOOKS: dict[str, Look] = {
         light=(
             "one bare-bulb hard key high camera-right cutting a crisp graphic shadow to the left, "
             "a gelled kicker opposite rimming the product in a saturated complementary colour, a "
-            "gridded background light burning a halo behind it, nothing soft anywhere"
+            "gridded background light out of frame burning a halo behind it, nothing soft anywhere"
         ),
         surface=(
             "a saturated seamless colour sweep, a stepped colour-block plinth at its centre, one "
@@ -191,7 +191,7 @@ LOOKS: dict[str, Look] = {
         light=(
             "a single snooted hard key from high back-left carving one bright edge down the front "
             "face and letting the rest fall to black, a gridded strip behind camera-right as a "
-            "cold specular rim, black flags either side"
+            "cold specular rim, black flags out of frame either side"
         ),
         surface=(
             "a black acrylic tabletop returning one clean mirror reflection, in an unlit room with "
@@ -214,16 +214,16 @@ LOOKS: dict[str, Look] = {
         light=(
             "hard late-morning sun through a slatted blind as the only key, raking from back-left "
             "so long striped shadows run diagonally across the table, a white bounce card "
-            "camera-right opening the shadow side"
+            "just out of frame camera-right opening the shadow side"
         ),
         surface=(
-            "a pale limewashed table laid for a real morning, the raw ingredient scattered loose "
+            "a pale sun-bleached wooden table laid for a real morning, the raw ingredient scattered loose "
             "across it, a linen cloth pushed aside, a glass and a ceramic bowl, condensation "
             "beading and one spill left where it fell"
         ),
         grade=(
-            "sunlit and natural, warm highlights against a single cool blue shadow tone, mid "
-            "contrast, clean whites, fine film grain, saturation held back"
+            "sunlit and natural, warm cream highlights against one cool shadow tone, mid contrast, "
+            "clean whites, fine film grain, saturation held back"
         ),
         palette_hint="warm cream and toasted amber against one cool shadow tone, a single fresh green",
         axes={"light": "mixed_daylight", "contrast": "mid", "surface": "natural"},

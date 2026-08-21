@@ -8,6 +8,8 @@ on", not as "the edit was ugly". The promises are:
   * every placeholder resolves, and every text key is in the vocabulary;
   * the storyboard still fits the QA agent's duration window.
 """
+import re
+
 import pytest
 
 from app.schemas.campaign import AssetOrigin, ImageKind, Platform
@@ -55,6 +57,89 @@ def test_every_look_declares_all_three_axes_with_no_typos():
     """A missing or misspelt axis would silently make two looks compare as equal."""
     for key, look in LOOKS.items():
         assert set(look.axes) == set(AXES), f"{key} has axes {sorted(look.axes)}"
+
+
+# ---------------------------------------------------------------------------
+# Looks: the four fields have to be art direction, not adjectives
+# ---------------------------------------------------------------------------
+# These four tests exist because the first version of this library shipped
+# "bright even daylight" on a "wooden board with fresh ingredients" and the
+# product owner called the output ugly. The diagnosis was that every field was
+# a mood word where it should have been an instruction, so the tests pin the
+# shape of an instruction: a lens carries numbers, a light names equipment, a
+# surface describes a set, and a grade names what happens to the tones.
+
+@pytest.mark.parametrize("key", sorted(LOOKS))
+def test_every_lens_names_a_focal_length_and_an_aperture(key):
+    """The f-number is what actually moves the image; "shallow depth of field"
+    is a wish. Both numbers must be there."""
+    lens = LOOKS[key].lens
+    assert re.search(r"\d+\s*mm", lens), f"{key}.lens has no focal length: {lens!r}"
+    assert re.search(r"f/[\d.]+", lens), f"{key}.lens has no aperture: {lens!r}"
+
+
+# The words a photographer writes on a lighting diagram. A light that names
+# none of them is describing the weather, not a setup.
+LIGHTING_EQUIPMENT = (
+    "key", "fill", "rim", "kicker", "bounce", "flag", "scrim", "softbox", "grid",
+    "gridded", "snoot", "snooted", "gobo", "cookie", "barn door", "diffusion",
+    "clamshell", "negative fill", "flash", "strobe", "blind", "window", "gel",
+    "gelled", "backlight", "edge light",
+)
+
+
+@pytest.mark.parametrize("key", sorted(LOOKS))
+def test_every_light_describes_a_setup_not_a_weather_condition(key):
+    light = LOOKS[key].light.casefold()
+    named = [word for word in LIGHTING_EQUIPMENT if word in light]
+    assert len(named) >= 3, f"{key}.light names only {named}: {LOOKS[key].light!r}"
+    # A setup says where the light comes from, not merely that there is some.
+    assert any(
+        direction in light
+        for direction in ("left", "right", "behind", "overhead", "above", "below", "back")
+    ), f"{key}.light gives no direction: {LOOKS[key].light!r}"
+
+
+@pytest.mark.parametrize("key", sorted(LOOKS))
+def test_every_surface_describes_a_set_rather_than_a_noun(key):
+    """"black stone" is a material; a set says what is on it and what has
+    already happened there. Length is a crude proxy, but a two-word surface
+    cannot possibly be a set."""
+    surface = LOOKS[key].surface
+    assert len(surface.split()) >= 12, f"{key}.surface is a noun, not a set: {surface!r}"
+    assert surface.count(",") >= 2, f"{key}.surface lists no elements: {surface!r}"
+
+
+@pytest.mark.parametrize("key", sorted(LOOKS))
+def test_every_grade_names_what_happens_to_the_tones(key):
+    grade = LOOKS[key].grade.casefold()
+    vocabulary = (
+        "black", "shadow", "highlight", "contrast", "saturation", "saturated",
+        "grain", "tone", "halation", "white balance", "cast", "key",
+    )
+    named = [word for word in vocabulary if word in grade]
+    assert len(named) >= 3, f"{key}.grade names only {named}: {LOOKS[key].grade!r}"
+
+
+def test_no_two_looks_share_a_light_or_a_surface():
+    """Six presets that differ only in wording are one preset with six names."""
+    for field in ("light", "surface", "grade", "lens"):
+        values = [getattr(look, field) for look in LOOKS.values()]
+        assert len(set(values)) == len(values), f"two looks share a {field}"
+
+
+def test_lighting_hardware_is_always_placed_out_of_frame():
+    """Measured: "a white bounce card camera-right" put a literal white board in
+    the picture and "a black flag opposite" hung a black cloth behind the
+    product. Naming the modifier is right; forgetting to say it is off camera
+    is how grip equipment ends up in a campaign image."""
+    for key, look in LOOKS.items():
+        light = look.light.casefold()
+        for hardware in ("bounce card", "black flag", "black flags", "bounce below"):
+            if hardware in light:
+                assert "out of frame" in light, (
+                    f"{key}.light names {hardware!r} without placing it out of frame"
+                )
 
 
 @pytest.mark.parametrize(
@@ -219,6 +304,59 @@ def test_scene_keys_and_slot_ids_are_the_same_set():
     empty frame; a scene with no slot is dead text nobody will ever see."""
     slot_ids = {s.id for kit in KITS.values() for s in kit.slots}
     assert set(SLOT_SCENES) == slot_ids
+
+
+def test_every_staged_scene_names_a_composition_and_an_event():
+    """A location is not a picture. "three products arranged on a board" says
+    where they are; "three in a tight overlapping row, the nearest turned
+    three-quarters, a ribbon of milk frozen mid-pour between them" says what the
+    photograph looks like. Every scene but the marketplace one must do both."""
+    composition = (
+        "angle", "row", "overlapping", "three-quarters", "foreground", "bokeh",
+        "frame", "third", "half", "close", "macro", "behind", "lower", "left",
+    )
+    event = (
+        "pour", "splash", "steam", "falling", "mid-motion", "in motion", "frozen",
+        "arcs", "scatter", "running", "raking", "drift", "beading", "spill",
+    )
+    for slot_id, scene in SLOT_SCENES.items():
+        if slot_id == "shopee_main":
+            continue
+        low = scene.casefold()
+        assert any(word in low for word in composition), f"{slot_id} states no composition"
+        assert any(word in low for word in event), f"{slot_id} stages no event"
+
+
+def test_every_scene_that_carries_copy_reserves_the_space_for_it():
+    """Measured, and the most expensive failure in this file. The same headline
+    that rendered correctly over a frame whose scene reserved "generous empty
+    space in the top third" vanished completely from a busier frame whose scene
+    did not. Any slot with text_keys must say out loud where the type goes."""
+    text_slots = [s for kit in KITS.values() for s in kit.slots if s.text_keys]
+    assert text_slots, "no slot carries copy - this test is guarding nothing"
+    for slot in text_slots:
+        scene = SLOT_SCENES[slot.id].casefold()
+        assert "empty" in scene, f"{slot.id} carries copy but reserves no space for it"
+
+
+def test_no_scene_asks_for_a_flat_colour_band_behind_the_type():
+    """The first attempt at reserving space said "flat negative space", and the
+    model answered with a literal white band across the top of four images out
+    of six - a template, not a photograph. The scenes now ask for a full-bleed
+    photograph and say so."""
+    for slot_id, scene in SLOT_SCENES.items():
+        if slot_id == "shopee_main":
+            continue
+        assert "flat negative space" not in scene.casefold(), slot_id
+
+
+def test_shopee_main_stays_the_plain_one():
+    """Marketplace listing image, not a campaign frame. It is the only slot the
+    art direction does not reach, and making it cinematic is a takedown risk."""
+    scene = SLOT_SCENES["shopee_main"].casefold()
+    for cinematic in ("bokeh", "gobo", "raking", "splash", "mid-motion", "hero angle",
+                      "rim", "smoke", "dramatic"):
+        assert cinematic not in scene, f"shopee_main has gone cinematic: {cinematic!r}"
 
 
 def test_shopee_main_scene_ignores_the_route_look():

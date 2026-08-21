@@ -257,7 +257,12 @@ def build_nodes(plan: CampaignPlan, campaign_input: CampaignInput | None,
 
                 nodes.append(Node(id=kf_id, kind="image", deps=[ws_id, hero_id],
                                   run=_run_kf, concurrency_group="image"))
-                nodes.append(Node(id=clip_id, kind="video", deps=[kf_id],
+                # ws_id is a real dependency, not decoration: the clip reads the
+                # storyboard to know what its shot is. The executor hands a node
+                # only the deps it declares, so omitting it is a KeyError rather
+                # than a silent race — which is how every clip in the first full
+                # run failed in ten milliseconds.
+                nodes.append(Node(id=clip_id, kind="video", deps=[ws_id, kf_id],
                                   run=_run_clip, concurrency_group="video"))
 
             vo_id = f"voiceover_{route_id}"
