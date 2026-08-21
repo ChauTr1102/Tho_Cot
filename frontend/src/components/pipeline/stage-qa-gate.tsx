@@ -3,6 +3,7 @@
 import * as React from "react";
 import { AlertTriangle, CheckCircle2, RefreshCw, ShieldAlert } from "lucide-react";
 import { api, ApiError } from "@/lib/api";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { QAIssue, VerifyChecklistResponseData } from "@/types/qa_checklist";
 
 interface Props {
@@ -141,9 +142,37 @@ export const StageQAGate: React.FC<Props> = ({ campaignInput, campaignOutput, it
 
       <div className="flex-1 overflow-y-auto space-y-6">
         {state === "checking" && (
-          <div className="flex flex-col items-center justify-center p-12 border border-foreground/10 bg-foreground/[0.02] space-y-4">
-            <RefreshCw className="h-8 w-8 text-[#35ea52] animate-spin" />
-            <p className="text-sm font-mono text-foreground/50 tracking-widest uppercase">Đang chạy xác thực QA...</p>
+          // Mocked loading skeleton: the real verify-checklist call can take a
+          // few seconds (LLM-backed), and a bare spinner reads as "stuck" /
+          // buggy to QA. Render a fake placeholder shaped like the eventual
+          // result instead so the stage always looks alive while loading.
+          <div className="space-y-6 animate-in fade-in duration-300">
+            <div className="border-l-2 border-foreground/10 bg-foreground/[0.02] p-4 flex items-start gap-4">
+              <RefreshCw className="h-6 w-6 text-[#35ea52] animate-spin shrink-0" />
+              <div className="space-y-2 flex-1">
+                <Skeleton className="h-4 w-56" />
+                <Skeleton className="h-3 w-full max-w-md" />
+                <p className="text-[10px] font-mono text-foreground/30 tracking-widest uppercase pt-1">
+                  Đang chạy xác thực QA...
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[0, 1].map((i) => (
+                <div key={i} className="border border-foreground/10 bg-background p-4 space-y-3">
+                  <Skeleton className="h-3 w-32" />
+                  <div className="space-y-3">
+                    {[0, 1].map((j) => (
+                      <div key={j} className="space-y-1.5">
+                        <Skeleton className="h-3 w-40" />
+                        <Skeleton className="h-8 w-full" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 

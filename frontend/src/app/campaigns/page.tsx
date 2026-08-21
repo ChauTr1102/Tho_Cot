@@ -15,6 +15,7 @@ import { api } from "@/lib/api";
 import { attachDefaultSampleProductPhotos, createInitialResearchSubmission, parseResearchCampaignPlan, validateResearchSubmission, type ResearchCampaignPlan, type ResearchSubmission } from "@/types/research";
 import { buildCampaignInputDTO, buildMockCampaignOutput } from "@/types/campaign_output_mock";
 import type { VerifyChecklistResponseData } from "@/types/qa_checklist";
+import type { StudioAssetDTOResponse } from "@/types/studio";
 
 const STATUS_LABELS: Record<CampaignListItem["status"], string> = {
   draft: "BẢN NHÁP",
@@ -221,6 +222,32 @@ export default function CampaignsPage() {
     [researchSubmission.input],
   );
 
+  // Called once the content-generation stage's studio run finishes with real
+  // assets (real /media/... paths the backend can resolve back to actual
+  // files — see StudioAssetDTOResponse). Merges them on top of
+  // buildMockCampaignOutput's plan-derived positioning/routes/ab_plan (which
+  // the studio doesn't own), so the QA gate and final report see real
+  // generated images/video/copy instead of mock URLs once a run has
+  // completed, while still falling back to the mock for anything not ready.
+  const handleStudioAssetsReady = React.useCallback(
+    (assets: StudioAssetDTOResponse) => {
+      setCampaignOutput((current) => {
+        const base = current ?? buildMockCampaignOutput(researchPlan, researchSubmission.input);
+        return {
+          ...base,
+          ...(assets.product_collection_image_set
+            ? { product_collection_image_set: assets.product_collection_image_set }
+            : {}),
+          ...(assets.short_form_video_asset
+            ? { short_form_video_asset: assets.short_form_video_asset }
+            : {}),
+          ...(assets.commerce_copy ? { commerce_copy: assets.commerce_copy } : {}),
+        };
+      });
+    },
+    [researchPlan, researchSubmission.input],
+  );
+
   const handleNextStage = () => {
     if (currentStage === "product_input") {
       if (workflowMode === "autopilot") {
@@ -403,7 +430,7 @@ export default function CampaignsPage() {
               >
               {currentStage === "product_input" && <StageProductInput value={researchSubmission} onChange={setResearchSubmission} initialInputMode={workflowMode === "autopilot" ? "manual" : "link"} />}
               {currentStage === "research" && <StageResearch plan={researchPlan} isLoading={researchLoading} error={researchError} onRetry={() => void runResearch()} />}
-              {currentStage === "content_generation" && <StageContentGeneration campaignId={activeCampaignId} />}
+              {currentStage === "content_generation" && <StageContentGeneration campaignId={activeCampaignId} onAssetsReady={handleStudioAssetsReady} />}
               {currentStage === "qa_gate" && <StageQAGate campaignInput={campaignInputForQa} campaignOutput={campaignOutput ?? buildMockCampaignOutput(researchPlan, researchSubmission.input)} onResult={setQaResult} />}
               {currentStage === "final_output" && <StageFinalOutput plan={researchPlan} input={researchSubmission.input} campaignOutput={campaignOutput ?? buildMockCampaignOutput(researchPlan, researchSubmission.input)} qaResult={qaResult} />}
               {!["product_input", "research", "content_generation", "qa_gate", "final_output"].includes(currentStage) && (

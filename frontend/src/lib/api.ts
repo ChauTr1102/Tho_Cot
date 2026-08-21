@@ -1,6 +1,7 @@
 import { CreateItemInput, HealthStatus, Item, StandardResponse, UpdateItemInput, ExtractRequest, ExtractResponse, VerifyChecklistRequest, VerifyChecklistResponseData } from "@/types";
 import { parseResearchCampaignPlan, validateResearchSubmission, type ResearchCampaignPlan, type ResearchSubmission } from "@/types/research";
 import type { CampaignListItem, CreateCampaignInput, PersistedCampaign, UpdateCampaignInput } from "@/types/campaign";
+import type { StudioAssetDTOResponse } from "@/types/studio";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
@@ -151,4 +152,10 @@ export const api = {
       method: "POST",
       body: JSON.stringify(payload),
     }),
+
+  // Asset Studio — the studio's slice of CampaignOutputDTO (real generated
+  // images/video, as /media/... paths the backend can resolve back to real
+  // files) plus commerce copy, once a run has finished.
+  getStudioAssets: (campaignId: string) =>
+    request<StudioAssetDTOResponse>(`/studio/${encodeURIComponent(campaignId)}/assets`),
 };

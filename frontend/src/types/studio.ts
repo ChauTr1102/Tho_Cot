@@ -285,6 +285,56 @@ export interface AssetPack {
 }
 
 /* ────────────────────────────────────────────────────────────────────────────
+ * Real generated assets, in CampaignOutputDTO shape — `GET
+ * /api/studio/{campaign_id}/assets` (backend/app/api/v1/endpoints/studio.py's
+ * `AssetDTOResponse`).
+ *
+ * This is the studio's slice of `CampaignOutputDTO`
+ * (backend/app/schemas/campaign_dto.py): `product_collection_image_set` and
+ * `short_form_video_asset` carry `/media/...` paths that point at real files
+ * the backend generated (not mock URLs), so the QA gate's image-dependent
+ * checks can actually inspect them. Both asset fields are nullable — null
+ * means "not ready yet", not "empty" — a caller should keep falling back to
+ * mock/placeholder data for a field that is still null rather than sending an
+ * empty object that would type-check and fail the QA checklist for the wrong
+ * reason.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+export interface StudioShortFormVideoAsset {
+  generated_video_urls: string[];
+  format: string;
+  duration: string;
+  additional_cuts: string[];
+}
+
+export interface StudioProductCollectionImageSet {
+  product_hero_image: string;
+  sku_detail_image: string;
+  campaign_collection_image: string;
+  marketplace_thumbnail: string;
+  promotion_banner?: string | null;
+  bundle_image?: string | null;
+  seasonal_sale_image?: string | null;
+}
+
+export interface StudioCommerceCopy {
+  product_title: string;
+  product_description: string;
+  listing_bullet_points: string[];
+  ad_caption: string;
+  promotion_copy?: string | null;
+  short_hook_lines: string[];
+}
+
+export interface StudioAssetDTOResponse {
+  campaign_id: string;
+  status: string;
+  product_collection_image_set: StudioProductCollectionImageSet | null;
+  short_form_video_asset: StudioShortFormVideoAsset | null;
+  commerce_copy: StudioCommerceCopy | null;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
  * Run request — `POST /api/studio/run`
  * ────────────────────────────────────────────────────────────────────────── */
 

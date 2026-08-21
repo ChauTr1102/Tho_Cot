@@ -49,6 +49,7 @@ import { ThinkingPanel } from "@/components/studio/ThinkingPanel";
 import { StudioHeader } from "@/components/studio/StudioHeader";
 import { estimateKit } from "@/lib/studio-catalog";
 import { useRunClock, useStudioStream } from "@/lib/studio-events";
+import { api, ApiError } from "@/lib/api";
 import {
   approveDraft,
   fetchSavedResult,
@@ -59,7 +60,7 @@ import {
   type ResearchCampaign,
   type SavedResult,
 } from "@/lib/studio-draft";
-import type { NodeKind, StudioNode } from "@/types/studio";
+import type { NodeKind, StudioAssetDTOResponse, StudioNode } from "@/types/studio";
 import type { Platform } from "@/types/studio";
 
 /**
@@ -84,11 +85,19 @@ interface AssetStudioProps {
   campaignId?: string | null;
   /** True when rendered inside the pipeline: no backdrop, no masthead. */
   embedded?: boolean;
+  /**
+   * Called with the real generated assets (CampaignOutputDTO shape, real
+   * `/media/...` paths — not mock URLs) once a run finishes. The pipeline
+   * uses this to feed real data into the QA gate / final report instead of
+   * always falling back to buildMockCampaignOutput.
+   */
+  onAssetsReady?: (assets: StudioAssetDTOResponse) => void;
 }
 
 export function AssetStudio({
   campaignId: requestedCampaign = null,
   embedded = false,
+  onAssetsReady,
 }: AssetStudioProps) {
   const [platforms, setPlatforms] = useState<Platform[]>([
     "tiktok_shop",
@@ -208,6 +217,32 @@ export function AssetStudio({
       setStoppedAt(Date.now());
     }
   }, [finished, startedAt, stoppedAt]);
+
+  // Once a run reaches a terminal state, pull the real generated assets
+  // (CampaignOutputDTO shape, real /media/... paths) so the caller can feed
+  // them into the QA gate / final report instead of relying on mock data.
+  // `finished` also covers "disconnected", so a page that was left open
+  // through a completed run still picks the result up once reconnected.
+  useEffect(() => {
+    if (!finished || !campaignId || !onAssetsReady) return;
+    let cancelled = false;
+    api
+      .getStudioAssets(campaignId)
+      .then((res) => {
+        if (!cancelled && res.data) onAssetsReady(res.data);
+      })
+      .catch((error: unknown) => {
+        // Assets not being ready yet (e.g. a run that errored before
+        // producing anything) is expected, not exceptional — the caller
+        // simply keeps whatever fallback it already has.
+        if (!(error instanceof ApiError)) {
+          console.warn("studio.assets_fetch_failed", error);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [finished, campaignId, onAssetsReady]);
 
   // Propose, then approve. The director reads the brief and writes a register
   // for whatever the user asked for; nothing renders until a person says yes.

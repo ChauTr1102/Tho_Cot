@@ -58,6 +58,78 @@ function ReadyBadge({ optional = false }: { optional?: boolean }) {
   return null;
 }
 
+// Compact QA notification: instead of dumping every issue inline in the
+// final report (which reads as overwhelming), this fires one toast bubble
+// when the result comes in and renders a small pill that expands to the
+// full issue list only when the user asks for it.
+function QaNotificationBubble({ qaResult }: { qaResult: VerifyChecklistResponseData }) {
+  const [expanded, setExpanded] = React.useState(false);
+  const notifiedIteration = React.useRef<number | null>(null);
+  const hasIssues = qaResult.issues.length > 0;
+
+  React.useEffect(() => {
+    if (notifiedIteration.current === qaResult.iteration) return;
+    notifiedIteration.current = qaResult.iteration;
+    if (hasIssues) {
+      toast.warning(`QA: ${qaResult.issues.length} lưu ý nhỏ trên gói chiến dịch`, {
+        description: "Chỉ là gợi ý — không chặn tiến trình. Xem chi tiết trong phần QA & POLICY GATE.",
+      });
+    } else {
+      toast.success("QA & Policy Gate: đã vượt qua", {
+        description: `Không có lưu ý nào từ AI (lần kiểm tra ${qaResult.iteration}).`,
+      });
+    }
+  }, [qaResult.iteration, hasIssues, qaResult.issues.length]);
+
+  return (
+    <section id="final-qa" className="scroll-mt-4">
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        className={`w-full flex items-center gap-3 border p-3 text-left transition-colors ${
+          hasIssues
+            ? "border-amber-500/30 bg-amber-500/[0.04] hover:bg-amber-500/[0.07]"
+            : "border-[#35ea52]/30 bg-[#35ea52]/[0.04] hover:bg-[#35ea52]/[0.07]"
+        }`}
+      >
+        {hasIssues ? (
+          <ShieldAlert className="h-5 w-5 text-amber-400 shrink-0" />
+        ) : (
+          <ShieldCheck className="h-5 w-5 text-[#35ea52] shrink-0" />
+        )}
+        <span className="flex-1 text-xs font-mono">
+          {hasIssues ? (
+            <span className="text-amber-400 font-bold">
+              QA & POLICY GATE — {qaResult.issues.length} lưu ý (lần kiểm tra {qaResult.iteration})
+            </span>
+          ) : (
+            <span className="text-[#35ea52] font-bold">QA & POLICY GATE — Đã vượt qua</span>
+          )}
+        </span>
+        <span className="text-[10px] font-mono text-foreground/35">{expanded ? "ẨN" : "XEM"}</span>
+      </button>
+
+      {expanded && (
+        <div className="border border-t-0 border-foreground/10 bg-background p-4 animate-in fade-in duration-200">
+          {hasIssues ? (
+            <ul className="space-y-1.5">
+              {qaResult.issues.map((issue) => (
+                <li key={issue.rule_id} className="text-xs font-mono text-amber-400/90">
+                  <span className="font-bold">{issue.rule_id}</span> — {issue.message}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-xs font-mono text-foreground/50">
+              Không có lưu ý nào từ AI trên gói chiến dịch này (lần kiểm tra {qaResult.iteration}).
+            </p>
+          )}
+        </div>
+      )}
+    </section>
+  );
+}
+
 export const StageFinalOutput: React.FC<Props> = ({ plan, input, campaignOutput, qaResult }) => {
   const positioning = plan?.product_positioning;
   const angle = positioning?.main_campaign_angle.decision ?? fallbackPlan.angle;
@@ -118,31 +190,7 @@ export const StageFinalOutput: React.FC<Props> = ({ plan, input, campaignOutput,
     <section className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-foreground/10 border border-foreground/10" aria-label="Tóm tắt campaign brief"><div className="p-3.5 bg-background"><p className="text-[9px] font-mono text-foreground/30">SẢN PHẨM / NGÀNH HÀNG</p><p className="text-xs text-foreground/65 mt-1.5">{input?.product_brief.category || "F&B · Cà phê hòa tan"}</p></div><div className="p-3.5 bg-background"><p className="text-[9px] font-mono text-foreground/30">THỊ TRƯỜNG</p><p className="text-xs text-foreground/65 mt-1.5">{input?.product_brief.target_market.slice(0, 3).join(" · ") || "Trung Quốc · Đông Nam Á"}</p></div><div className="p-3.5 bg-background"><p className="text-[9px] font-mono text-foreground/30">ƯU ĐÃI</p><p className="text-xs text-foreground/65 mt-1.5">{input?.product_brief.promotion || "Không có ưu đãi"}</p></div><div className="p-3.5 bg-background"><p className="text-[9px] font-mono text-foreground/30">MỤC TIÊU</p><p className="text-xs text-foreground/65 mt-1.5">{input?.market_signal.campaign_objectives.join(" · ") || "Nhận biết · Chuyển đổi"}</p></div></section>
 
     {qaResult && (
-      <section id="final-qa" className="scroll-mt-4 border border-foreground/10 p-4 space-y-3">
-        {qaResult.issues.length === 0 ? (
-          <div className="border-l-2 border-[#35ea52] bg-[#35ea52]/[0.05] p-4 flex items-start gap-4">
-            <ShieldCheck className="h-6 w-6 text-[#35ea52] shrink-0" />
-            <div>
-              <h3 className="text-[15px] font-mono font-bold text-[#35ea52]">QA & POLICY GATE: ĐÃ VƯỢT QUA</h3>
-              <p className="text-sm font-mono text-foreground/70">Không có lưu ý nào từ AI trên gói chiến dịch này (lần kiểm tra {qaResult.iteration}).</p>
-            </div>
-          </div>
-        ) : (
-          <div className="border-l-2 border-amber-500 bg-amber-500/[0.05] p-4 flex items-start gap-4">
-            <ShieldAlert className="h-6 w-6 text-amber-400 shrink-0" />
-            <div className="space-y-1 flex-1">
-              <h3 className="text-[15px] font-mono font-bold text-amber-400">QA & POLICY GATE: {qaResult.issues.length} LƯU Ý (lần kiểm tra {qaResult.iteration})</h3>
-              <ul className="space-y-1 mt-2">
-                {qaResult.issues.map((issue) => (
-                  <li key={issue.rule_id} className="text-xs font-mono text-amber-400/90">
-                    <span className="font-bold">{issue.rule_id}</span> — {issue.message}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        )}
-      </section>
+      <QaNotificationBubble qaResult={qaResult} />
     )}
 
     <div className="grid grid-cols-1 xl:grid-cols-[230px_minmax(0,1fr)] gap-6 items-start">

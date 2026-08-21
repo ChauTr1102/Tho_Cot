@@ -6,6 +6,16 @@ paths relative to the backend workspace root, for user-uploaded brief
 assets), this loads arbitrary local filesystem paths for already-generated
 campaign assets (product images, etc.) that the frontend/generation
 pipeline saved to disk and passed back as absolute paths.
+
+Studio-generated assets specifically travel to the frontend as `/media/...`
+URLs (app/api/v1/endpoints/studio.py's `_to_url` rewrites every local path
+under `studio_settings.DATA_DIR` that way before it reaches the browser),
+and the frontend has no reason to know or reconstruct the original
+filesystem path — it only ever sees the URL. Since this QA agent runs in
+the same backend process as the studio and therefore shares its DATA_DIR,
+`_resolve_media_path` below reverses that rewrite so a `/media/...` value
+coming back from the frontend resolves to the real file on disk instead of
+being rejected as an unreadable "remote URL".
 """
 from __future__ import annotations
 
@@ -13,6 +23,7 @@ import base64
 import logging
 import mimetypes
 import pathlib
+from urllib.parse import urlparse
 
 logger = logging.getLogger(__name__)
 
@@ -25,9 +36,39 @@ _MAX_IMAGE_BYTES = 20 * 1024 * 1024
 # format, URL/path presence), not actual frame content.
 _VIDEO_EXTENSIONS = {".mp4", ".mov", ".webm", ".avi", ".mkv"}
 
+_MEDIA_URL_PREFIX = "/media/"
+
 
 def is_video_path(path: str) -> bool:
     return pathlib.Path(path).suffix.lower() in _VIDEO_EXTENSIONS
+
+
+def _resolve_media_path(path: str) -> str | None:
+    """Reverse the studio's `/media/...` URL rewrite back to a real local
+    file path under `studio_settings.DATA_DIR`, if `path` is one of those
+    URLs (absolute, e.g. "http://localhost:8000/media/<id>/media/hero.png",
+    or relative, e.g. "/media/<id>/media/hero.png"). Returns None if `path`
+    is not a studio media URL at all, so the caller falls through to
+    treating it as a plain local path.
+
+    Imported lazily to avoid a hard dependency from the QA agent module on
+    the studio package for callers that never touch studio-generated
+    assets (e.g. unit tests that stub image loading entirely).
+    """
+    relative = None
+    parsed = urlparse(path)
+    if parsed.scheme in ("http", "https"):
+        if parsed.path.startswith(_MEDIA_URL_PREFIX):
+            relative = parsed.path[len(_MEDIA_URL_PREFIX):]
+    elif path.startswith(_MEDIA_URL_PREFIX):
+        relative = path[len(_MEDIA_URL_PREFIX):]
+
+    if relative is None:
+        return None
+
+    from app.services.studio.config import studio_settings
+
+    return str(pathlib.Path(studio_settings.DATA_DIR) / relative)
 
 
 def load_local_image(path: str) -> tuple[str | None, str]:
@@ -41,8 +82,13 @@ def load_local_image(path: str) -> tuple[str | None, str]:
     """
     if not path or not path.strip():
         return None, "Đường dẫn ảnh rỗng."
-    if path.startswith(("http://", "https://")):
+
+    resolved = _resolve_media_path(path)
+    if resolved is not None:
+        path = resolved
+    elif path.startswith(("http://", "https://")):
         return None, f"Đường dẫn là remote URL, không phải local file path: {path}"
+
     file_path = pathlib.Path(path)
     if not file_path.is_file():
         return None, f"Không tìm thấy file ảnh tại đường dẫn local: {path}"
