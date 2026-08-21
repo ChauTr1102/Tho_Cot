@@ -18,11 +18,11 @@
  */
 
 import { useState } from "react";
-import { Check, Pencil, Play, RotateCcw, Sparkles } from "lucide-react";
+import { Check, Pencil, RotateCcw, Sparkles } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { Deliverable, Draft } from "@/lib/studio-draft";
+import type { Draft } from "@/lib/studio-draft";
 
 interface DraftPanelProps {
   draft: Draft;
@@ -32,17 +32,7 @@ interface DraftPanelProps {
   onDiscard: () => void;
 }
 
-const RATIO_LABEL: Record<string, string> = {
-  "1:1": "Vuông",
-  "9:16": "Dọc",
-  "4:5": "Feed",
-  "2:1": "Ngang",
-};
 
-const PLATFORM_LABEL: Record<string, string> = {
-  tiktok_shop: "TikTok Shop",
-  shopee: "Shopee",
-};
 
 export function DraftPanel({
   draft,
@@ -152,23 +142,23 @@ export function DraftPanel({
         ) : null}
       </div>
 
-      <div>
-        <p className="text-muted-foreground mb-2 text-[12px] font-medium">
-          Sẽ dựng {draft.deliverables.length} asset
-          {draft.video_shots > 0
-            ? ` · 1 video ${draft.video_seconds}s (${draft.video_shots} shot)`
-            : ""}
-        </p>
-        <ul className="flex flex-col gap-1.5">
-          {draft.deliverables.map((item) => (
-            <DeliverableRow key={item.id} item={item} />
-          ))}
-        </ul>
-      </div>
+      {/* The deliverables used to be listed here. They are nodes on the canvas
+          now — that is where the shape of the work belongs, and a rail that
+          repeats it is the same information twice, in the longer form. What
+          stays is the count and the one thing the canvas cannot show: why. */}
+      <p className="text-muted-foreground text-[12.5px]">
+        <span className="text-foreground font-medium">
+          {draft.deliverables.length} asset
+        </span>
+        {draft.video_shots > 0
+          ? ` · 1 video ${draft.video_seconds}s (${draft.video_shots} shot)`
+          : ""}{" "}
+        — xem sơ đồ bên phải.
+      </p>
 
       {draft.notes.length > 0 ? (
         <ul className="text-muted-foreground flex flex-col gap-1 text-[12px]">
-          {draft.notes.map((note) => (
+          {draft.notes.slice(0, 2).map((note) => (
             <li key={note} className="flex gap-2">
               <span className="text-primary mt-[7px] size-1 shrink-0 rounded-full bg-current" />
               <span className="leading-relaxed">{note}</span>
@@ -249,32 +239,3 @@ function RegisterField({
   );
 }
 
-function DeliverableRow({ item }: { item: Deliverable }) {
-  return (
-    <li className="border-border/50 bg-background/40 flex items-start gap-2.5 rounded-md border px-2.5 py-2">
-      <Play className="text-primary/60 mt-[3px] size-3 shrink-0" aria-hidden />
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-1.5">
-          <code className="font-mono text-[12px]">{item.id}</code>
-          {item.kind === "poster" ? (
-            <Badge
-              variant="outline"
-              className="border-gold/40 text-gold h-4 px-1.5 text-[9.5px] tracking-wide uppercase"
-            >
-              poster
-            </Badge>
-          ) : null}
-          <span className="text-muted-foreground/60 text-[11px]">
-            {PLATFORM_LABEL[item.platform] ?? item.platform} ·{" "}
-            {RATIO_LABEL[item.ratio] ?? item.ratio}
-          </span>
-        </div>
-        {item.purpose ? (
-          <p className="text-muted-foreground mt-0.5 text-[12px] leading-snug text-pretty">
-            {item.purpose}
-          </p>
-        ) : null}
-      </div>
-    </li>
-  );
-}

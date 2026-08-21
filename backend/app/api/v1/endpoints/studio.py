@@ -42,7 +42,9 @@ from app.schemas.campaign_dto import (
     ShortFormVideoAsset,
 )
 from app.schemas.common import StandardResponse
-from app.services.studio import demo_briefs, directed, director, dto_bridge, pipeline, upstream
+from app.services.studio import (
+    demo_briefs, directed, director, dto_bridge, pack, pipeline, upstream,
+)
 from app.services.studio.config import studio_settings
 from app.services.studio.graph import GraphEvent
 
@@ -535,6 +537,29 @@ def _apply_edits(original, edited: dict[str, Any] | None):
         video_shots=int(edited.get("video_shots", original.video_shots) or original.video_shots),
         video_seconds=int(edited.get("video_seconds", original.video_seconds) or original.video_seconds),
     )
+
+
+@router.get("/{campaign_id}/zip")
+def download_zip(campaign_id: str):
+    """The finished kit as a zip, grouped by marketplace.
+
+    Filenames carry the marketplace, the slot and the shape, because someone
+    opens this beside an upload form and has to know which file goes in which
+    box without opening any of them. MANIFEST.md inside doubles as BP-01's
+    model-usage explanation, generated from what actually ran.
+    """
+    from fastapi.responses import FileResponse
+
+    run = _RUNS.get(campaign_id)
+    if run is None:
+        raise NotFoundException(message=f"Không tìm thấy lượt chạy '{campaign_id}'.")
+    if run.bundle is None:
+        raise NotFoundException(
+            message=f"Lượt chạy '{campaign_id}' chưa xong (trạng thái: {run.status}).")
+
+    target = Path(studio_settings.DATA_DIR) / campaign_id / f"{campaign_id}_kit.zip"
+    pack.build_zip(run.bundle, target)
+    return FileResponse(target, media_type="application/zip", filename=target.name)
 
 
 @router.get("/brands", response_model=StandardResponse[list[dict]])

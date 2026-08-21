@@ -26,8 +26,30 @@ import { RunStage } from "@/components/studio/RunStage";
 import { StudioHeader } from "@/components/studio/StudioHeader";
 import { DEMO_BRANDS, estimateKit } from "@/lib/studio-catalog";
 import { useRunClock, useStudioStream } from "@/lib/studio-events";
-import { approveDraft, requestDraft, type Draft } from "@/lib/studio-draft";
+import {
+  approveDraft,
+  requestDraft,
+  type Draft,
+  type GraphNodeSpecLite,
+} from "@/lib/studio-draft";
+import type { NodeKind, StudioNode } from "@/types/studio";
 import type { Platform } from "@/types/studio";
+
+/**
+ * The director names node kinds for what they are *for*; the executor names
+ * them for what they *do*. The canvas speaks the executor's vocabulary, so a
+ * proposal has to be translated before it can be drawn beside a live run.
+ */
+const DIRECTOR_KIND_TO_NODE_KIND: Record<string, NodeKind> = {
+  inventory: "inventory",
+  hero: "image",
+  image: "image",
+  poster: "image",
+  keyframe: "keyframe",
+  clip: "video",
+  voiceover: "compose",
+  assemble: "compose",
+};
 
 export default function StudioPage() {
   const [brandDir, setBrandDir] = useState<string>(DEMO_BRANDS[0].dir);
@@ -39,7 +61,7 @@ export default function StudioPage() {
   const [direction, setDirection] = useState("");
   const [draft, setDraft] = useState<Draft | null>(null);
   const [draftId, setDraftId] = useState<string | null>(null);
-  const [nodeCount, setNodeCount] = useState(0);
+  const [draftGraph, setDraftGraph] = useState<GraphNodeSpecLite[]>([]);
   const [approving, setApproving] = useState(false);
 
   const [campaignId, setCampaignId] = useState<string | null>(null);
@@ -57,6 +79,23 @@ export default function StudioPage() {
   const plannedOrigins = useMemo(
     () => estimateKit(platforms).origins,
     [platforms]
+  );
+
+  // The proposal drawn as a graph, greyed out. Every node the run will create
+  // exists here before anything is generated, which is the point of approving:
+  // you see the shape of the work, not a list of its names.
+  const previewNodes = useMemo<StudioNode[]>(
+    () =>
+      draftGraph.map((node) => ({
+        id: node.id,
+        kind: DIRECTOR_KIND_TO_NODE_KIND[node.kind] ?? "image",
+        deps: node.deps,
+        state: "pending",
+        elapsed_sec: 0,
+        payload: {},
+        updated_at: 0,
+      })),
+    [draftGraph]
   );
 
   const finished = stream.status === "done" || stream.status === "disconnected";
@@ -88,7 +127,7 @@ export default function StudioPage() {
       });
       setDraft(result.draft);
       setDraftId(result.campaignId);
-      setNodeCount(result.graph.nodes.length);
+      setDraftGraph(result.graph.nodes);
       toast.success("Đề xuất đã sẵn sàng", {
         description: `Ngôn ngữ hình: ${result.draft.register.name}`,
       });
@@ -167,12 +206,13 @@ export default function StudioPage() {
           {draft ? (
             <DraftPanel
               draft={draft}
-              nodeCount={nodeCount}
+              nodeCount={draftGraph.length}
               approving={approving}
               onApprove={handleApprove}
               onDiscard={() => {
                 setDraft(null);
                 setDraftId(null);
+                setDraftGraph([]);
               }}
             />
           ) : (
@@ -204,7 +244,7 @@ export default function StudioPage() {
                 node showing the picture it produced. Before a run exists it
                 falls back to the kit manifest — see `KitManifest.tsx`. */}
             <GraphCanvas
-              nodes={stream.nodes}
+              nodes={campaignId ? stream.nodes : previewNodes}
               platforms={platforms}
               campaignId={campaignId}
               awaiting={running && stream.nodes.length === 0}
