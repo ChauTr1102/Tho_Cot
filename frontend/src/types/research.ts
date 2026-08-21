@@ -82,7 +82,6 @@ export function validateResearchSubmission({ input, files }: ResearchSubmission)
   if (!input.brand_kit.tone_of_voice.length) errors.push("Cần ít nhất một tone of voice.");
   if (!input.audience_brief.target_customer.length || !input.audience_brief.languages.length || !input.audience_brief.platforms.length || !input.audience_brief.markets.length) errors.push("Audience brief còn thiếu danh sách bắt buộc.");
   if (!input.market_signal.campaign_objectives.length) errors.push("Cần ít nhất một campaign objective.");
-  if (!files.logo) errors.push("Logo là bắt buộc.");
   if (!files.product_photos.length) errors.push("Cần ít nhất một product photo.");
   const images = [...(files.logo ? [files.logo] : []), ...files.product_photos, ...files.existing_product_visuals];
   if (images.some((file) => !ALLOWED_IMAGE_TYPES.has(file.type) || file.size === 0 || file.size > 20 * 1024 * 1024)) errors.push("Ảnh phải đúng định dạng, không rỗng và không vượt quá 20 MB.");
@@ -122,7 +121,11 @@ export const createInitialResearchSubmission = (): ResearchSubmission => ({
       logo: "logo.png",
       brand_colors: [{ name: "G7 Red", hex: "#E60000", verification_status: "estimated" }],
       tone_of_voice: ["Năng động", "Trực diện", "Tự hào bản sắc Việt"],
-      product_photos: [], existing_product_visuals: [],
+      product_photos: [
+        "/sample-data/05-trung-nguyen-g7/product_01.jpg",
+        "/sample-data/05-trung-nguyen-g7/product_02.jpg",
+      ],
+      existing_product_visuals: [],
     },
     audience_brief: {
       target_customer: ["Dân văn phòng", "Sinh viên 18–34", "Người yêu thích cà phê Việt vị đậm", "Khách mua quà"],
@@ -140,6 +143,29 @@ export const createInitialResearchSubmission = (): ResearchSubmission => ({
   },
   files: { logo: null, product_photos: [], existing_product_visuals: [] }, evidence: "",
 });
+
+const DEFAULT_PRODUCT_PHOTOS = [
+  "/sample-data/05-trung-nguyen-g7/product_01.jpg",
+  "/sample-data/05-trung-nguyen-g7/product_02.jpg",
+] as const;
+
+export async function attachDefaultSampleProductPhotos(
+  submission: ResearchSubmission,
+): Promise<ResearchSubmission> {
+  const productPhotos = await Promise.all(
+    DEFAULT_PRODUCT_PHOTOS.map(async (url) => {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`Không thể tải ảnh mẫu: ${url}`);
+      const blob = await response.blob();
+      return new File([blob], url.split("/").pop()!, { type: blob.type || "image/jpeg" });
+    }),
+  );
+
+  return {
+    ...submission,
+    files: { ...submission.files, product_photos: productPhotos },
+  };
+}
 
 export const createEmptyResearchSubmission = (): ResearchSubmission => ({
   input: {

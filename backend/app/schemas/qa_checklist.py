@@ -6,13 +6,11 @@ CampaignInputDTO / CampaignOutputDTO contracts already shared with the
 frontend (app/schemas/campaign_dto.py), instead of QA_checklist's own
 standalone CampaignInput/CampaignPlan/AssetBundle models.
 
-`regenerate` tells the frontend exactly which generation stage(s) to call
-next to fix the detected issues, so it doesn't have to re-run the whole
-pipeline on every QA failure:
-  - "plan"   -> re-run positioning/creative-routes/AB-test-plan generation
-  - "images" -> re-run the product/marketplace image generation step
-  - "video"  -> re-run the short-form video generation step
-  - "copy"   -> re-run the commerce-copy generation step
+`regenerate` tells the frontend which side of the pipeline to re-run to fix
+the detected issues, so it doesn't have to re-run the whole pipeline on
+every QA failure:
+  - "plan"  -> re-run positioning/creative-routes/AB-test-plan generation
+  - "asset" -> re-run image, video, or commerce-copy generation
 """
 from __future__ import annotations
 
@@ -30,11 +28,9 @@ class QASeverity(str, Enum):
 
 
 class RegenerateTarget(str, Enum):
-    """Which generation stage the frontend should call next to fix an issue."""
+    """Which side of the pipeline the frontend should re-run to fix an issue."""
     PLAN = "plan"
-    IMAGES = "images"
-    VIDEO = "video"
-    COPY = "copy"
+    ASSET = "asset"
 
 
 class QAIssue(BaseModel):
@@ -43,8 +39,17 @@ class QAIssue(BaseModel):
     message: str
     field: str
     regenerate: RegenerateTarget = Field(
-        description="Which stage produced the offending content and should be regenerated."
+        description="Which side produced the offending content and should be regenerated."
     )
+
+
+class QACheckedItem(BaseModel):
+    """One generated checklist item and its pass/fail outcome, so the
+    frontend can render a full tick-list (not just the failures)."""
+    rule_id: str
+    description: str
+    passed: bool
+    category: RegenerateTarget
 
 
 class VerifyChecklistRequest(BaseModel):
@@ -57,10 +62,14 @@ class VerifyChecklistResponse(BaseModel):
     passed: bool = Field(description="True only when there are zero BLOCKER issues.")
     iteration: int
     issues: List[QAIssue] = Field(default_factory=list)
+    checked_items: List[QACheckedItem] = Field(
+        default_factory=list,
+        description="Every generated checklist item with its pass/fail outcome, for rendering a full tick-list.",
+    )
     regenerate: List[RegenerateTarget] = Field(
         default_factory=list,
         description=(
-            "Deduplicated, ordered list of stages the frontend should call next "
-            "(plan -> images -> video -> copy order). Empty when passed=True."
+            "Deduplicated, ordered list of sides the frontend should call next "
+            "(plan -> asset order). Empty when passed=True."
         ),
     )

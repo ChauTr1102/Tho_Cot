@@ -1,4 +1,22 @@
 from fastapi.testclient import TestClient
+import pytest
+
+from app.api.v1.endpoints import verify_checklist as verify_checklist_endpoint
+
+
+@pytest.fixture(autouse=True)
+def force_rule_based_fallback(monkeypatch):
+    """These tests assert on the deterministic rule-based checklist output,
+    not the LLM agent's (necessarily non-deterministic) judgments. Force the
+    agent pipeline to fail so every test exercises the rule-based fallback
+    in app/api/v1/endpoints/verify_checklist.py, regardless of whether
+    ARK_API_KEY happens to be set in the environment running the suite."""
+    def _always_fail(*_args, **_kwargs):
+        raise RuntimeError("agent pipeline disabled in test_verify_checklist.py")
+
+    monkeypatch.setattr(
+        verify_checklist_endpoint.agent_qa_checklist_service, "verify", _always_fail,
+    )
 
 
 def _base_campaign_input() -> dict:
@@ -111,7 +129,7 @@ def test_verify_checklist_passes_for_compliant_output(client: TestClient):
     assert data["issues"] == []
 
 
-def test_verify_checklist_flags_forbidden_claim_and_regenerates_copy(client: TestClient):
+def test_verify_checklist_flags_forbidden_claim_and_regenerates_asset(client: TestClient):
     output = _passing_campaign_output()
     output["commerce_copy"]["product_description"] += " This product cures bloating."
 
@@ -123,13 +141,16 @@ def test_verify_checklist_flags_forbidden_claim_and_regenerates_copy(client: Tes
     res = client.post("/api/verify-checklist", json=payload)
     assert res.status_code == 200
     data = res.json()["data"]
-    assert data["passed"] is False
-    assert "copy" in data["regenerate"]
-    rule_ids = {issue["rule_id"] for issue in data["issues"]}
-    assert "USER.FORBIDDEN_CLAIM" in rule_ids
+    # TEMP policy: all issues are downgraded to WARNING, so the pipeline is
+    # never blocked — passed stays True even though a real issue was found.
+    assert data["passed"] is True
+    assert "asset" in data["regenerate"]
+    issues_by_id = {issue["rule_id"]: issue for issue in data["issues"]}
+    assert "USER.FORBIDDEN_CLAIM" in issues_by_id
+    assert issues_by_id["USER.FORBIDDEN_CLAIM"]["severity"] == "WARNING"
 
 
-def test_verify_checklist_flags_missing_image_and_regenerates_images(client: TestClient):
+def test_verify_checklist_flags_missing_image_and_regenerates_asset(client: TestClient):
     output = _passing_campaign_output()
     output["product_collection_image_set"]["sku_detail_image"] = ""
 
@@ -141,10 +162,11 @@ def test_verify_checklist_flags_missing_image_and_regenerates_images(client: Tes
     res = client.post("/api/verify-checklist", json=payload)
     assert res.status_code == 200
     data = res.json()["data"]
-    assert data["passed"] is False
-    assert "images" in data["regenerate"]
-    rule_ids = {issue["rule_id"] for issue in data["issues"]}
-    assert "ASSETS.MISSING_IMAGE_KIND" in rule_ids
+    assert data["passed"] is True
+    assert "asset" in data["regenerate"]
+    issues_by_id = {issue["rule_id"]: issue for issue in data["issues"]}
+    assert "ASSETS.MISSING_IMAGE_KIND" in issues_by_id
+    assert issues_by_id["ASSETS.MISSING_IMAGE_KIND"]["severity"] == "WARNING"
 
 
 def test_verify_checklist_flags_single_route_and_regenerates_plan(client: TestClient):
@@ -159,13 +181,14 @@ def test_verify_checklist_flags_single_route_and_regenerates_plan(client: TestCl
     res = client.post("/api/verify-checklist", json=payload)
     assert res.status_code == 200
     data = res.json()["data"]
-    assert data["passed"] is False
+    assert data["passed"] is True
     assert "plan" in data["regenerate"]
-    rule_ids = {issue["rule_id"] for issue in data["issues"]}
-    assert "PLAN.ROUTE_COUNT" in rule_ids
+    issues_by_id = {issue["rule_id"]: issue for issue in data["issues"]}
+    assert "PLAN.ROUTE_COUNT" in issues_by_id
+    assert issues_by_id["PLAN.ROUTE_COUNT"]["severity"] == "WARNING"
 
 
-def test_verify_checklist_flags_bad_video_aspect_and_regenerates_video(client: TestClient):
+def test_verify_checklist_flags_bad_video_aspect_and_regenerates_asset(client: TestClient):
     output = _passing_campaign_output()
     output["short_form_video_asset"]["format"] = "1:1"
     output["short_form_video_asset"]["duration"] = "40s"
@@ -178,9 +201,9 @@ def test_verify_checklist_flags_bad_video_aspect_and_regenerates_video(client: T
     res = client.post("/api/verify-checklist", json=payload)
     assert res.status_code == 200
     data = res.json()["data"]
-    # Aspect/duration are WARNING-only, so this campaign still passes overall,
-    # but video should still be flagged as a stage to regenerate.
-    assert "video" in data["regenerate"]
+    assert data["passed"] is True
+    assert "asset" in data["regenerate"]
     rule_ids = {issue["rule_id"] for issue in data["issues"]}
     assert "ASSETS.VIDEO_ASPECT" in rule_ids
     assert "ASSETS.VIDEO_DURATION" in rule_ids
+    assert all(issue["severity"] == "WARNING" for issue in data["issues"])

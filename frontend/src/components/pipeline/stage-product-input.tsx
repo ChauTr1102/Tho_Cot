@@ -25,6 +25,7 @@ import { toast } from "sonner";
 import { api } from "@/lib/api";
 import {
   CAMPAIGN_OBJECTIVES,
+  attachDefaultSampleProductPhotos,
   createEmptyResearchSubmission,
   createInitialResearchSubmission,
   type CampaignObjective,
@@ -39,6 +40,7 @@ const OBJECTIVE_LABELS: Record<CampaignObjective, string> = {
 interface Props {
   value: ResearchSubmission;
   onChange: React.Dispatch<React.SetStateAction<ResearchSubmission>>;
+  initialInputMode?: "link" | "manual";
 }
 
 const toArr = (val: unknown): string[] => {
@@ -102,8 +104,8 @@ function Section({
   );
 }
 
-export const StageProductInput: React.FC<Props> = ({ value, onChange }) => {
-  const [inputMode, setInputMode] = React.useState<"link" | "manual">("link");
+export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInputMode = "link" }) => {
+  const [inputMode, setInputMode] = React.useState<"link" | "manual">(initialInputMode);
   const [tiktokUrl, setTiktokUrl] = React.useState("");
   const [newImageUrl, setNewImageUrl] = React.useState("");
   const [isExtracting, setIsExtracting] = React.useState(false);
@@ -247,9 +249,13 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange }) => {
     toast.info("Đã xóa trắng form để nhập thủ công từ đầu.");
   };
 
-  const handleLoadSample = () => {
-    onChange(createInitialResearchSubmission());
-    toast.success("Đã tải dữ liệu mẫu (G7 Coffee).");
+  const handleLoadSample = async () => {
+    try {
+      onChange(await attachDefaultSampleProductPhotos(createInitialResearchSubmission()));
+      toast.success("Đã tải dữ liệu mẫu và ảnh sản phẩm G7 Coffee.");
+    } catch {
+      toast.error("Không thể tải ảnh sản phẩm mẫu G7.");
+    }
   };
 
   return (
@@ -288,7 +294,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange }) => {
             onClick={() => setInputMode("manual")}
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-mono tracking-wider transition-all ${
               inputMode === "manual"
-                ? "bg-foreground text-black font-bold shadow-md"
+                ? "bg-foreground text-white font-bold shadow-md"
                 : "text-foreground/50 hover:text-foreground hover:bg-foreground/[0.05]"
             }`}
           >
@@ -783,7 +789,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange }) => {
           {/* Logo Card */}
           <div className="space-y-1.5">
             <label className="text-[10px] font-mono text-foreground/50 uppercase tracking-wider flex items-center justify-between">
-              <span>Logo thương hiệu *</span>
+              <span>Logo thương hiệu (không bắt buộc)</span>
               {value.files.logo && (
                 <span className="text-[#35ea52] font-mono text-[10px]">✓ {value.files.logo.name}</span>
               )}

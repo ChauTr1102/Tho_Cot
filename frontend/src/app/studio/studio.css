@@ -55,6 +55,44 @@
    the faint 1px technical grid taken from the event site. The auroras are
    fixed so they read as light in the room rather than as decoration glued to
    the content. */
+/* ── The studio's own palette ────────────────────────────────────────────────
+   Pinned here, not inherited. Every token below used to come from globals.css
+   via `.dark`, and globals.css belongs to the whole app: a teammate moved the
+   landing page to a warm ivory light theme, which set `--primary: #000000` and
+   `--background: #f4f4f0` in both modes. The studio reads `--primary` fifteen
+   times for its lime, so that change turned this route into black text on white
+   with a few green glows left behind — a full merge away from anything anyone
+   would have tested.
+
+   `@theme inline` compiles `border-border` straight to `var(--border)`, so
+   redefining the tokens on the route's own root cascades to every component
+   underneath it and to nothing outside. The app theme and the studio theme can
+   now move independently, which is what both of them want.
+   ──────────────────────────────────────────────────────────────────────────── */
+.studio-backdrop {
+  --background: #001708;
+  --foreground: #f4faf5;
+  --card: #00220e;
+  --card-foreground: #f4faf5;
+  --popover: #00220e;
+  --popover-foreground: #f4faf5;
+  --primary: #35ea52;
+  --primary-foreground: #001708;
+  --secondary: #012a14;
+  --secondary-foreground: #f4faf5;
+  --muted: #012a14;
+  --muted-foreground: #a1c1a7;
+  --accent: #7ef962;
+  --accent-foreground: #001708;
+  --cta: #fe6e00;
+  --gold: #fcbb00;
+  --danger: #fd393f;
+  --destructive: #ff3333;
+  --border: rgba(107, 239, 117, 0.18);
+  --input: rgba(107, 239, 117, 0.18);
+  --ring: #35ea52;
+}
+
 .studio-backdrop {
   background-color: var(--background);
   background-image:

@@ -45,6 +45,11 @@ export const SidebarNav: React.FC = () => {
     setTimeout(() => setIsOpen(false), 0);
   }, [pathname]);
 
+  // Do not render the floating nav on the landing page
+  if (pathname === "/") {
+    return null;
+  }
+
   return (
     <div className="fixed bottom-10 left-10 z-[100]" ref={menuRef}>
       
@@ -60,15 +65,18 @@ export const SidebarNav: React.FC = () => {
           {/* Top Brand Area */}
           <div className="p-4 border-b border-foreground/10 bg-foreground/[0.02]">
             <div className="flex items-center gap-2.5">
-              <div className="font-mono text-foreground text-lg font-bold tracking-widest italic transform -skew-x-12">
-                CAIBS
-              </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/brand/logo-header.png"
+                alt="CAIBS Logo"
+                className="h-6 w-auto object-contain drop-shadow-[0_0_10px_rgba(53,234,82,0.3)]"
+              />
               <div className="h-4 w-px bg-foreground/20" />
-              <span className="text-foreground/30 text-[10px] font-mono tracking-widest">
+              <span className="text-foreground/40 text-[10px] font-mono tracking-widest">
                 MULTI.AGENT
               </span>
             </div>
-            <div className="flex items-center gap-1.5 mt-3">
+            <div className="flex items-center gap-1.5 mt-2.5">
               <div className="w-1 h-1 rounded-full bg-[#35ea52] animate-pulse" />
               <span className="text-[10px] font-mono text-foreground/40 tracking-wider">HỆ THỐNG.TRỰC TUYẾN V2.0</span>
             </div>

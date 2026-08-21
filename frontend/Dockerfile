@@ -6,7 +6,13 @@
 FROM node:20-slim AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci
+# NOTE: package-lock.json is currently out of sync with package.json
+# (missing @emnapi/core@1.11.3 / @emnapi/runtime@1.11.3 resolutions), so
+# `npm ci` fails with EUSAGE. Using `npm install` here lets npm repair the
+# lockfile during the build. Regenerate package-lock.json locally with
+# `npm install` and commit it, then switch this back to `npm ci` for
+# fully reproducible builds.
+RUN npm install
 
 # ---- builder: build the Next.js app ----------------------------------------
 FROM node:20-slim AS builder

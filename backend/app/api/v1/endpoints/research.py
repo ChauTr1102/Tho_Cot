@@ -35,18 +35,18 @@ def _json_object(value: str, field_name: str) -> dict[str, Any]:
 
 
 async def _read_assets(
-    logo: UploadFile,
+    logo: UploadFile | None,
     product_photos: list[UploadFile],
     existing_product_visuals: list[UploadFile],
 ) -> tuple[list[tuple[str, str, str | None, bytes]], dict[str, Any]]:
-    uploads = [("logo", logo)]
+    uploads = [("logo", logo)] if logo else []
     uploads.extend((f"product_photos[{index}]", item) for index, item in enumerate(product_photos))
     uploads.extend((f"existing_product_visuals[{index}]", item) for index, item in enumerate(existing_product_visuals))
     assets = []
     for label, upload in uploads:
         assets.append((label, upload.filename or label, upload.content_type, await upload.read()))
     paths = {
-        "logo": logo.filename or "logo",
+        "logo": logo.filename if logo else "",
         "product_photos": [item.filename or f"product_{index}" for index, item in enumerate(product_photos)],
         "existing_product_visuals": [item.filename or f"visual_{index}" for index, item in enumerate(existing_product_visuals)],
     }
@@ -65,7 +65,7 @@ async def run_research(
     brand_kit: str = Form(..., description="JSON object brand_kit; đường dẫn ảnh được thay bằng file upload"),
     audience_brief: str = Form(..., description="JSON object audience_brief"),
     market_signal: str = Form(..., description="JSON object market_signal"),
-    logo: UploadFile = File(...),
+    logo: UploadFile | None = File(default=None),
     product_photos: list[UploadFile] = File(...),
     existing_product_visuals: list[UploadFile] | None = File(default=None),
     schema_version: Literal["1.0"] = Form("1.0"),

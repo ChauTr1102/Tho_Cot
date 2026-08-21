@@ -1,4 +1,4 @@
-import { CreateItemInput, HealthStatus, Item, StandardResponse, UpdateItemInput, ExtractRequest, ExtractResponse } from "@/types";
+import { CreateItemInput, HealthStatus, Item, StandardResponse, UpdateItemInput, ExtractRequest, ExtractResponse, VerifyChecklistRequest, VerifyChecklistResponseData } from "@/types";
 import { parseResearchCampaignPlan, validateResearchSubmission, type ResearchCampaignPlan, type ResearchSubmission } from "@/types/research";
 import type { CampaignListItem, CreateCampaignInput, PersistedCampaign, UpdateCampaignInput } from "@/types/campaign";
 
@@ -127,7 +127,7 @@ export const api = {
     form.append("brand_kit", JSON.stringify(input.brand_kit));
     form.append("audience_brief", JSON.stringify(input.audience_brief));
     form.append("market_signal", JSON.stringify(input.market_signal));
-    form.append("logo", files.logo!);
+    if (files.logo) form.append("logo", files.logo);
     files.product_photos.forEach((file) => form.append("product_photos", file));
     files.existing_product_visuals.forEach((file) => form.append("existing_product_visuals", file));
     if (evidence.trim()) form.append("evidence", evidence.trim());
@@ -145,4 +145,10 @@ export const api = {
       throw new ApiError(error instanceof Error ? error.message : "Không thể kết nối research backend.", 0);
     }
   },
+
+  verifyChecklist: (payload: VerifyChecklistRequest) =>
+    request<VerifyChecklistResponseData>("/verify-checklist", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
 };

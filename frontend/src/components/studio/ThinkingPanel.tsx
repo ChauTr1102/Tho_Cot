@@ -39,39 +39,31 @@ interface Step {
 const STEPS: Step[] = [
   {
     at: 0,
-    label: "Đọc brief và plan",
-    detail: "positioning, benefit hierarchy, hai creative route từ bước nghiên cứu",
+    label: "Đọc campaign plan",
+    detail: "positioning · benefit hierarchy · creative routes",
   },
   {
     at: 5,
-    label: "Soát kho ảnh",
-    detail: "đo từng tấm: kích thước, nền, độ nét — ô nào dùng được ảnh thật",
+    label: "Kiểm kê kho ảnh",
+    detail: "độ phân giải · nền · tỉ lệ khung",
   },
   {
     at: 12,
-    label: "Viết ngôn ngữ hình",
-    detail: "ống kính, nguồn sáng, chất bề mặt, tông màu — theo đúng chỉ đạo của bạn",
+    label: "Sinh visual register",
+    detail: "ống kính · ánh sáng · bề mặt · tông màu",
   },
   {
     at: 44,
-    label: "Chia deliverable theo sàn",
-    detail: "mỗi sàn một bộ khung riêng, không phải resize từ một tấm",
+    label: "Phân bổ deliverable theo sàn",
+    detail: "khung ảnh và video theo chuẩn từng sàn",
   },
   {
     at: 66,
-    label: "Dựng đồ thị phụ thuộc",
-    detail: "ô nào chờ hero, ô nào chạy song song ngay",
+    label: "Dựng dependency graph",
+    detail: "thứ tự thực thi · nhánh chạy song song",
   },
 ];
 
-/** Lines that rotate under the steps, so the panel is never visually static. */
-const MURMUR = [
-  "Ảnh thật của thương hiệu luôn được ưu tiên hơn ảnh dựng mới.",
-  "Bao bì không bao giờ được vẽ lại — nhãn sai một chữ là hỏng cả kit.",
-  "Chữ trên ảnh phải được gọi tên chính xác trong prompt, không để model tự nghĩ.",
-  "Mỗi sàn có luật riêng: Shopee cần nền trắng, TikTok cần hook trong 3 giây.",
-  "Hero là mỏ neo phong cách — mọi tấm sau đều tham chiếu về nó.",
-];
 
 interface ThinkingPanelProps {
   /** What the user asked for, shown back to them as the thing being served. */
@@ -97,7 +89,6 @@ export function ThinkingPanel({ direction, campaignName }: ThinkingPanelProps) {
     (last, step, index) => (elapsed >= step.at ? index : last),
     0
   );
-  const murmur = MURMUR[Math.floor(elapsed / 7) % MURMUR.length];
 
   return (
     <div className="studio-panel relative flex h-[clamp(560px,72vh,900px)] flex-col overflow-hidden">
@@ -116,7 +107,7 @@ export function ThinkingPanel({ direction, campaignName }: ThinkingPanelProps) {
             className="studio-live-dot relative size-2 rounded-full bg-primary"
           />
           <h2 className="font-display text-[15px] font-semibold tracking-tight">
-            Đạo diễn đang phân tích
+            Đang phân tích chiến dịch
           </h2>
         </div>
         <span className="studio-nums font-mono text-[13px] tabular-nums text-muted-foreground">
@@ -135,12 +126,12 @@ export function ThinkingPanel({ direction, campaignName }: ThinkingPanelProps) {
           </p>
           {direction.trim() ? (
             <p className="mt-2 max-w-2xl text-[14px] leading-relaxed text-muted-foreground">
-              Theo yêu cầu:{" "}
+              Chỉ đạo:{" "}
               <span className="text-foreground/85">“{direction.trim()}”</span>
             </p>
           ) : (
             <p className="mt-2 max-w-2xl text-[14px] leading-relaxed text-muted-foreground">
-              Không có chỉ đạo riêng — đạo diễn tự đọc brief và quyết định.
+              Không có chỉ đạo riêng — dùng mặc định suy ra từ brief.
             </p>
           )}
         </div>
@@ -194,18 +185,11 @@ export function ThinkingPanel({ direction, campaignName }: ThinkingPanelProps) {
           })}
         </ol>
 
-        <p
-          key={murmur}
-          className="studio-enter max-w-2xl border-l-2 border-primary/40 pl-3.5 text-[13px] leading-relaxed text-muted-foreground/85"
-        >
-          {murmur}
-        </p>
       </div>
 
       <div className="shrink-0 border-t border-border px-5 py-3">
         <p className="text-center text-[12px] text-muted-foreground">
-          Chưa có ảnh nào được dựng. Bạn sẽ duyệt đề xuất trước khi studio tiêu
-          tốn một giây render nào.
+          Chưa render. Đề xuất sẽ chờ bạn duyệt.
         </p>
       </div>
     </div>

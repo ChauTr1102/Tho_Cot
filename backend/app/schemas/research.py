@@ -35,7 +35,7 @@ class ResearchBrandColor(StrictModel):
 
 
 class ResearchBrandKit(StrictModel):
-    logo: str = Field(min_length=1)
+    logo: str = ""
     brand_colors: list[ResearchBrandColor] = Field(min_length=1)
     tone_of_voice: list[str] = Field(min_length=1)
     product_photos: list[str]
