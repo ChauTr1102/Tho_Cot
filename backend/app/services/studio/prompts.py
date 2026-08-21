@@ -107,10 +107,28 @@ RULE_CLAUSES: dict[str, str] = {
 # is produced by the same model that mangled the captions.
 
 VIDEO_PROMPT = """SUBJECT: the product shown in the first frame, unchanged and in focus
-ACTION + CAMERA: {shot_scene}, slow push-in, the product stays sharp and centred
+ACTION + CAMERA: {shot_scene}, {camera}
 STYLE: {lens}, {light}, {surface}, {grade}, unchanged from the first frame
 CONSTRAINTS: preserve the first frame's composition and every string already printed in it. \
-Do not add any text, caption, lettering, overlay or watermark of any kind."""
+{framing_constraint}Do not add any text, caption, lettering, overlay or watermark of any kind."""
+
+# Two camera behaviours, chosen by whether the first frame carries text.
+#
+# A push-in is the better-looking move and the right default for a frame that is
+# pure product. But it reframes, and measured on a real 9:16 keyframe whose
+# headline sat in the top third, the push-in carried "PHỤC HỒI HÀNG RÀO DA"
+# straight out of frame -- the Ken Burns fallback beat, which only pans, kept it.
+# When Seedream has drawn copy into the frame, the camera must hold its framing:
+# losing the headline costs more than gaining the movement.
+CAMERA_PUSH_IN = "slow push-in, the product stays sharp and centred"
+CAMERA_LOCKED = (
+    "the camera holds its framing exactly, no zoom and no reframing; "
+    "only the light, reflections and fine surface details move"
+)
+FRAMING_CONSTRAINT_LOCKED = (
+    "Keep every edge of the first frame visible for the whole clip: do not zoom in, "
+    "crop, pan away from, or push past any text near the frame edges. "
+)
 
 
 # ---------------------------------------------------------------------------
@@ -233,6 +251,7 @@ def build_video_prompt(
     shot_scene: str,
     spine: "StyleSpine",
     vo_text: str = "",
+    has_onscreen_text: bool = False,
 ) -> str:
     """Assemble the motion prompt for one shot (Seedance 2.5, image-to-video).
 
@@ -250,6 +269,8 @@ def build_video_prompt(
     del vo_text  # spoken by Seed Audio TTS; never drawn by Seedance
     return VIDEO_PROMPT.format(
         shot_scene=_strip_quotes(resolve_scene(shot_scene, spine)),
+        camera=CAMERA_LOCKED if has_onscreen_text else CAMERA_PUSH_IN,
+        framing_constraint=FRAMING_CONSTRAINT_LOCKED if has_onscreen_text else "",
         lens=spine.lens,
         light=spine.light,
         surface=spine.surface,

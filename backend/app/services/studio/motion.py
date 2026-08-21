@@ -206,8 +206,14 @@ def render_shot(
     started = time.time()
     task_id = resume_task_id
     try:
+        # A keyframe carrying copy gets a locked camera. Measured: the default
+        # push-in reframed a 9:16 keyframe enough to carry its headline out of
+        # shot, while the Ken Burns fallback beat kept the same headline.
         prompt = prompts.build_video_prompt(
-            str(getattr(shot, "scene", "")), spine, str(getattr(shot, "vo_text", ""))
+            str(getattr(shot, "scene", "")),
+            spine,
+            str(getattr(shot, "vo_text", "")),
+            has_onscreen_text=bool(str(getattr(shot, "onscreen_text", "")).strip()),
         )
         if task_id is None:
             task_id = ark.create_video_task(

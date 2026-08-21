@@ -501,7 +501,11 @@ def mux(
     # subtitle PNGs follow. The overlay filter addresses them by that index.
     first_png_index = 1 + (1 if vo_path else 0)
     for p in pngs:
-        args += ["-i", str(p)]
+        # `-loop 1` is required, not cosmetic. A PNG is a single-frame stream, so
+        # by the time a later caption's `enable` window opens its input has long
+        # ended and the overlay draws nothing. Measured: without it the first
+        # caption appeared and every subsequent one was silently dropped.
+        args += ["-loop", "1", "-i", str(p)]
 
     if pngs:
         steps, current = [], "0:v"
