@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
+import { cn } from "@/lib/utils";
 import {
   CAMPAIGN_OBJECTIVES,
   attachDefaultSampleProductPhotos,
@@ -109,7 +110,11 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
   const [tiktokUrl, setTiktokUrl] = React.useState("");
   const [newImageUrl, setNewImageUrl] = React.useState("");
   const [isExtracting, setIsExtracting] = React.useState(false);
+  const [isExtractingFile, setIsExtractingFile] = React.useState(false);
+  const [extractedFileName, setExtractedFileName] = React.useState<string | null>(null);
+  const [isDragging, setIsDragging] = React.useState(false);
   const [extractedSuccess, setExtractedSuccess] = React.useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
   const data = value.input;
   const setInput = (input: ResearchSubmission["input"]) => onChange((current) => ({ ...current, input }));
@@ -130,6 +135,107 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
     toast.success("Đã thêm hình ảnh vào danh sách!");
   };
 
+  const applyExtractionPayload = (payload: any, sourceLabel: string) => {
+    const pb = payload?.product_brief;
+    const bk = payload?.brand_kit;
+    const ab = payload?.audience_brief;
+    const ms = payload?.market_signal;
+
+    const productName = pb?.product_name || "Sản phẩm chiến dịch";
+    const category = pb?.category || "E-Commerce";
+    const keySellingPoints = toArr(pb?.key_selling_points);
+    const targetMarkets = toArr(pb?.target_market);
+    const requiredClaims = toArr(pb?.required_claims);
+    const restrictedClaims = toArr(pb?.restricted_or_forbidden_claims);
+
+    const priceAmount = pb?.price_or_promotion?.price ?? null;
+    const priceCurrency = pb?.price_or_promotion?.currency || "VND";
+    const promotion = pb?.price_or_promotion?.promotion || null;
+
+    const brandColors = bk?.brand_colors?.primary
+      ? [
+          {
+            name: bk.brand_colors.primary,
+            hex: bk.brand_colors.primary.startsWith("#") ? bk.brand_colors.primary : "#10b981",
+            verification_status: "estimated" as const,
+          },
+        ]
+      : [
+          {
+            name: "Màu chủ đạo",
+            hex: "#10b981",
+            verification_status: "estimated" as const,
+          },
+        ];
+
+    const toneOfVoice = toArr(
+      bk?.tone_of_voice?.attributes?.length
+        ? bk.tone_of_voice.attributes
+        : bk?.tone_of_voice?.description || ["Trẻ trung", "Năng động", "Thân thiện"]
+    );
+
+    const targetCustomer = toArr(ab?.target_customer || ["Khách hàng mua sắm online"]);
+    const languages = toArr(ab?.language || ["vi", "en"]);
+    const platforms = toArr(ab?.platform || ["TikTok Shop", "Shopee", "Facebook"]);
+    const markets = toArr(ab?.market || ["Việt Nam"]);
+
+    const trends = toArr(ms?.trend || ["Livestream Shopping", "Short-form Video Trends"]);
+    const seasonalMoments = toArr(ms?.seasonal_moment || ["Mega Sale", "Mùa mua sắm"]);
+    const consumerPainPoints = toArr(ms?.consumer_pain_point || ["Cần sản phẩm chất lượng, tiện dụng"]);
+    const searchKeywords = toArr(ms?.search_keyword || [productName]);
+    const competitorAngles = toArr(ms?.competitor_angle);
+
+    onChange((current) => ({
+      ...current,
+      input: {
+        schema_version: "1.0",
+        campaign_id: current.input.campaign_id || `campaign-${Date.now()}`,
+        product_brief: {
+          product_name: productName,
+          category: category,
+          key_selling_points: keySellingPoints.length ? keySellingPoints : ["Chất lượng cao", "Tiện dụng"],
+          price:
+            priceAmount !== null
+              ? {
+                  amount: priceAmount,
+                  currency: priceCurrency,
+                  unit: "sản phẩm",
+                  note: promotion,
+                }
+              : null,
+          promotion: promotion,
+          target_market: targetMarkets.length ? targetMarkets : ["Việt Nam"],
+          required_claims: requiredClaims,
+          restricted_claims: restrictedClaims,
+        },
+        brand_kit: {
+          logo: bk?.logo?.path || current.input.brand_kit.logo || "logo.png",
+          brand_colors: brandColors,
+          tone_of_voice: toneOfVoice.length ? toneOfVoice : ["Trẻ trung", "Năng động"],
+          product_photos: toArr(bk?.product_photos),
+          existing_product_visuals: toArr(bk?.existing_product_visuals),
+        },
+        audience_brief: {
+          target_customer: targetCustomer,
+          languages: languages,
+          platforms: platforms,
+          markets: markets,
+        },
+        market_signal: {
+          trends: trends,
+          seasonal_moments: seasonalMoments,
+          consumer_pain_points: consumerPainPoints,
+          search_keywords: searchKeywords,
+          competitor_angles: competitorAngles,
+          campaign_objectives: ["conversion", "awareness"],
+        },
+      },
+    }));
+
+    setExtractedSuccess(true);
+    toast.success(`Đã trích xuất & tự động điền toàn bộ thông tin từ ${sourceLabel}!`);
+  };
+
   const handleExtractFromUrl = async () => {
     if (!tiktokUrl.trim()) {
       toast.error("Hãy nhập URL TikTok Shop hợp lệ.");
@@ -138,109 +244,32 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
     setIsExtracting(true);
     try {
       const res = await api.extractProduct({ url: tiktokUrl.trim(), render: true });
-      const payload = res.data;
-      const pb = payload?.product_brief;
-      const bk = payload?.brand_kit;
-      const ab = payload?.audience_brief;
-      const ms = payload?.market_signal;
-
-      const productName = pb?.product_name || "Sản phẩm TikTok Shop";
-      const category = pb?.category || "E-Commerce";
-      const keySellingPoints = toArr(pb?.key_selling_points);
-      const targetMarkets = toArr(pb?.target_market);
-      const requiredClaims = toArr(pb?.required_claims);
-      const restrictedClaims = toArr(pb?.restricted_or_forbidden_claims);
-
-      const priceAmount = pb?.price_or_promotion?.price ?? null;
-      const priceCurrency = pb?.price_or_promotion?.currency || "VND";
-      const promotion = pb?.price_or_promotion?.promotion || null;
-
-      const brandColors = bk?.brand_colors?.primary
-        ? [
-            {
-              name: bk.brand_colors.primary,
-              hex: bk.brand_colors.primary.startsWith("#") ? bk.brand_colors.primary : "#10b981",
-              verification_status: "estimated" as const,
-            },
-          ]
-        : [
-            {
-              name: "Màu chủ đạo",
-              hex: "#10b981",
-              verification_status: "estimated" as const,
-            },
-          ];
-
-      const toneOfVoice = toArr(
-        bk?.tone_of_voice?.attributes?.length
-          ? bk.tone_of_voice.attributes
-          : bk?.tone_of_voice?.description || ["Trẻ trung", "Năng động", "Thân thiện"]
-      );
-
-      const targetCustomer = toArr(ab?.target_customer || ["Khách hàng mua sắm online trên TikTok Shop"]);
-      const languages = toArr(ab?.language || ["vi", "en"]);
-      const platforms = toArr(ab?.platform || ["TikTok Shop"]);
-      const markets = toArr(ab?.market || ["Việt Nam"]);
-
-      const trends = toArr(ms?.trend || ["Livestream Shopping", "Short-form Video Trends"]);
-      const seasonalMoments = toArr(ms?.seasonal_moment || ["Mùa hè", "Mega Sale"]);
-      const consumerPainPoints = toArr(ms?.consumer_pain_point || ["Cần sản phẩm chất lượng, tiện dụng"]);
-      const searchKeywords = toArr(ms?.search_keyword || [productName]);
-      const competitorAngles = toArr(ms?.competitor_angle);
-
-      onChange((current) => ({
-        ...current,
-        input: {
-          schema_version: "1.0",
-          campaign_id: current.input.campaign_id || `campaign-${Date.now()}`,
-          product_brief: {
-            product_name: productName,
-            category: category,
-            key_selling_points: keySellingPoints.length ? keySellingPoints : ["Chất lượng cao", "Tiện dụng"],
-            price:
-              priceAmount !== null
-                ? {
-                    amount: priceAmount,
-                    currency: priceCurrency,
-                    unit: "sản phẩm",
-                    note: promotion,
-                  }
-                : null,
-            promotion: promotion,
-            target_market: targetMarkets.length ? targetMarkets : ["Việt Nam"],
-            required_claims: requiredClaims,
-            restricted_claims: restrictedClaims,
-          },
-          brand_kit: {
-            logo: bk?.logo?.path || current.input.brand_kit.logo || "logo.png",
-            brand_colors: brandColors,
-            tone_of_voice: toneOfVoice.length ? toneOfVoice : ["Trẻ trung", "Năng động"],
-            product_photos: toArr(bk?.product_photos),
-            existing_product_visuals: toArr(bk?.existing_product_visuals),
-          },
-          audience_brief: {
-            target_customer: targetCustomer,
-            languages: languages,
-            platforms: platforms,
-            markets: markets,
-          },
-          market_signal: {
-            trends: trends,
-            seasonal_moments: seasonalMoments,
-            consumer_pain_points: consumerPainPoints,
-            search_keywords: searchKeywords,
-            competitor_angles: competitorAngles,
-            campaign_objectives: ["conversion", "awareness"],
-          },
-        },
-      }));
-
-      setExtractedSuccess(true);
-      toast.success("Đã trích xuất & tự động điền toàn bộ thông tin sản phẩm!");
+      applyExtractionPayload(res.data, "TikTok Shop URL");
     } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : "Không thể trích xuất dữ liệu từ URL.");
     } finally {
       setIsExtracting(false);
+    }
+  };
+
+  const handleFileUpload = async (file: File) => {
+    if (!file) return;
+    const validExts = [".pdf", ".docx", ".doc", ".txt", ".md", ".json"];
+    const lowerName = file.name.toLowerCase();
+    if (!validExts.some((ext) => lowerName.endsWith(ext))) {
+      toast.error("Vui lòng tải lên file định dạng PDF, DOCX, DOC hoặc TXT.");
+      return;
+    }
+
+    setIsExtractingFile(true);
+    setExtractedFileName(file.name);
+    try {
+      const res = await api.extractDocumentFile(file);
+      applyExtractionPayload(res.data, `tài liệu "${file.name}"`);
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Không thể trích xuất thông tin từ file tài liệu.");
+    } finally {
+      setIsExtractingFile(false);
     }
   };
 
@@ -361,32 +390,108 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
         </div>
       )}
 
-      {/* OPTION 2: MANUAL CONTROLS */}
+      {/* OPTION 2: MANUAL CONTROLS & DOC/PDF UPLOADER */}
       {inputMode === "manual" && (
-        <div className="p-3 border border-foreground/15 bg-foreground/[0.02] flex flex-wrap items-center justify-between gap-3 animate-in fade-in duration-200">
-          <div className="flex items-center gap-2">
-            <PenLine className="h-4 w-4 text-foreground/50" />
-            <span className="text-xs font-mono text-foreground/70">
-              CHẾ ĐỘ TỰ ĐIỀN THỦ CÔNG: Nhập thông tin chi tiết vào các mục bên dưới.
-            </span>
+        <div className="space-y-3 animate-in fade-in duration-200">
+          <div className="p-3 border border-foreground/15 bg-foreground/[0.02] flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <PenLine className="h-4 w-4 text-foreground/50" />
+              <span className="text-xs font-mono text-foreground/70">
+                CHẾ ĐỘ TỰ ĐIỀN THỦ CÔNG: Nhập thông tin chi tiết hoặc tải file tài liệu để AI tự điền.
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,.docx,.doc,.txt,.md,.json"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) void handleFileUpload(file);
+                  e.target.value = "";
+                }}
+              />
+              <button
+                type="button"
+                disabled={isExtractingFile}
+                onClick={() => fileInputRef.current?.click()}
+                className="h-7 px-3 bg-[#35ea52] text-black text-[11px] font-mono font-bold tracking-wider hover:bg-[#35ea52]/90 transition-all flex items-center gap-1.5 disabled:opacity-50"
+              >
+                {isExtractingFile ? (
+                  <>
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    ĐANG ĐỌC FILE...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="h-3 w-3" />
+                    TẢI FILE DOC / PDF
+                  </>
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={handleResetEmpty}
+                className="h-7 px-3 border border-foreground/20 text-[11px] font-mono text-foreground/60 hover:text-foreground hover:border-foreground/40 transition-all flex items-center gap-1.5"
+              >
+                <RotateCcw className="h-3 w-3" />
+                XÓA TRẮNG FORM
+              </button>
+              <button
+                type="button"
+                onClick={handleLoadSample}
+                className="h-7 px-3 border border-[#35ea52]/30 text-[#35ea52] text-[11px] font-mono hover:bg-[#35ea52]/10 transition-all flex items-center gap-1.5"
+              >
+                <FileText className="h-3 w-3" />
+                TẢI DỮ LIỆU MẪU
+              </button>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleResetEmpty}
-              className="h-7 px-3 border border-foreground/20 text-[11px] font-mono text-foreground/60 hover:text-foreground hover:border-foreground/40 transition-all flex items-center gap-1.5"
-            >
-              <RotateCcw className="h-3 w-3" />
-              XÓA TRẮNG FORM
-            </button>
-            <button
-              type="button"
-              onClick={handleLoadSample}
-              className="h-7 px-3 border border-[#35ea52]/30 text-[#35ea52] text-[11px] font-mono hover:bg-[#35ea52]/10 transition-all flex items-center gap-1.5"
-            >
-              <FileText className="h-3 w-3" />
-              TẢI DỮ LIỆU MẪU
-            </button>
+
+          {/* Drag & Drop Document Card */}
+          <div
+            onDragOver={(e) => {
+              e.preventDefault();
+              setIsDragging(true);
+            }}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setIsDragging(false);
+              const file = e.dataTransfer.files?.[0];
+              if (file) void handleFileUpload(file);
+            }}
+            onClick={() => fileInputRef.current?.click()}
+            className={cn(
+              "p-3.5 border border-dashed text-center cursor-pointer transition-all bg-background/40 flex flex-col sm:flex-row items-center justify-between gap-3",
+              isDragging
+                ? "border-[#35ea52] bg-[#35ea52]/10 shadow-sm"
+                : "border-foreground/20 hover:border-[#35ea52]/60 hover:bg-foreground/[0.02]"
+            )}
+          >
+            <div className="flex items-center gap-3 text-left">
+              <div className="size-8 rounded-none border border-[#35ea52]/40 bg-[#35ea52]/10 grid place-items-center text-[#35ea52] shrink-0">
+                {isExtractingFile ? <Loader2 className="size-4 animate-spin" /> : <FileText className="size-4" />}
+              </div>
+              <div>
+                <p className="text-xs font-mono font-bold text-foreground flex items-center gap-2">
+                  <span>KÉO THẢ HOẶC CHỌN FILE BRIEF / SPEC SHEET (PDF, DOCX, TXT)</span>
+                  {extractedFileName && (
+                    <span className="text-[10px] text-[#35ea52] font-normal border border-[#35ea52]/30 px-1.5 py-0.2">
+                      Đã đọc: {extractedFileName}
+                    </span>
+                  )}
+                </p>
+                <p className="text-[11px] font-mono text-foreground/45 mt-0.5">
+                  Gemini AI sẽ tự động đọc nội dung tài liệu và phân loại điền vào từng ô bên dưới.
+                </p>
+              </div>
+            </div>
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-mono font-bold text-[#35ea52] border border-[#35ea52]/40 px-2.5 py-1 shrink-0 hover:bg-[#35ea52]/10">
+              <Upload className="size-3" />
+              CHỌN TÀI LIỆU
+            </span>
           </div>
         </div>
       )}

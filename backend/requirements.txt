@@ -14,4 +14,7 @@ agno>=2.9.0
 google-genai
 playwright
 requests>=2.32.0
+pypdf>=5.0.0
+python-docx>=1.1.0
+lxml>=5.0.0
 

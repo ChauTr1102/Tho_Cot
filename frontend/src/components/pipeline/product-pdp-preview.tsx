@@ -18,6 +18,7 @@ interface ProductPdpPreviewProps {
   price?: { amount: number; currency: string; unit: string } | null;
   promotion?: string | null;
   description: string;
+  caption?: string;
   bullets: string[];
   angle: string;
 }
@@ -112,7 +113,7 @@ export function ProductPdpPreview(props: ProductPdpPreviewProps) {
         </div>
         </div>
       </div>
-      {previewType === "video" && props.videos?.[0] ? viewport === "mobile" ? <div className="mx-auto w-full max-w-[420px]"><IphonePreviewFrame><div className="aspect-[9/16] w-full bg-black"><PlatformVideoPlayer src={props.videos[0]} poster={platformImages?.[0] ?? props.images[0]} title={props.productName} platform={platform} /></div></IphonePreviewFrame></div> : <div className="mx-auto w-full max-w-[360px] overflow-hidden rounded-xl bg-black shadow-xl"><div className="aspect-[9/16]"><PlatformVideoPlayer src={props.videos[0]} poster={platformImages?.[0] ?? props.images[0]} title={props.productName} platform={platform} /></div></div> : <div className={viewport === "mobile" ? "mx-auto w-full max-w-[420px]" : "w-full"}>
+      {previewType === "video" && props.videos?.[0] ? viewport === "mobile" ? <div className="mx-auto w-full max-w-[420px]"><IphonePreviewFrame><div className="h-full w-full bg-black"><PlatformVideoPlayer src={props.videos[0]} poster={platformImages?.[0] ?? props.images[0]} title={props.productName} caption={props.caption} platform={platform} fit="cover" tiktokChrome={platform === "tiktok"} /></div></IphonePreviewFrame></div> : <div className="mx-auto w-full max-w-[360px] overflow-hidden rounded-xl bg-black shadow-xl"><div className="aspect-[9/16]"><PlatformVideoPlayer src={props.videos[0]} poster={platformImages?.[0] ?? props.images[0]} title={props.productName} caption={props.caption} platform={platform} tiktokChrome={platform === "tiktok"} /></div></div> : <div className={viewport === "mobile" ? "mx-auto w-full max-w-[420px]" : "w-full"}>
         {platform === "shopee" ? <ShopeePdpPreview {...props} images={platformImages?.length ? platformImages : props.images} viewMode={viewport} /> : <TiktokPdpPreview {...props} images={platformImages?.length ? platformImages : props.images} viewMode={viewport} />}
       </div>}
     </div>

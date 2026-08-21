@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { CheckCircle2, Loader2, Rocket } from "lucide-react";
+import { CheckCircle2, Loader2 } from "lucide-react";
 
 type Platform = "tiktok" | "shopee" | "taobao" | "tmall";
 type DeployState = "idle" | "deploying" | "success";
@@ -22,7 +22,6 @@ export const StageDeploy: React.FC = () => {
   };
 
   const isBusy = Object.values(status).some((value) => value === "deploying");
-  const allLive = Object.values(status).every((value) => value === "success");
 
   return (
     <div className="space-y-4">
@@ -38,9 +37,6 @@ export const StageDeploy: React.FC = () => {
           </article>
         ))}
       </div>
-      <button type="button" onClick={() => deploy(["tiktok", "shopee", "taobao", "tmall"])} disabled={isBusy || allLive} className="h-10 px-5 bg-[#35ea52] text-black text-xs font-mono font-bold inline-flex items-center justify-center gap-2 hover:bg-[#35ea52]/85 disabled:opacity-60">
-        {isBusy ? <><Loader2 className="h-4 w-4 animate-spin" /> ĐANG TRIỂN KHAI...</> : allLive ? <><CheckCircle2 className="h-4 w-4" /> ĐÃ ĐĂNG TRÊN TẤT CẢ NỀN TẢNG</> : <><Rocket className="h-4 w-4" /> ĐĂNG LÊN TẤT CẢ NỀN TẢNG</>}
-      </button>
     </div>
   );
 };

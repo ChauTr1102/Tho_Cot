@@ -117,6 +117,29 @@ export const api = {
     return json as ExtractResponse;
   },
 
+  extractDocumentFile: async (file: File): Promise<ExtractResponse> => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch(`${API_BASE_URL}/extractor/extract-file`, {
+      method: "POST",
+      body: formData,
+    });
+
+    const json: unknown = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      const payload = json as { detail?: string; message?: string } | null;
+      throw new ApiError(
+        payload?.detail || payload?.message || `Lỗi khi trích xuất tài liệu (${response.status})`,
+        response.status,
+        json
+      );
+    }
+
+    return json as ExtractResponse;
+  },
+
   runResearch: async ({ input, files, evidence }: ResearchSubmission): Promise<ResearchCampaignPlan> => {
     const validationErrors = validateResearchSubmission({ input, files, evidence });
     if (validationErrors.length) throw new ApiError(validationErrors[0], 0, validationErrors);
