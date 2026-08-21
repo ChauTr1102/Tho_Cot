@@ -12,7 +12,7 @@ import { AutopilotWorkflow } from "@/components/pipeline/autopilot-workflow";
 import { AlertTriangle, ArrowLeft, CalendarDays, FolderKanban, ListTree, LoaderCircle, Plus, RefreshCw, Search, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
-import { attachDefaultSampleProductPhotos, createInitialResearchSubmission, parseResearchCampaignPlan, validateResearchSubmission, type ResearchCampaignPlan, type ResearchSubmission } from "@/types/research";
+import { attachDefaultSampleProductPhotos, createEmptyResearchSubmission, createInitialResearchSubmission, parseResearchCampaignPlan, validateResearchSubmission, type ResearchCampaignPlan, type ResearchSubmission } from "@/types/research";
 import { buildCampaignInputDTO, buildMockCampaignOutput } from "@/types/campaign_output_mock";
 import type { VerifyChecklistResponseData } from "@/types/qa_checklist";
 import type { StudioAssetDTOResponse } from "@/types/studio";
@@ -134,11 +134,12 @@ export default function CampaignsPage() {
   }, []);
 
   const startNewCampaign = () => {
-    const initialSubmission = createInitialResearchSubmission();
-    setResearchSubmission(initialSubmission);
-    void attachDefaultSampleProductPhotos(initialSubmission)
-      .then(setResearchSubmission)
-      .catch(() => toast.error("Không thể tải sẵn ảnh sản phẩm mẫu G7."));
+    // Blank, not seeded. The G7 sample makes the demo one click and makes every
+    // other product a lie: the form opened claiming to be G7 coffee, and
+    // whatever the extractor did not overwrite stayed — a yoghurt campaign
+    // carrying "Cà phê Robusta Việt Nam" as a required claim and #E60000 as its
+    // brand colour. The seeded path is still one button away, under Autopilot.
+    setResearchSubmission(createEmptyResearchSubmission());
     setResearchPlan(null);
     // Forget the campaign that was open before. Leaving it set would let the
     // handoff to the studio carry the previous campaign's id if the user walked

@@ -513,7 +513,12 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
         </div>
       )}
 
-      {/* DETAILED FORM SECTIONS: ALWAYS VISIBLE */}
+      {/* The form appears once there is something to put in it.
+          In link mode the paste box is meant to do the typing, so twenty empty
+          fields above it ask the user to do the job they came here to avoid —
+          and invite them to hand-fill what the extractor is about to overwrite.
+          Manual mode shows it immediately, because there the form is the tool. */}
+      {(inputMode === "manual" || extractedSuccess || isExtracting) && (
       <div className="flex-1 space-y-6 overflow-y-auto pr-2 pb-8">
         {/* Loading Banner when extracting */}
         {isExtracting && (
@@ -1007,6 +1012,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
         <fieldset className="space-y-2"><legend className="text-[11px] font-mono font-bold text-foreground/85 uppercase tracking-wider">Mục tiêu chiến dịch *</legend><div className="flex flex-wrap gap-4">{CAMPAIGN_OBJECTIVES.map((objective) => <label key={objective} className="flex items-center gap-2 text-xs font-mono font-semibold text-foreground/85 hover:text-foreground cursor-pointer"><input type="checkbox" className="accent-[#35ea52] h-4 w-4" checked={data.market_signal.campaign_objectives.includes(objective)} onChange={(e) => market({ campaign_objectives: e.target.checked ? [...data.market_signal.campaign_objectives, objective] : data.market_signal.campaign_objectives.filter((item: CampaignObjective) => item !== objective) })} />{OBJECTIVE_LABELS[objective]}</label>)}</div></fieldset>
       </Section>
     </div>
+      )}
   </div>
   );
 };
