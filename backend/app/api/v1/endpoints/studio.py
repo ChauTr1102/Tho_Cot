@@ -408,11 +408,34 @@ def get_assets(campaign_id: str):
     plainly that the field is not ready rather than handed a placeholder.
     """
     run = _RUNS.get(campaign_id)
-    if run is None:
-        raise NotFoundException(message=f"Không tìm thấy lượt chạy '{campaign_id}'.")
-    if run.bundle is None:
-        raise NotFoundException(
-            message=f"Lượt chạy '{campaign_id}' chưa xong (trạng thái: {run.status})."
+
+    # `_RUNS` is process-local, so it answers only while the process that did
+    # the rendering is still alive. Restart the backend, or open a campaign
+    # built in an earlier session, and this used to 404 — at which point the
+    # pipeline's final report and QA gate fell back to mock URLs pointing at
+    # example.com. The files never went anywhere; only the dict did. So when
+    # memory has nothing, read the kit off disk.
+    if run is None or run.bundle is None:
+        from_disk = saved.to_dto(campaign_id)
+        if from_disk["status"] == "empty":
+            if run is None:
+                raise NotFoundException(
+                    message=f"Không tìm thấy lượt chạy '{campaign_id}'.")
+            raise NotFoundException(
+                message=f"Lượt chạy '{campaign_id}' chưa xong (trạng thái: {run.status}).")
+        return StandardResponse(
+            success=True,
+            message="Asset đọc lại từ đĩa",
+            data=AssetDTOResponse(
+                campaign_id=campaign_id,
+                status="done",
+                product_collection_image_set=from_disk["product_collection_image_set"],
+                short_form_video_asset=from_disk["short_form_video_asset"],
+                # Copy lives on the bundle, which memory no longer has. Null is
+                # the honest answer; the final report keeps the plan-derived
+                # copy it already had rather than being handed an invention.
+                commerce_copy=None,
+            ),
         )
 
     return StandardResponse(
