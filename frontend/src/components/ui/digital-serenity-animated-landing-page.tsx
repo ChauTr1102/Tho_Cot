@@ -158,6 +158,42 @@ export const DigitalSerenity: React.FC<DigitalSerenityProps> = ({
       0%, 100% { opacity: 0.15; transform: scale(1); }
       50% { opacity: 0.4; transform: scale(1.15); }
     }
+    @keyframes flyer-sway {
+      0%, 100% { transform: rotate(-2.5deg); }
+      30% { transform: rotate(-1deg); }
+      60% { transform: rotate(-3.5deg); }
+      80% { transform: rotate(-1.8deg); }
+    }
+    @keyframes led-border-flicker {
+      0%, 100% {
+        box-shadow: 3px 5px 14px rgba(0,0,0,0.4), 0 0 8px rgba(40,200,64,0.3), inset 0 0 6px rgba(40,200,64,0.08);
+        border-color: rgba(40,200,64,0.4);
+      }
+      15% {
+        box-shadow: 3px 5px 14px rgba(0,0,0,0.4), 0 0 18px rgba(40,200,64,0.7), 0 0 40px rgba(40,200,64,0.2), inset 0 0 12px rgba(40,200,64,0.15);
+        border-color: rgba(40,200,64,0.9);
+      }
+      18% {
+        box-shadow: 3px 5px 14px rgba(0,0,0,0.4), 0 0 4px rgba(40,200,64,0.15);
+        border-color: rgba(40,200,64,0.2);
+      }
+      22% {
+        box-shadow: 3px 5px 14px rgba(0,0,0,0.4), 0 0 20px rgba(40,200,64,0.75), 0 0 50px rgba(40,200,64,0.25), inset 0 0 14px rgba(40,200,64,0.18);
+        border-color: rgba(40,200,64,1);
+      }
+      55% {
+        box-shadow: 3px 5px 14px rgba(0,0,0,0.4), 0 0 12px rgba(40,200,64,0.45), inset 0 0 8px rgba(40,200,64,0.1);
+        border-color: rgba(40,200,64,0.55);
+      }
+      70% {
+        box-shadow: 3px 5px 14px rgba(0,0,0,0.4), 0 0 6px rgba(40,200,64,0.2);
+        border-color: rgba(40,200,64,0.3);
+      }
+      73% {
+        box-shadow: 3px 5px 14px rgba(0,0,0,0.4), 0 0 22px rgba(40,200,64,0.8), 0 0 45px rgba(40,200,64,0.22), inset 0 0 12px rgba(40,200,64,0.15);
+        border-color: rgba(40,200,64,0.95);
+      }
+    }
     .word-animate {
       display: inline-block;
       opacity: 0;
@@ -169,8 +205,8 @@ export const DigitalSerenity: React.FC<DigitalSerenityProps> = ({
       transform: translateY(-2px);
     }
     .grid-line {
-      stroke: rgba(13, 17, 23, 0.25);
-      stroke-width: 0.5;
+      stroke: rgba(30, 80, 55, 0.3);
+      stroke-width: 0.8;
       opacity: 0;
       stroke-dasharray: 6 6;
       stroke-dashoffset: 1000;
@@ -185,7 +221,7 @@ export const DigitalSerenity: React.FC<DigitalSerenityProps> = ({
       position: absolute;
       width: 44px;
       height: 44px;
-      border: 1px solid rgba(13, 17, 23, 0.10);
+      border: 1px solid rgba(30, 80, 55, 0.12);
       opacity: 0;
       animation: word-appear 1s ease-out forwards;
     }
@@ -250,7 +286,7 @@ export const DigitalSerenity: React.FC<DigitalSerenityProps> = ({
   return (
     <>
       <style>{pageStyles}</style>
-      <div className="min-h-screen bg-gradient-to-br from-[#FAF8F5] via-[#F5F3EF] to-[#EFECe6] text-[#0D1117] font-mono overflow-hidden relative selection:bg-[#28C840] selection:text-white">
+      <div className="min-h-screen bg-gradient-to-br from-[#C8DCD9] via-[#C2D3D4] to-[#C6D7D6] text-[#0D1117] font-mono overflow-hidden relative selection:bg-[#28C840] selection:text-white">
         {/* Cyberpunk Grid Background */}
         <svg
           className="absolute inset-0 w-full h-full pointer-events-none opacity-80"
@@ -259,7 +295,7 @@ export const DigitalSerenity: React.FC<DigitalSerenityProps> = ({
         >
           <defs>
             <pattern id="gridDarkMatrix" width="60" height="60" patternUnits="userSpaceOnUse">
-              <path d="M 60 0 L 0 0 0 60" fill="none" stroke="rgba(13, 17, 23, 0.15)" strokeWidth="0.5" />
+              <path d="M 60 0 L 0 0 0 60" fill="none" stroke="rgba(30, 80, 55, 0.18)" strokeWidth="0.8" />
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="url(#gridDarkMatrix)" />
@@ -298,15 +334,14 @@ export const DigitalSerenity: React.FC<DigitalSerenityProps> = ({
 
         {/* Responsive Main Content */}
         <div className="relative z-10 min-h-screen flex flex-col justify-between items-center px-6 py-8 sm:px-8 sm:py-10 md:px-16 md:py-12">
-          {/* Top Header with Brand Logo */}
-          <div className="text-center flex flex-col items-center">
+          {/* Top Header — Logo only */}
+          <div className="text-center flex flex-col items-center pt-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/brand/logo-header.png"
               alt="CAIBS Brand Logo"
-              className="h-10 sm:h-14 w-auto object-contain hover:scale-105 transition-transform"
+              className="h-12 sm:h-16 w-auto object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.25)] hover:scale-105 transition-transform"
             />
-            <div className="mt-3 w-20 sm:w-32 h-[2px] bg-gradient-to-r from-transparent via-[#28C840] to-transparent mx-auto"></div>
           </div>
 
           {/* Center Hero Heading & Slogan */}
@@ -330,12 +365,6 @@ export const DigitalSerenity: React.FC<DigitalSerenityProps> = ({
               </span>
             </h1>
 
-            {/* Slogan Subtitle */}
-            <p className="text-sm sm:text-base md:text-lg lg:text-xl font-normal text-[#4B5563] leading-relaxed max-w-2xl mx-auto mt-5 sm:mt-6 font-sans">
-              <span className="word-animate" data-delay="1300">
-                {subHeading}
-              </span>
-            </p>
 
             {/* SPONSORS & PARTNERS RUNNING DIRECTLY ON BACKGROUND */}
             <div
@@ -353,35 +382,35 @@ export const DigitalSerenity: React.FC<DigitalSerenityProps> = ({
                       className="h-7 sm:h-8 w-auto object-contain mr-2"
                     />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/dnes.png" alt="DNES" className="h-7 sm:h-8 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/dnes.png" alt="DNES" className="h-7 sm:h-8 w-auto object-contain opacity-90 hover:opacity-100 transition-all hover:scale-110 drop-shadow-[0_1px_3px_rgba(0,0,0,0.15)]" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/ecomdy.png" alt="Ecomdy" className="h-6 sm:h-7 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/ecomdy.png" alt="Ecomdy" className="h-6 sm:h-7 w-auto object-contain opacity-90 hover:opacity-100 transition-all hover:scale-110 drop-shadow-[0_1px_3px_rgba(0,0,0,0.15)]" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/byteplus.png" alt="BytePlus" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/byteplus.png" alt="BytePlus" className="h-5 sm:h-6 w-auto object-contain opacity-90 hover:opacity-100 transition-all hover:scale-110 drop-shadow-[0_1px_3px_rgba(0,0,0,0.15)]" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/printway.png" alt="Printway" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/printway.png" alt="Printway" className="h-5 sm:h-6 w-auto object-contain opacity-90 hover:opacity-100 transition-all hover:scale-110 drop-shadow-[0_1px_3px_rgba(0,0,0,0.15)]" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/burgerprints.png" alt="BurgerPrints" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/burgerprints.png" alt="BurgerPrints" className="h-5 sm:h-6 w-auto object-contain opacity-90 hover:opacity-100 transition-all hover:scale-110 drop-shadow-[0_1px_3px_rgba(0,0,0,0.15)]" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/kalodata.png" alt="Kalodata" className="h-6 sm:h-7 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/kalodata.png" alt="Kalodata" className="h-6 sm:h-7 w-auto object-contain opacity-90 hover:opacity-100 transition-all hover:scale-110 drop-shadow-[0_1px_3px_rgba(0,0,0,0.15)]" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/wealify.png" alt="Wealify" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/wealify.png" alt="Wealify" className="h-5 sm:h-6 w-auto object-contain opacity-90 hover:opacity-100 transition-all hover:scale-110 drop-shadow-[0_1px_3px_rgba(0,0,0,0.15)]" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/gke-logistics.png" alt="GKE Logistics" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/gke-logistics.png" alt="GKE Logistics" className="h-5 sm:h-6 w-auto object-contain opacity-90 hover:opacity-100 transition-all hover:scale-110 drop-shadow-[0_1px_3px_rgba(0,0,0,0.15)]" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/pgprints.png" alt="PG Prints" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/pgprints.png" alt="PG Prints" className="h-5 sm:h-6 w-auto object-contain opacity-90 hover:opacity-100 transition-all hover:scale-110 drop-shadow-[0_1px_3px_rgba(0,0,0,0.15)]" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/fristify.png" alt="Fristify" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/fristify.png" alt="Fristify" className="h-5 sm:h-6 w-auto object-contain opacity-90 hover:opacity-100 transition-all hover:scale-110 drop-shadow-[0_1px_3px_rgba(0,0,0,0.15)]" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/innovark.png" alt="Innovark" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/innovark.png" alt="Innovark" className="h-5 sm:h-6 w-auto object-contain opacity-90 hover:opacity-100 transition-all hover:scale-110 drop-shadow-[0_1px_3px_rgba(0,0,0,0.15)]" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/lianlian.png" alt="LianLian Global" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/lianlian.png" alt="LianLian Global" className="h-5 sm:h-6 w-auto object-contain opacity-90 hover:opacity-100 transition-all hover:scale-110 drop-shadow-[0_1px_3px_rgba(0,0,0,0.15)]" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/partner-swissep.png" alt="Swiss EP" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/partner-swissep.png" alt="Swiss EP" className="h-5 sm:h-6 w-auto object-contain opacity-90 hover:opacity-100 transition-all hover:scale-110 drop-shadow-[0_1px_3px_rgba(0,0,0,0.15)]" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/partner-genaifund.png" alt="GenAI Fund" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/partner-genaifund.png" alt="GenAI Fund" className="h-5 sm:h-6 w-auto object-contain opacity-90 hover:opacity-100 transition-all hover:scale-110 drop-shadow-[0_1px_3px_rgba(0,0,0,0.15)]" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/partner-dsa.png" alt="DSA" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/partner-dsa.png" alt="DSA" className="h-5 sm:h-6 w-auto object-contain opacity-90 hover:opacity-100 transition-all hover:scale-110 drop-shadow-[0_1px_3px_rgba(0,0,0,0.15)]" />
                   </div>
 
                   {/* Set 2 (Seamless loop copy) */}
@@ -393,35 +422,35 @@ export const DigitalSerenity: React.FC<DigitalSerenityProps> = ({
                       className="h-7 sm:h-8 w-auto object-contain mr-2"
                     />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/dnes.png" alt="DNES" className="h-7 sm:h-8 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/dnes.png" alt="DNES" className="h-7 sm:h-8 w-auto object-contain opacity-90 hover:opacity-100 transition-all hover:scale-110 drop-shadow-[0_1px_3px_rgba(0,0,0,0.15)]" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/ecomdy.png" alt="Ecomdy" className="h-6 sm:h-7 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/ecomdy.png" alt="Ecomdy" className="h-6 sm:h-7 w-auto object-contain opacity-90 hover:opacity-100 transition-all hover:scale-110 drop-shadow-[0_1px_3px_rgba(0,0,0,0.15)]" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/byteplus.png" alt="BytePlus" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/byteplus.png" alt="BytePlus" className="h-5 sm:h-6 w-auto object-contain opacity-90 hover:opacity-100 transition-all hover:scale-110 drop-shadow-[0_1px_3px_rgba(0,0,0,0.15)]" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/printway.png" alt="Printway" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/printway.png" alt="Printway" className="h-5 sm:h-6 w-auto object-contain opacity-90 hover:opacity-100 transition-all hover:scale-110 drop-shadow-[0_1px_3px_rgba(0,0,0,0.15)]" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/burgerprints.png" alt="BurgerPrints" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/burgerprints.png" alt="BurgerPrints" className="h-5 sm:h-6 w-auto object-contain opacity-90 hover:opacity-100 transition-all hover:scale-110 drop-shadow-[0_1px_3px_rgba(0,0,0,0.15)]" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/kalodata.png" alt="Kalodata" className="h-6 sm:h-7 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/kalodata.png" alt="Kalodata" className="h-6 sm:h-7 w-auto object-contain opacity-90 hover:opacity-100 transition-all hover:scale-110 drop-shadow-[0_1px_3px_rgba(0,0,0,0.15)]" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/wealify.png" alt="Wealify" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/wealify.png" alt="Wealify" className="h-5 sm:h-6 w-auto object-contain opacity-90 hover:opacity-100 transition-all hover:scale-110 drop-shadow-[0_1px_3px_rgba(0,0,0,0.15)]" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/gke-logistics.png" alt="GKE Logistics" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/gke-logistics.png" alt="GKE Logistics" className="h-5 sm:h-6 w-auto object-contain opacity-90 hover:opacity-100 transition-all hover:scale-110 drop-shadow-[0_1px_3px_rgba(0,0,0,0.15)]" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/pgprints.png" alt="PG Prints" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/pgprints.png" alt="PG Prints" className="h-5 sm:h-6 w-auto object-contain opacity-90 hover:opacity-100 transition-all hover:scale-110 drop-shadow-[0_1px_3px_rgba(0,0,0,0.15)]" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/fristify.png" alt="Fristify" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/fristify.png" alt="Fristify" className="h-5 sm:h-6 w-auto object-contain opacity-90 hover:opacity-100 transition-all hover:scale-110 drop-shadow-[0_1px_3px_rgba(0,0,0,0.15)]" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/innovark.png" alt="Innovark" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/innovark.png" alt="Innovark" className="h-5 sm:h-6 w-auto object-contain opacity-90 hover:opacity-100 transition-all hover:scale-110 drop-shadow-[0_1px_3px_rgba(0,0,0,0.15)]" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/lianlian.png" alt="LianLian Global" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/lianlian.png" alt="LianLian Global" className="h-5 sm:h-6 w-auto object-contain opacity-90 hover:opacity-100 transition-all hover:scale-110 drop-shadow-[0_1px_3px_rgba(0,0,0,0.15)]" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/partner-swissep.png" alt="Swiss EP" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/partner-swissep.png" alt="Swiss EP" className="h-5 sm:h-6 w-auto object-contain opacity-90 hover:opacity-100 transition-all hover:scale-110 drop-shadow-[0_1px_3px_rgba(0,0,0,0.15)]" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/partner-genaifund.png" alt="GenAI Fund" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/partner-genaifund.png" alt="GenAI Fund" className="h-5 sm:h-6 w-auto object-contain opacity-90 hover:opacity-100 transition-all hover:scale-110 drop-shadow-[0_1px_3px_rgba(0,0,0,0.15)]" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/partner-dsa.png" alt="DSA" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/partner-dsa.png" alt="DSA" className="h-5 sm:h-6 w-auto object-contain opacity-90 hover:opacity-100 transition-all hover:scale-110 drop-shadow-[0_1px_3px_rgba(0,0,0,0.15)]" />
                   </div>
                 </div>
               </div>
@@ -451,7 +480,7 @@ export const DigitalSerenity: React.FC<DigitalSerenityProps> = ({
           {/* Bottom Footer Section */}
           <div className="text-center space-y-2">
             <div className="mb-3 w-20 sm:w-32 h-[2px] bg-gradient-to-r from-transparent via-[#28C840] to-transparent mx-auto"></div>
-            <p className="text-xs sm:text-sm font-mono font-light text-[#6B7280] uppercase tracking-[0.15em] opacity-80">
+            <p className="text-xs sm:text-sm font-mono font-bold text-[#0D1117]/65 uppercase tracking-[0.18em]">
               <span className="word-animate" data-delay="2400">
                 {bottomTagline}
               </span>
