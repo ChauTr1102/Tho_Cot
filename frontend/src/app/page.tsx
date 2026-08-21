@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import DigitalSerenity from "@/components/ui/digital-serenity-animated-landing-page";
 
 export default function HomePage() {
-  redirect("/campaigns");
+  return <DigitalSerenity />;
 }

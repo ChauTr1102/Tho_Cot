@@ -169,52 +169,8 @@ export default function CampaignsPage() {
 
   return (
     <div className="min-h-screen bg-transparent text-foreground/80 flex relative">
-      {/* Global Corner Frame Accents */}
-      <div className="fixed top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-foreground/20 z-50 pointer-events-none" />
-      <div className="fixed top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-foreground/20 z-50 pointer-events-none" />
-      <div className="fixed bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-foreground/20 z-50 pointer-events-none" />
-      <div className="fixed bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-foreground/20 z-50 pointer-events-none" />
-
-      {/* Top Status Bar */}
-      <div className="fixed top-0 left-0 right-0 z-40 border-b border-foreground/10 bg-background/90 backdrop-blur-sm">
-        <div className="flex items-center justify-between px-12 py-1.5">
-          <div className="flex items-center gap-4 text-[10px] font-mono text-foreground/30 tracking-widest">
-            <span>CAIBS.AI.ADS</span>
-            <div className="w-1 h-1 bg-foreground/20 rounded-full" />
-            <span>EST.2025</span>
-          </div>
-          <div className="flex items-center gap-4 text-[10px] font-mono text-foreground/25 tracking-widest">
-            <span>LAT: 10.7626°</span>
-            <div className="w-1 h-1 bg-foreground/15 rounded-full" />
-            <span>LONG: 106.6602°</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom Status Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-foreground/10 bg-background/90 backdrop-blur-sm">
-        <div className="flex items-center justify-between px-12 py-1.5">
-          <div className="flex items-center gap-4 text-[10px] font-mono text-foreground/25 tracking-widest">
-            <div className="flex items-center gap-1.5">
-              <div className="w-1.5 h-1.5 rounded-full bg-[#35ea52] animate-pulse" />
-              <span>HỆ THỐNG.HOẠT ĐỘNG</span>
-            </div>
-            <span>V2.0.0</span>
-          </div>
-          <div className="flex items-center gap-4 text-[10px] font-mono text-foreground/20 tracking-widest">
-            <span>◐ LÕI.ĐA.TÁC.TỬ</span>
-            <div className="flex gap-1">
-              <div className="w-1 h-1 bg-foreground/40 rounded-full animate-pulse" />
-              <div className="w-1 h-1 bg-foreground/25 rounded-full animate-pulse" style={{ animationDelay: "0.2s" }} />
-              <div className="w-1 h-1 bg-foreground/10 rounded-full animate-pulse" style={{ animationDelay: "0.4s" }} />
-            </div>
-            <span>KHUNG: ∞</span>
-          </div>
-        </div>
-      </div>
-
       {/* Main Workspace Area */}
-      <main className="flex-1 min-w-0 flex flex-col min-h-screen bg-transparent pt-7 pb-6">
+      <main className="flex-1 min-w-0 flex flex-col min-h-screen bg-transparent py-6">
         <div className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-8 flex flex-col">
 
           {/* TAB: CAMPAIGNS */}
