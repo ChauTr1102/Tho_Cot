@@ -1,0 +1,80 @@
+{
+  "product_brief": {
+    "product_name": "Julyhouse Xịt Thơm Quần Áo Hương Trái Cây Mùa Hè 280ml 100ml",
+    "category": "Clothing / Fabric Fragrance Spray",
+    "key_selling_points": [
+      "Hương trái cây mùa hè",
+      "Dung tích 280ml và 100ml"
+    ],
+    "price_or_promotion": {
+      "price": null,
+      "currency": "VND",
+      "promotion": null
+    },
+    "target_market": "Vietnam",
+    "required_claims": [],
+    "restricted_or_forbidden_claims": []
+  },
+  "brand_kit": {
+    "logo": {
+      "path": null
+    },
+    "brand_colors": {
+      "primary": null,
+      "secondary": null,
+      "accent": [],
+      "palette": []
+    },
+    "tone_of_voice": {
+      "description": "Fresh, energetic, and pleasant",
+      "attributes": [
+        "fresh",
+        "approachable",
+        "friendly"
+      ],
+      "do": [
+        "Highlight fruity fragrance and freshness"
+      ],
+      "dont": []
+    },
+    "product_photos": [],
+    "existing_product_visuals": []
+  },
+  "audience_brief": {
+    "target_customer": "Consumers in Vietnam looking for clothing fragrance sprays with summer fruit scents",
+    "language": "Vietnamese",
+    "platform": "TikTok Shop",
+    "market": "Vietnam"
+  },
+  "market_signal": {
+    "trend": null,
+    "seasonal_moment": "Mùa hè (Summer)",
+    "consumer_pain_point": "Quần áo có mùi hôi hoặc thiếu hương thơm tươi mát",
+    "search_keyword": [
+      "julyhouse",
+      "xit thom quan ao",
+      "xit thom julyhouse",
+      "huong trai cay mua he",
+      "xit quan ao thơm"
+    ],
+    "competitor_angle": null,
+    "campaign_objective": "Tăng doanh số xịt thơm quần áo Julyhouse trên TikTok Shop"
+  },
+  "past_campaign_data": {
+    "enabled": false,
+    "ctr": null,
+    "cvr": null,
+    "roas": null,
+    "watch_time": {
+      "value": null,
+      "unit": "seconds"
+    },
+    "add_to_cart_rate": null,
+    "comments": [],
+    "sales_results": {
+      "units_sold": null,
+      "revenue": null,
+      "currency": "VND"
+    }
+  }
+}
