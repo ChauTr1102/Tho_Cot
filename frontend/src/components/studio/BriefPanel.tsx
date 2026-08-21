@@ -24,6 +24,7 @@ import {
   KITS,
   estimateKit,
 } from "@/lib/studio-catalog";
+import { DIRECTION_PRESETS } from "@/lib/studio-draft";
 import type { Platform } from "@/types/studio";
 
 const PLATFORM_ICONS: Record<Platform, LucideIcon> = {
@@ -37,6 +38,9 @@ interface BriefPanelProps {
   platforms: Platform[];
   onPlatformsChange: (platforms: Platform[]) => void;
   onRun: () => void;
+  /** Free text: what the user wants this campaign to feel like. */
+  direction: string;
+  onDirectionChange: (value: string) => void;
   /** True from the moment Run is pressed until the run reaches a terminal state. */
   running: boolean;
   /** True only while `POST /studio/run` is in flight. */
@@ -50,6 +54,8 @@ export function BriefPanel({
   platforms,
   onPlatformsChange,
   onRun,
+  direction,
+  onDirectionChange,
   running,
   starting,
   campaignId,
@@ -240,6 +246,39 @@ export function BriefPanel({
             ledger on the run stage owns that number, and two live counts of
             the same thing is one too many. */}
 
+        {/* The steer. Everything above this describes the product; this
+            describes the campaign, and it outranks the director's own reading
+            of the brief. Presets exist because an empty box invites an empty
+            answer, not because the list is exhaustive — the field is free text
+            and the register is written for whatever is in it. */}
+        <div className="mt-4">
+          <div className="mb-1.5 flex items-baseline justify-between gap-2">
+            <span className="text-[13px] font-medium">Muốn chiến dịch ra sao?</span>
+            <span className="text-muted-foreground/60 text-[11px]">tuỳ chọn</span>
+          </div>
+          <textarea
+            value={direction}
+            rows={2}
+            disabled={locked}
+            onChange={(event) => onDirectionChange(event.target.value)}
+            placeholder="dễ thương, pastel · điện ảnh tối giản · sale tưng bừng chữ to…"
+            className="border-border/70 bg-background/50 placeholder:text-muted-foreground/45 focus:border-primary/60 focus:ring-primary/20 w-full resize-none rounded-md border px-2.5 py-2 text-[13px] leading-relaxed outline-none focus:ring-2 disabled:opacity-50"
+          />
+          <div className="mt-1.5 flex flex-wrap gap-1.5">
+            {DIRECTION_PRESETS.map((preset) => (
+              <button
+                key={preset.label}
+                type="button"
+                disabled={locked}
+                onClick={() => onDirectionChange(preset.value)}
+                className="border-border/60 text-muted-foreground hover:border-primary/50 hover:text-foreground rounded-full border px-2.5 py-1 text-[11.5px] transition-colors disabled:opacity-50"
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <Button
           type="button"
           size="lg"
@@ -256,12 +295,12 @@ export function BriefPanel({
                 aria-hidden
                 className="studio-live-dot relative size-1.5 rounded-full bg-current"
               />
-              {starting ? "Đang khởi tạo…" : "Đang dựng kit…"}
+              {starting ? "Đang đọc brief…" : "Đang dựng kit…"}
             </>
           ) : (
             <>
               <Play aria-hidden className="size-4" strokeWidth={2.5} />
-              Chạy studio
+              Đề xuất chiến dịch
             </>
           )}
         </Button>

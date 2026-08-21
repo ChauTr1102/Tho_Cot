@@ -7,8 +7,7 @@
  * legible. Three surfaces, top to bottom:
  *
  *   1. The status bar — one line answering "is it moving, how far, how long".
- *   2. The canvas slot (`children`) — the graph. Task 13 swaps the placeholder
- *      for the React Flow canvas here; nothing else on this screen changes.
+ *   2. The canvas slot (`children`) — the graph, where the run is watched.
  *   3. The ledgers — the route mix accumulating live, and the last transitions
  *      as they land. Between them they turn a wait into something to read.
  *
@@ -81,12 +80,8 @@ export function RunStage({
         <DisconnectedNotice message={error} onRetry={onRetry} />
       ) : null}
 
-      {/* ══════════════════════════════════════════════════════════════════
-          TASK 13 MOUNTS THE GRAPH CANVAS HERE.
-          `page.tsx` passes <GraphCanvasPlaceholder /> as this child today.
-          Replace that single JSX element with <GraphCanvas nodes={nodes} />;
-          the status bar and the ledgers below need no changes.
-          ══════════════════════════════════════════════════════════════════ */}
+      {/* The graph canvas. It manages its own height and its own full-screen
+          state, so this slot imposes nothing on it. */}
       {children}
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">

@@ -11,19 +11,22 @@
  *
  * Layout: brief rail left, live run stage right. This component owns the run
  * lifecycle (`campaignId`, the wall clock, the POST) and hands everything else
- * down. Task 13 changes exactly one JSX element here — the canvas child.
+ * down — including to `GraphCanvas`, which is where the run is actually
+ * watched.
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { BriefPanel } from "@/components/studio/BriefPanel";
-import { GraphCanvasPlaceholder } from "@/components/studio/GraphCanvasPlaceholder";
+import { DraftPanel } from "@/components/studio/DraftPanel";
+import { GraphCanvas } from "@/components/studio/GraphCanvas";
 import { OriginLegend } from "@/components/studio/OriginBadge";
 import { RunStage } from "@/components/studio/RunStage";
 import { StudioHeader } from "@/components/studio/StudioHeader";
 import { DEMO_BRANDS, estimateKit } from "@/lib/studio-catalog";
-import { startStudioRun, useRunClock, useStudioStream } from "@/lib/studio-events";
+import { useRunClock, useStudioStream } from "@/lib/studio-events";
+import { approveDraft, requestDraft, type Draft } from "@/lib/studio-draft";
 import type { Platform } from "@/types/studio";
 
 export default function StudioPage() {
@@ -32,6 +35,12 @@ export default function StudioPage() {
     "tiktok_shop",
     "shopee",
   ]);
+
+  const [direction, setDirection] = useState("");
+  const [draft, setDraft] = useState<Draft | null>(null);
+  const [draftId, setDraftId] = useState<string | null>(null);
+  const [nodeCount, setNodeCount] = useState(0);
+  const [approving, setApproving] = useState(false);
 
   const [campaignId, setCampaignId] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
@@ -61,32 +70,61 @@ export default function StudioPage() {
     }
   }, [finished, startedAt, stoppedAt]);
 
-  const handleRun = useCallback(async () => {
+  // Propose, then approve. The director reads the brief and writes a register
+  // for whatever the user asked for; nothing renders until a person says yes.
+  const handlePropose = useCallback(async () => {
     if (platforms.length === 0) return;
 
     setStarting(true);
     setCampaignId(null);
     setStoppedAt(null);
+    setDraft(null);
 
     try {
-      const id = await startStudioRun({ brand_dir: brandDir, platforms });
-      setStartedAt(Date.now());
-      setCampaignId(id);
-      toast.success("Studio đã bắt đầu chạy", {
-        description: `Chiến dịch ${id} · ước tính 6–12 phút`,
+      const result = await requestDraft({
+        brand_dir: brandDir,
+        direction,
+        with_video: true,
+      });
+      setDraft(result.draft);
+      setDraftId(result.campaignId);
+      setNodeCount(result.graph.nodes.length);
+      toast.success("Đề xuất đã sẵn sàng", {
+        description: `Ngôn ngữ hình: ${result.draft.register.name}`,
       });
     } catch (error) {
-      setStartedAt(null);
-      toast.error("Không khởi tạo được lượt chạy", {
+      toast.error("Không lấy được đề xuất", {
         description:
-          error instanceof Error
-            ? error.message
-            : "Backend studio chưa phản hồi.",
+          error instanceof Error ? error.message : "Backend chưa phản hồi.",
       });
     } finally {
       setStarting(false);
     }
-  }, [brandDir, platforms]);
+  }, [brandDir, direction, platforms]);
+
+  const handleApprove = useCallback(
+    async (edited: Partial<Draft> | undefined) => {
+      if (!draftId) return;
+      setApproving(true);
+      try {
+        const id = await approveDraft(draftId, { draft: edited, withVideo: true });
+        setStartedAt(Date.now());
+        setCampaignId(id);
+        setDraft(null);
+        toast.success("Đã duyệt — studio bắt đầu dựng", {
+          description: `Chiến dịch ${id}`,
+        });
+      } catch (error) {
+        toast.error("Không bắt đầu được", {
+          description:
+            error instanceof Error ? error.message : "Backend chưa phản hồi.",
+        });
+      } finally {
+        setApproving(false);
+      }
+    },
+    [draftId]
+  );
 
   return (
     <div className="studio-backdrop flex min-h-screen flex-col">
@@ -122,16 +160,35 @@ export default function StudioPage() {
         </div>
 
         <div className="grid items-start gap-4 lg:grid-cols-[minmax(300px,340px)_minmax(0,1fr)]">
-          <BriefPanel
-            brandDir={brandDir}
-            onBrandChange={setBrandDir}
-            platforms={platforms}
-            onPlatformsChange={setPlatforms}
-            onRun={handleRun}
-            running={running}
-            starting={starting}
-            campaignId={campaignId}
-          />
+          {/* One rail, two states. While a proposal is on the table it takes
+              the whole rail — it is the only decision that matters at that
+              moment, and leaving the brief editable beside it invites changes
+              that the proposal no longer reflects. */}
+          {draft ? (
+            <DraftPanel
+              draft={draft}
+              nodeCount={nodeCount}
+              approving={approving}
+              onApprove={handleApprove}
+              onDiscard={() => {
+                setDraft(null);
+                setDraftId(null);
+              }}
+            />
+          ) : (
+            <BriefPanel
+              brandDir={brandDir}
+              onBrandChange={setBrandDir}
+              platforms={platforms}
+              onPlatformsChange={setPlatforms}
+              onRun={handlePropose}
+              direction={direction}
+              onDirectionChange={setDirection}
+              running={running}
+              starting={starting}
+              campaignId={campaignId}
+            />
+          )}
 
           <RunStage
             status={stream.status}
@@ -143,10 +200,13 @@ export default function StudioPage() {
             plannedOrigins={plannedOrigins}
             onRetry={stream.reconnect}
           >
-            {/* ─── TASK 13: swap this element for <GraphCanvas /> ─────────── */}
-            <GraphCanvasPlaceholder
+            {/* The graph, as a canvas: pan, zoom, drag, and every finished
+                node showing the picture it produced. Before a run exists it
+                falls back to the kit manifest — see `KitManifest.tsx`. */}
+            <GraphCanvas
               nodes={stream.nodes}
               platforms={platforms}
+              campaignId={campaignId}
               awaiting={running && stream.nodes.length === 0}
             />
           </RunStage>

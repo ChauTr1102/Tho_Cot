@@ -22,15 +22,27 @@ import type {
   AssetPack,
   GraphNodeSpec,
   NodeState,
+  RerunSupport,
   StudioActivityEntry,
   StudioEvent,
   StudioNode,
+  StudioNodeRerunRequest,
   StudioRunRequest,
   StudioStreamStatus,
 } from "@/types/studio";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+
+/**
+ * Origin the backend serves generated media from.
+ *
+ * `main.py` mounts `StaticFiles` at `/media`, a sibling of `/api` rather than
+ * a child of it, and every path leaving the studio endpoints is rewritten to
+ * `/media/...`. Those URLs are root-relative, so the browser would resolve
+ * them against the Next.js origin unless they are re-based here.
+ */
+const MEDIA_BASE_URL = API_BASE_URL.replace(/\/api\/?$/, "");
 
 /** One retry, then the failure is the user's to see. */
 const RECONNECT_DELAY_MS = 1500;
@@ -44,6 +56,22 @@ const TERMINAL_STATES: ReadonlySet<NodeState> = new Set<NodeState>([
   "degraded",
   "failed",
 ]);
+
+/**
+ * `pipeline.run_studio` reports run-level milestones through the same channel
+ * as real nodes, under dunder ids: `__graph__` carries the DAG (the API layer
+ * translates that one into the `graph` event) and `__pack__` announces the
+ * finished bundle. `__pack__` still arrives as a `node` event, so without this
+ * it lands on the canvas as a thirteenth box with no dependencies, no output
+ * and no meaning — sitting in its own column at the far left, because a node
+ * with no `deps` sorts to layer zero.
+ *
+ * They are run metadata, not steps. Dropped from the node map, the progress
+ * counts and the activity ledger alike.
+ */
+function isSyntheticNode(nodeId: string): boolean {
+  return nodeId.startsWith("__") && nodeId.endsWith("__");
+}
 
 export interface StudioProgress {
   total: number;
@@ -145,6 +173,7 @@ export function useStudioStream(campaignId: string | null): StudioStream {
       setNodeById((previous) => {
         const next = new Map<string, StudioNode>();
         for (const spec of specs) {
+          if (isSyntheticNode(spec.id)) continue;
           const existing = previous.get(spec.id);
           next.set(spec.id, {
             id: spec.id,
@@ -169,6 +198,7 @@ export function useStudioStream(campaignId: string | null): StudioStream {
           return;
 
         case "node": {
+          if (isSyntheticNode(event.node_id)) return;
           const at = Date.now();
           setNodeById((previous) => {
             const next = new Map(previous);
@@ -184,11 +214,18 @@ export function useStudioStream(campaignId: string | null): StudioStream {
             });
             return next;
           });
+          // Read into a local *before* queueing the update. React runs the
+          // updater at render time, not at call time, so several events
+          // arriving in one batch would all read the same, final `seqRef` —
+          // and two transitions of the same node in one batch (a `running`
+          // and its `done`) would collide on the key. That is exactly what
+          // the backlog replay delivers on connect.
           seqRef.current += 1;
+          const seq = seqRef.current;
           setActivity((previous) =>
             [
               {
-                key: `${event.node_id}:${seqRef.current}`,
+                key: `${event.node_id}:${seq}`,
                 node_id: event.node_id,
                 kind: event.kind,
                 state: event.state,
@@ -351,6 +388,138 @@ export async function startStudioRun(
     throw new Error("Phản hồi từ /studio/run thiếu campaign_id");
   }
   return campaignId;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * Media
+ * ────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * Resolve a node payload's media reference into something an `<img>` can load.
+ *
+ * The backend rewrites generated files to `/media/...`, but leaves any path
+ * *outside* its data directory untouched — a source photograph read straight
+ * from `sample_data/` arrives as an absolute filesystem path. Those are not
+ * fetchable from a browser, so they resolve to `null` and the node renders its
+ * "no preview" state instead of a broken image icon.
+ */
+export function mediaUrl(value?: string | null): string | null {
+  if (typeof value !== "string" || value.length === 0) return null;
+  if (/^(?:https?:|data:|blob:)/i.test(value)) return value;
+  if (value.startsWith("/media/")) return `${MEDIA_BASE_URL}${value}`;
+  return null;
+}
+
+/** Extensions the canvas plays as video rather than showing as a still. */
+const VIDEO_EXTENSIONS = /\.(?:mp4|webm|mov|m4v|ogv)(?:[?#]|$)/i;
+
+export function isVideoUrl(url: string): boolean {
+  return VIDEO_EXTENSIONS.test(url);
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * Single-node re-run
+ * ────────────────────────────────────────────────────────────────────────── */
+
+function rerunUrl(campaignId: string, nodeId: string): string {
+  return `${API_BASE_URL}/studio/${encodeURIComponent(
+    campaignId
+  )}/node/${encodeURIComponent(nodeId)}/rerun`;
+}
+
+/**
+ * Re-render a single node, optionally against an edited prompt.
+ *
+ * Resolves as soon as the backend acknowledges. The *result* is not returned
+ * here — it arrives on the campaign's open SSE stream as ordinary `node`
+ * events, which is what keeps the canvas a single source of truth rather than
+ * two half-synchronised ones.
+ *
+ * Throws on any non-2xx so the caller can surface a real failure. A 404 or 405
+ * is treated specially: it means the endpoint is not deployed, so the local
+ * support flag is downgraded and every re-run control disables itself.
+ */
+export async function rerunStudioNode(
+  campaignId: string,
+  nodeId: string,
+  request: StudioNodeRerunRequest = {}
+): Promise<void> {
+  const res = await fetch(rerunUrl(campaignId, nodeId), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(request),
+  });
+
+  if (res.status === 404 || res.status === 405) {
+    cachedSupport = "unavailable";
+    throw new Error("Backend chưa có endpoint chạy lại từng node.");
+  }
+  if (!res.ok) {
+    throw new Error(`POST .../node/${nodeId}/rerun trả về HTTP ${res.status}`);
+  }
+}
+
+/**
+ * Module-level because the answer is a property of the deployment, not of a
+ * campaign: once one probe has answered, every later run knows.
+ */
+let cachedSupport: RerunSupport = "unknown";
+let inFlightProbe: Promise<RerunSupport> | null = null;
+
+/**
+ * Ask the backend whether the re-run endpoint exists, without side effects.
+ *
+ * A GET against a POST-only route answers 405 (the route is registered); a GET
+ * against a route nobody declared answers 404. A preflight cannot be used for
+ * this — FastAPI's CORS middleware answers every `OPTIONS` with 200 before the
+ * router ever sees the path — and a POST cannot be used either, because a
+ * probe must not start work. So: GET, and read the status code.
+ *
+ * A transport error leaves the answer `unknown` rather than `unavailable`: the
+ * backend being briefly unreachable is not evidence that a feature is missing,
+ * and leaving the control enabled means a click reports the real error.
+ */
+async function probeRerunSupport(campaignId: string): Promise<RerunSupport> {
+  if (cachedSupport !== "unknown") return cachedSupport;
+  inFlightProbe ??= (async () => {
+    try {
+      const res = await fetch(rerunUrl(campaignId, "__probe__"), {
+        method: "GET",
+      });
+      cachedSupport = res.status === 404 ? "unavailable" : "available";
+    } catch {
+      inFlightProbe = null; // let a later run try again
+      return "unknown";
+    }
+    return cachedSupport;
+  })();
+  return inFlightProbe;
+}
+
+/**
+ * Whether the re-run control should be live, resolved once per session.
+ *
+ * Returns `unknown` before the probe answers, which the UI treats as "enabled,
+ * optimistically" — the first click reports the truth either way.
+ */
+export function useRerunSupport(campaignId: string | null): RerunSupport {
+  const [support, setSupport] = useState<RerunSupport>(cachedSupport);
+
+  useEffect(() => {
+    if (!campaignId || cachedSupport !== "unknown") {
+      setSupport(cachedSupport);
+      return;
+    }
+    let disposed = false;
+    void probeRerunSupport(campaignId).then((answer) => {
+      if (!disposed) setSupport(answer);
+    });
+    return () => {
+      disposed = true;
+    };
+  }, [campaignId]);
+
+  return support;
 }
 
 /**

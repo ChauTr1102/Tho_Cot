@@ -81,10 +81,18 @@ export type ImageKind =
 export interface NodePayload {
   /** Media URL for a finished image or video node, served by the backend. */
   url?: string;
+  /**
+   * Alias for `url` on nodes that name their output `path` — the compose node
+   * emits both. Rewritten to a `/media/...` URL by the API layer just like
+   * `url`, so the canvas treats the two interchangeably.
+   */
+  path?: string;
   /** Which of the three routes produced this asset. */
   origin?: AssetOrigin;
   /** Visual QA verdict, e.g. "PASS" / "FAIL". */
   qa?: string;
+  /** Findings behind a non-PASS verdict, at most a handful. */
+  qa_notes?: string[];
   /** Kit slot id, e.g. "shopee_main". */
   slot?: string;
   platform?: Platform;
@@ -92,6 +100,36 @@ export interface NodePayload {
   attempt?: number;
   /** Human-readable detail, typically on `failed` or `degraded`. */
   message?: string;
+
+  /**
+   * The prompt this node rendered from.
+   *
+   * Not emitted by the backend yet — `pipeline.build_nodes` returns the
+   * `RenderedImage` dataclass, which `_event_payload` drops. The canvas reads
+   * it when it is present and offers an empty override box when it is not, so
+   * adding it backend-side needs no frontend change. See `rerunStudioNode`.
+   */
+  prompt?: string;
+  /** Poster frame for a video node, if the backend renders one separately. */
+  poster?: string;
+  /** Aspect ratio of the produced asset, e.g. "9:16". */
+  ratio?: string;
+  /** Seconds of finished video, on a clip or compose node. */
+  duration?: number;
+
+  /* Keys the graph executor adds itself (`graph.GraphEvent`). */
+  /** Why a node failed without running: "dependency_failed" | "unschedulable". */
+  reason?: string;
+  /** The dependency whose failure killed this node. */
+  failed_dep?: string;
+  /** Exception text on a real failure. */
+  error?: string;
+  error_type?: string;
+  /** Short reason a node finished `degraded` rather than `done`. */
+  note?: string;
+  /** True when the result came from the on-disk cache rather than a render. */
+  cached?: boolean;
+
   [key: string]: unknown;
 }
 
@@ -264,3 +302,37 @@ export interface StudioRunRequest {
 export interface StudioRunResponse {
   campaign_id: string;
 }
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * Single-node re-run — `POST /api/studio/{campaign_id}/node/{node_id}/rerun`
+ * ────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * Re-render one node of a graph that has already run.
+ *
+ * `prompt` overrides the prompt the node rendered from the first time; omit it
+ * to re-run the node unchanged. The endpoint answers immediately and the
+ * result arrives on the campaign's existing SSE stream as ordinary `node`
+ * events for that `node_id` — `running`, then a terminal state carrying the
+ * new `url`. The canvas needs no second channel and no polling.
+ *
+ * Dependents are deliberately not re-run: re-rendering one keyframe must not
+ * silently invalidate the master video a judge is halfway through watching.
+ */
+export interface StudioNodeRerunRequest {
+  prompt?: string;
+}
+
+/** `{ok: true}` — an acknowledgement, not a result. */
+export interface StudioNodeRerunResponse {
+  ok: true;
+}
+
+/**
+ * Whether the backend implements the single-node re-run endpoint.
+ *
+ * `unknown` until the probe answers. The control renders disabled with an
+ * honest tooltip while support is `unavailable`, rather than posting into a
+ * route that does not exist and failing silently.
+ */
+export type RerunSupport = "unknown" | "available" | "unavailable";
