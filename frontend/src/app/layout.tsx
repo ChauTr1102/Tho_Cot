@@ -1,22 +1,23 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, Space_Grotesk } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
+import { SidebarNav } from "@/components/sidebar-nav";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const fontSans = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const fontDisplay = Space_Grotesk({
+  variable: "--font-space-grotesk",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "FastAPI + Next.js Base MVP",
-  description: "Production-ready lean MVP Starter with FastAPI Backend and Next.js + shadcn/ui Frontend",
+  title: "CAIBS - Multi-Agent Campaign Platform",
+  description: "AI-driven product campaign generation",
 };
 
 export default function RootLayout({
@@ -25,17 +26,70 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="dark h-full" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-background font-sans antialiased flex flex-col`}
+        className={`${fontSans.variable} ${fontDisplay.variable} min-h-screen bg-background text-foreground/80 font-sans antialiased flex flex-col relative`}
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="dark"
+          forcedTheme="dark"
           disableTransitionOnChange
         >
+          {/* Global Corner Frame Accents */}
+          <div className="fixed top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-foreground/20 z-50 pointer-events-none" />
+          <div className="fixed top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-foreground/20 z-50 pointer-events-none" />
+          <div className="fixed bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-foreground/20 z-50 pointer-events-none" />
+          <div className="fixed bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-foreground/20 z-50 pointer-events-none" />
+
+          <div className="bg-fx">
+            <div className="glow g1"></div>
+            <div className="glow g2"></div>
+            <div className="glow g3"></div>
+          </div>
+
+          {/* Top Status Bar */}
+          <div className="fixed top-0 left-0 right-0 z-40 border-b border-foreground/10 bg-background/90 backdrop-blur-sm">
+            <div className="flex items-center justify-between px-12 py-1.5">
+              <div className="flex items-center gap-4 text-[10px] font-mono text-foreground/30 tracking-widest">
+                <span>CAIBS.AI.ADS</span>
+                <div className="w-1 h-1 bg-foreground/20 rounded-full" />
+                <span>EST.2025</span>
+              </div>
+              <div className="flex items-center gap-4 text-[10px] font-mono text-foreground/25 tracking-widest">
+                <span>LAT: 10.7626°</span>
+                <div className="w-1 h-1 bg-foreground/15 rounded-full" />
+                <span>LONG: 106.6602°</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Status Bar */}
+          <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-foreground/10 bg-background/90 backdrop-blur-sm">
+            <div className="flex items-center justify-between px-12 py-1.5">
+              <div className="flex items-center gap-4 text-[10px] font-mono text-foreground/25 tracking-widest">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#35ea52] animate-pulse" />
+                  <span>SYSTEM.ACTIVE</span>
+                </div>
+                <span>V2.0.0</span>
+              </div>
+              <div className="flex items-center gap-4 text-[10px] font-mono text-foreground/20 tracking-widest">
+                <span>◐ MULTI.AGENT.CORE</span>
+                <div className="flex gap-1">
+                  <div className="w-1 h-1 bg-foreground/40 rounded-full animate-pulse" />
+                  <div className="w-1 h-1 bg-foreground/25 rounded-full animate-pulse" style={{ animationDelay: "0.2s" }} />
+                  <div className="w-1 h-1 bg-foreground/10 rounded-full animate-pulse" style={{ animationDelay: "0.4s" }} />
+                </div>
+                <span>FRAME: ∞</span>
+              </div>
+            </div>
+          </div>
+
+          <SidebarNav />
+
           {children}
+
           <Toaster richColors position="top-right" />
         </ThemeProvider>
       </body>
