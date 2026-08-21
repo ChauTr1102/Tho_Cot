@@ -91,8 +91,15 @@ class StudioSettings(BaseSettings):
     # EFFECTIVE), destroying the signal the gate exists to detect. So: four
     # native-resolution crops instead of one resize.
     QA_TILE_PX: int = 1024
-    QA_MAX_ATTEMPTS: int = 2                  # regeneration attempts per asset
+    QA_MAX_ATTEMPTS: int = 1                  # inspections per asset before giving up
     QA_ENABLED: bool = True
+    # False keeps the gate off the critical path: the image is published the
+    # moment it renders and the verdict arrives afterwards as a badge update.
+    # Measured, blocking: a text-bearing image took 285s -- roughly two rounds of
+    # render-then-inspect -- against 60s for the render alone. True restores the
+    # regenerate-until-it-passes loop, which is right for a final asset run and
+    # wrong for anyone watching a screen.
+    QA_BLOCKING: bool = False
     # Inspect only images that carry marketing copy. A vision pass costs 41-109s
     # on top of a 60s render, and an image with no text on it has nothing the
     # gate can catch -- gating everything turned a one-minute hero into five.

@@ -209,11 +209,16 @@ def render_shot(
         # A keyframe carrying copy gets a locked camera. Measured: the default
         # push-in reframed a 9:16 keyframe enough to carry its headline out of
         # shot, while the Ken Burns fallback beat kept the same headline.
+        # `role` picks the camera move for the beat — a hook and a CTA do not
+        # want the same gesture. Passing it explicitly rather than letting the
+        # prompt builder sniff it out of the staging sentence: the sniff works,
+        # but it is a keyword guess, not a contract.
         prompt = prompts.build_video_prompt(
             str(getattr(shot, "scene", "")),
             spine,
             str(getattr(shot, "vo_text", "")),
             has_onscreen_text=bool(str(getattr(shot, "onscreen_text", "")).strip()),
+            role=str(getattr(shot, "role", "")),
         )
         if task_id is None:
             task_id = ark.create_video_task(

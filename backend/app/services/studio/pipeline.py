@@ -28,6 +28,7 @@ thumbnails without a second round trip.
 """
 from __future__ import annotations
 
+import threading
 import time
 from dataclasses import replace
 from pathlib import Path
@@ -78,43 +79,72 @@ def _forbidden(campaign_input: CampaignInput | None) -> list[str]:
     return list(campaign_input.product_brief.forbidden_claims) if campaign_input else []
 
 
+def _inspect(result: render.RenderedImage, expected: Sequence[str],
+             label_text: Sequence[str], forbidden: Sequence[str]) -> Any:
+    """Run the visual gate over a finished image and record the verdict on it."""
+    verdict = qa_visual.inspect_image(
+        result.local_path, expected_texts=expected,
+        label_text=label_text, forbidden_claims=forbidden,
+    )
+    result.qa_passed = verdict.passed
+    result.qa_notes = (list(verdict.missing_text) + list(verdict.unexpected_brandlike)
+                       + list(verdict.forbidden_hits))
+    return verdict
+
+
 def _render_with_qa(fn: Callable[[str], render.RenderedImage],
                     expected: Sequence[str], label_text: Sequence[str],
-                    forbidden: Sequence[str], *, gate: bool) -> render.RenderedImage:
-    """Render, inspect, and re-render with a corrective instruction on failure.
+                    forbidden: Sequence[str], *, gate: bool,
+                    node_id: str = "", kind: str = "image",
+                    on_event: Callable[[GraphEvent], None] | None = None,
+                    ) -> render.RenderedImage:
+    """Render an image, and inspect it either on the critical path or beside it.
 
     The gate exists because Seedream's Vietnamese is *usually* right, not always.
     Asked for "BÉO NGẬY NHƯ QUÁN" it produced "BÉO NGẠY NHƯ QUÀ" and
-    "BÉO NGAY NHƯ QUẢN" in two images of the same run -- and "ngậy" (creamy)
-    becoming "ngay" (immediately) changes the meaning, it is not a typo a buyer
-    forgives. Retries reuse the same corrective channel the gate reports on, so
-    a second attempt is aimed rather than merely repeated.
+    "BÉO NGAY NHƯ QUẢN" in two images of the same run — and "ngậy" (creamy)
+    becoming "ngay" (immediately) is a change of meaning, not a typo a buyer
+    forgives. So the gate stays.
+
+    What changed is when it runs. Blocking, a text-bearing image measured 285s
+    against 60s for the render alone, because a failed inspection re-rendered
+    from scratch and inspected again — and since nearly every image carries copy,
+    nearly every image paid it. Non-blocking, the image is published as soon as
+    it exists and the verdict follows as a badge update a minute later. The
+    defect is still reported; it just no longer holds up the screen.
+
+    `QA_BLOCKING=true` restores the regenerate-until-it-passes loop, which is the
+    right mode for producing final submission assets unattended.
     """
-    # An image with no copy on it gives the gate nothing to check, and a vision
-    # pass costs 41-109s on top of a 60s render. Skipping those is what keeps a
-    # run in minutes rather than tens of minutes.
+    # An image with no copy on it gives the gate nothing to check.
     if gate and studio_settings.QA_TEXT_ONLY and not expected:
         gate = False
 
-    attempts = studio_settings.QA_MAX_ATTEMPTS if gate else 0
-    hint = ""
-    result = fn(hint)
+    result = fn("")
     if not gate:
         return result
 
-    for attempt in range(1, attempts + 1):
-        verdict = qa_visual.inspect_image(
-            result.local_path, expected_texts=expected,
-            label_text=label_text, forbidden_claims=forbidden,
-        )
-        result.qa_passed = verdict.passed
-        result.qa_notes = list(verdict.missing_text) + list(verdict.unexpected_brandlike) \
-            + list(verdict.forbidden_hits)
+    if not studio_settings.QA_BLOCKING:
+        def _later() -> None:
+            try:
+                verdict = _inspect(result, expected, label_text, forbidden)
+            except Exception:
+                return          # a failed inspection must never taint a good image
+            if on_event and node_id:
+                on_event(GraphEvent(
+                    node_id=node_id, kind=kind, state=NodeState.DONE,
+                    payload={"qa": "PASS" if verdict.passed else "WARN",
+                             "qa_notes": result.qa_notes[:4]},
+                ))
+        threading.Thread(target=_later, daemon=True).start()
+        return result
+
+    for attempt in range(1, max(1, studio_settings.QA_MAX_ATTEMPTS) + 1):
+        verdict = _inspect(result, expected, label_text, forbidden)
         result.attempts = attempt
-        if verdict.passed or attempt == attempts:
+        if verdict.passed or attempt >= studio_settings.QA_MAX_ATTEMPTS:
             return result
-        hint = qa_visual.corrective_hint(verdict, attempt)
-        result = fn(hint)
+        result = fn(qa_visual.corrective_hint(verdict, attempt))
         result.attempts = attempt + 1
     return result
 
@@ -126,7 +156,8 @@ def _render_with_qa(fn: Callable[[str], render.RenderedImage],
 def build_nodes(plan: CampaignPlan, campaign_input: CampaignInput | None,
                 sheet: Any | None = None, route_id: str = "A",
                 platforms: Sequence[Platform] | None = None,
-                *, qa: bool | None = None, with_video: bool = True) -> list[Node]:
+                *, qa: bool | None = None, with_video: bool = True,
+                on_event: Callable[[GraphEvent], None] | None = None) -> list[Node]:
     """Build the node list for one creative route.
 
     `sheet` may be supplied to skip the inventory node -- useful in tests and
@@ -203,7 +234,9 @@ def build_nodes(plan: CampaignPlan, campaign_input: CampaignInput | None,
                             item, ws.spine, item.source_photo or (photos[0] if photos else None),
                             hero.local_path if hero else None,
                             ws.label_text, out_dir, extra_instruction=hint),
-                        [t for _, t in item.texts], ws.label_text, forbidden, gate=gate)
+                        [t for _, t in item.texts], ws.label_text, forbidden,
+                        gate=gate, node_id=f"item_{route_id}_{_slot_id}",
+                        on_event=on_event)
                 return {"image": img, "url": img.local_path,
                         "origin": img.origin.value, "slot": _slot_id,
                         "platform": platform.value,
@@ -244,7 +277,8 @@ def build_nodes(plan: CampaignPlan, campaign_input: CampaignInput | None,
                             hero.local_path if hero else None,
                             ws.label_text, out_dir, extra_instruction=hint),
                         [shot.onscreen_text] if shot.onscreen_text else [],
-                        ws.label_text, forbidden, gate=gate)
+                        ws.label_text, forbidden, gate=gate,
+                        node_id=f"keyframe_{route_id}_{_pid}_{_i}", on_event=on_event)
 
                 def _run_clip(ctx, _kf=kf_id, _i=i) -> Any:
                     ws = ctx[ws_id]
@@ -350,7 +384,7 @@ def run_studio(plan: CampaignPlan, campaign_input: CampaignInput | None = None,
     started = time.time()
     campaign_id = plan.campaign_id or "campaign"
     nodes = build_nodes(plan, campaign_input, None, route_id, platforms,
-                        qa=qa, with_video=with_video)
+                        qa=qa, with_video=with_video, on_event=on_event)
 
     # The shape of the graph goes out before any node runs, so the screen can
     # lay out every box and grey them in rather than growing the canvas as
