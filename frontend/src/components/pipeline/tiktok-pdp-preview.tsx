@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Image from "next/image";
-import { ChevronRight, ImageOff, Minus, Plus, ShieldCheck, Star, Truck } from "lucide-react";
+import { ArrowLeft, ChevronRight, Heart, ImageOff, Minus, Plus, Search, Share2, ShieldCheck, ShoppingBag, Star, Truck } from "lucide-react";
 
 interface TiktokPdpPreviewProps {
   productName: string;
@@ -14,6 +14,7 @@ interface TiktokPdpPreviewProps {
   angle: string;
   rating?: number;
   soldCount?: number;
+  viewMode?: "mobile" | "desktop";
 }
 
 // Fixed, visually-plausible placeholder stats — not derived from real analytics.
@@ -51,6 +52,7 @@ export function TiktokPdpPreview({
   angle,
   rating = DEFAULT_RATING,
   soldCount = DEFAULT_SOLD_COUNT,
+  viewMode = "desktop",
 }: TiktokPdpPreviewProps) {
   const [selectedImage, setSelectedImage] = React.useState(0);
   const [quantity, setQuantity] = React.useState(1);
@@ -61,6 +63,35 @@ export function TiktokPdpPreview({
   const originalAmount = price ? Math.round(price.amount * FAKE_ORIGINAL_MULTIPLIER) : 0;
 
   const variantChips = bullets.slice(0, 4);
+
+  if (viewMode === "mobile") {
+    return (
+      <div className="relative mx-auto min-h-[720px] overflow-hidden rounded-[26px] border-[6px] border-neutral-900 bg-[#f5f5f5] font-sans text-neutral-900 shadow-2xl">
+        <div className="flex h-7 items-center justify-between bg-white px-4 text-[9px] font-semibold"><span>9:41</span><span>●●● &nbsp; Wi-Fi &nbsp; ▰</span></div>
+        <div className="absolute left-1/2 top-2 h-3 w-20 -translate-x-1/2 rounded-full bg-neutral-900" />
+        <header className="flex h-12 items-center gap-3 border-b border-neutral-100 bg-white px-3">
+          <ArrowLeft className="h-5 w-5" /><div className="flex h-8 flex-1 items-center gap-2 rounded-sm bg-neutral-100 px-3 text-[10px] text-neutral-400"><Search className="h-3.5 w-3.5" /> Tìm kiếm trong TikTok Shop</div><Share2 className="h-5 w-5" /><ShoppingBag className="h-5 w-5" />
+        </header>
+        <div className="relative aspect-square bg-white">
+          {activeImage ? <Image src={activeImage} alt={productName} fill unoptimized className="object-cover" /> : <div className="flex h-full items-center justify-center"><ImageOff className="h-8 w-8 text-neutral-300" /></div>}
+          {promotion ? <span className="absolute bottom-3 left-3 rounded-sm bg-[#FE2C55] px-2 py-1 text-[9px] font-bold text-white">{promotion}</span> : null}
+          <span className="absolute bottom-3 right-3 rounded-full bg-black/60 px-2 py-1 text-[9px] text-white">1/{Math.max(images.length, 1)}</span>
+        </div>
+        <section className="border-b-8 border-[#f5f5f5] bg-white p-4">
+          {price ? <div className="flex items-end gap-2"><b className="text-2xl text-[#FE2C55]">{formatCurrency(price.amount, price.currency)}</b><span className="pb-0.5 text-[10px] text-neutral-400 line-through">{formatCurrency(originalAmount, price.currency)}</span><span className="mb-0.5 rounded-sm bg-[#FFE2E9] px-1.5 py-0.5 text-[9px] font-bold text-[#FE2C55]">-{discountPct}%</span></div> : null}
+          <h1 className="mt-2 text-sm font-semibold leading-5">{productName}</h1>
+          <div className="mt-2 flex items-center justify-between text-[10px] text-neutral-500"><span className="flex items-center gap-1 text-amber-500"><Star className="h-3 w-3 fill-current" /> {rating.toFixed(1)} <span className="text-neutral-400">· {soldCount.toLocaleString("vi-VN")} đã bán</span></span><Heart className="h-5 w-5 text-neutral-500" /></div>
+        </section>
+        <section className="border-b-8 border-[#f5f5f5] bg-white p-4 text-[10px]">
+          <div className="flex items-center gap-2"><Truck className="h-4 w-4 text-[#FE2C55]" /><span className="font-medium">Miễn phí vận chuyển</span><ChevronRight className="ml-auto h-4 w-4 text-neutral-300" /></div>
+          <div className="mt-3 flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-[#FE2C55]" /><span>Đổi ý miễn phí · Hoàn tiền đảm bảo</span></div>
+        </section>
+        <section className="border-b-8 border-[#f5f5f5] bg-white p-4"><div className="flex items-center justify-between"><b className="text-xs">Chọn phân loại</b><ChevronRight className="h-4 w-4 text-neutral-400" /></div><div className="mt-2 flex gap-2 overflow-hidden">{variantChips.slice(0, 2).map((chip, index) => <span key={chip} className={`max-w-[48%] truncate rounded-sm border px-2.5 py-1.5 text-[9px] ${index === 0 ? "border-[#FE2C55] bg-[#fff4f6] text-[#FE2C55]" : "border-neutral-200"}`}>{chip}</span>)}</div></section>
+        <section className="bg-white p-4 pb-24"><h2 className="text-xs font-semibold">Chi tiết sản phẩm</h2><p className="mt-2 line-clamp-3 text-[10px] leading-5 text-neutral-600">{description}</p></section>
+        <div className="absolute inset-x-0 bottom-0 flex h-16 items-center gap-2 border-t border-neutral-200 bg-white px-3"><button type="button" className="flex h-11 w-14 flex-col items-center justify-center text-[8px]"><ShoppingBag className="h-5 w-5" />Giỏ hàng</button><button type="button" className="h-11 flex-1 border border-[#FE2C55] bg-[#fff4f6] text-xs font-bold text-[#FE2C55]">Thêm vào giỏ</button><button type="button" className="h-11 flex-1 bg-[#FE2C55] text-xs font-bold text-white">Mua ngay</button></div>
+      </div>
+    );
+  }
 
   return (
     <div className="font-sans text-neutral-900 bg-white rounded-lg p-1">
