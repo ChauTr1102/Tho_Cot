@@ -60,14 +60,14 @@ export function ProductPdpPreview(props: ProductPdpPreviewProps) {
               const active = previewType === type;
               const Icon = type === "listing" ? ShoppingBag : Film;
               const disabled = type === "video" && !props.videos?.[0];
-              return <button key={type} type="button" disabled={disabled} onClick={() => setPreviewType(type)} aria-pressed={active} className={`flex min-w-[76px] flex-1 items-center justify-center gap-1.5 px-2 text-[10px] font-semibold transition-colors ${active ? "bg-neutral-900 text-white" : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"} disabled:cursor-not-allowed disabled:opacity-35`}><Icon className="h-3.5 w-3.5" />{type === "listing" ? "Sản phẩm" : "Video"}</button>;
+              return <button key={type} type="button" disabled={disabled} onClick={() => setPreviewType(type)} aria-pressed={active} className={`flex min-w-max flex-1 items-center justify-center gap-1.5 whitespace-nowrap px-2 text-[10px] font-semibold transition-colors ${active ? "bg-neutral-900 text-white" : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"} disabled:cursor-not-allowed disabled:opacity-35`}><Icon className="h-3.5 w-3.5 shrink-0" />{type === "listing" ? "Sản phẩm" : "Video"}</button>;
             })}
           </div>
           <div className="flex h-9 min-w-0 flex-1 border border-neutral-300 bg-white p-1 sm:flex-none" role="group" aria-label="Chọn kiểu thiết bị">
             {(["mobile", "desktop"] as const).map((mode) => {
               const active = viewport === mode;
               const Icon = mode === "mobile" ? Smartphone : Monitor;
-              return <button key={mode} type="button" onClick={() => setViewport(mode)} aria-pressed={active} aria-label={mode === "mobile" ? "Xem bản di động" : "Xem bản máy tính"} className={`flex min-w-[70px] flex-1 items-center justify-center gap-1.5 px-2 text-[10px] font-semibold transition-colors ${active ? "bg-neutral-900 text-white" : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"}`}><Icon className="h-3.5 w-3.5" /><span>{mode === "mobile" ? "Di động" : "Máy tính"}</span></button>;
+              return <button key={mode} type="button" onClick={() => setViewport(mode)} aria-pressed={active} aria-label={mode === "mobile" ? "Xem bản di động" : "Xem bản máy tính"} className={`flex min-w-max flex-1 items-center justify-center gap-1.5 whitespace-nowrap px-2 text-[10px] font-semibold transition-colors ${active ? "bg-neutral-900 text-white" : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"}`}><Icon className="h-3.5 w-3.5 shrink-0" /><span>{mode === "mobile" ? "Di động" : "Máy tính"}</span></button>;
             })}
           </div>
         <div ref={menuRef} className="relative min-w-0 flex-[1_1_176px] sm:w-44 sm:flex-none">

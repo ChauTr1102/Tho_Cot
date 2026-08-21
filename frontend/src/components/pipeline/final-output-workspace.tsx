@@ -195,9 +195,9 @@ export function FinalOutputWorkspace({ plan, input, campaignOutput, qaResult }: 
 
   return <div className="flex min-h-[760px] flex-col border border-foreground/10 bg-background">
     <div className="grid grid-cols-2 border-b border-foreground/10 bg-background p-1 lg:hidden"><button type="button" onClick={() => setMobilePane("preview")} className={`flex items-center justify-center gap-2 py-2 text-[10px] font-mono ${mobilePane === "preview" ? "bg-[#35ea52] font-bold text-black" : "text-foreground/45"}`}><LayoutTemplate className="h-3.5 w-3.5" /> PREVIEW</button><button type="button" onClick={() => setMobilePane("content")} className={`flex items-center justify-center gap-2 py-2 text-[10px] font-mono ${mobilePane === "content" ? "bg-[#35ea52] font-bold text-black" : "text-foreground/45"}`}><BarChart3 className="h-3.5 w-3.5" /> NỘI DUNG</button></div>
-    <div className="min-h-0 flex-1 lg:grid lg:grid-cols-[680px_minmax(0,1fr)]">
-      <section className={`self-start border-r border-foreground/10 ${mobilePane === "preview" ? "block" : "hidden"} lg:block`}>{preview}</section>
-      <section className={`min-h-full ${mobilePane === "content" ? "block" : "hidden"} lg:block`}>{inspector}</section>
+    <div className="min-h-0 flex-1 lg:grid lg:grid-cols-[minmax(0,1fr)_680px]">
+      <section className={`self-start border-l border-foreground/10 ${mobilePane === "preview" ? "block" : "hidden"} lg:order-2 lg:block`}>{preview}</section>
+      <section className={`min-h-full ${mobilePane === "content" ? "block" : "hidden"} lg:order-1 lg:block`}>{inspector}</section>
     </div>
   </div>;
 }
