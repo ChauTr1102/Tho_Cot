@@ -34,7 +34,7 @@ export const StageContentGeneration: React.FC<StageContentGenerationProps> = ({
   campaignId = null,
 }) => {
   return (
-    <div className="flex h-full flex-col animate-in fade-in duration-500">
+    <div className="flex flex-col animate-in fade-in duration-500">
       <div className="shrink-0 space-y-2 border-b border-foreground/10 pb-4">
         <h2 className="font-mono text-lg font-bold tracking-wider text-foreground">
           SÁNG TẠO CHIẾN DỊCH
@@ -44,7 +44,7 @@ export const StageContentGeneration: React.FC<StageContentGenerationProps> = ({
         </p>
       </div>
 
-      <div className="min-h-0 flex-1 pt-4">
+      <div className="pt-4">
         <AssetStudio campaignId={campaignId} embedded />
       </div>
     </div>

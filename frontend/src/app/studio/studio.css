@@ -91,6 +91,16 @@
   --border: rgba(107, 239, 117, 0.18);
   --input: rgba(107, 239, 117, 0.18);
   --ring: #35ea52;
+
+  /* Re-apply, do not merely redefine. `body` resolves `text-foreground` at the
+     body element and inherits the *computed* colour downwards, so redefining
+     `--foreground` on a descendant changes nothing that was already inherited.
+     Without this line every heading kept the ivory theme's near-black and went
+     invisible on the dark panel, while anything with an explicit
+     `text-muted-foreground` re-resolved locally and stayed readable — which is
+     exactly how the bug presented. */
+  color: var(--foreground);
+  background-color: var(--background);
 }
 
 .studio-backdrop {

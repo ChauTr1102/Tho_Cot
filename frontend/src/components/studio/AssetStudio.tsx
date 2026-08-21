@@ -22,6 +22,21 @@
  * place and ink-on-ivory in the other with no second stylesheet.
  */
 
+// The stylesheets travel with the component, not with the route.
+//
+// Both used to be imported by `app/studio/layout.tsx`, which loads them for
+// `/studio` and for nothing else. The moment this component was also mounted
+// inside the campaign pipeline, that route got the markup and none of the CSS:
+// React Flow lost its absolute positioning, so the minimap rendered inline as a
+// black slab in the top-left corner and the nodes scattered unstyled, and every
+// `.studio-*` rule — including the backdrop this component asks for — simply
+// did not exist. Whatever mounts `AssetStudio` now gets its styling with it.
+//
+// Order is load-bearing: React Flow's own theme first, `studio.css` second,
+// because the latter re-skins the former.
+import "@xyflow/react/dist/style.css";
+import "@/app/studio/studio.css";
+
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -234,7 +249,10 @@ export function AssetStudio({
             // contrast, its edges and its minimap are all tuned in `studio.css`
             // against a near-black ground, so on ivory the nodes washed out to
             // pale grey on white and the minimap read as a black slab.
-            "studio-backdrop flex h-full flex-col overflow-hidden rounded-xl border border-foreground/10"
+            // Height comes from the content, not from the slot. `h-full` inside the
+            // pipeline stage stretched the panel to the full stage and left the
+            // run log floating above three hundred pixels of empty dark.
+            "studio-backdrop flex flex-col overflow-hidden rounded-xl border border-foreground/10"
           : "studio-backdrop flex min-h-screen flex-col"
       }
     >
@@ -255,7 +273,7 @@ export function AssetStudio({
       <main
         className={
           embedded
-            ? "w-full min-h-0 flex-1 px-3 py-3"
+            ? "w-full px-3 pt-3 pb-4"
             : "mx-auto w-full max-w-[1760px] flex-1 px-4 pt-4 pb-10 sm:px-6"
         }
       >

@@ -125,7 +125,7 @@ export const AutopilotWorkflow: React.FC<Props> = ({ productName, errorMessage, 
           <div className="space-y-3">
             <div className="inline-flex items-center gap-2 text-[10px] font-mono tracking-[0.2em] text-[#35ea52]"><Zap className="h-4 w-4" /> QUY TRÌNH TỰ ĐỘNG</div>
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-display font-bold text-foreground">Một brief. Một lần chạy. Trọn bộ chiến dịch.</h1>
-            <p className="max-w-2xl text-sm text-foreground/45 leading-relaxed">Theo dõi các agent xử lý từ bước hiểu sản phẩm đến báo cáo sẵn sàng triển khai. Bấm vào từng bước để xem màn hình chi tiết.</p>
+            <p className="max-w-2xl text-sm text-foreground/45 leading-relaxed">Theo dõi các agent xử lý từ bước hiểu sản phẩm đến báo cáo sẵn sàng triển khai. Màn hình chi tiết sẽ mở khi từng bước hoàn tất.</p>
           </div>
           <div className="lg:text-right"><p className="text-[9px] font-mono text-foreground/30 tracking-wider">CHIẾN DỊCH ĐANG XỬ LÝ</p><p className="text-sm font-mono text-foreground mt-1">{productName}</p></div>
         </header>
@@ -141,11 +141,12 @@ export const AutopilotWorkflow: React.FC<Props> = ({ productName, errorMessage, 
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-3">
             {steps.map((step, index) => {
               const state = nodeStates[step.id];
+              const canOpen = state === "complete" || state === "failed";
               const Icon = step.icon;
-              return <button key={step.id} type="button" onClick={() => onOpenStep(step.id)} className={`relative text-left p-4 lg:pt-6 border min-h-44 transition-all group ${state === "running" ? "border-[#35ea52] bg-[#35ea52]/10 shadow-[0_0_35px_rgba(53,234,82,0.12)]" : state === "complete" ? "border-[#35ea52]/35 bg-[#35ea52]/[0.035]" : state === "failed" ? "border-red-500/50 bg-red-500/5" : "border-foreground/10 bg-background hover:border-foreground/30"}`}>
+              return <button key={step.id} type="button" disabled={!canOpen} onClick={() => canOpen && onOpenStep(step.id)} aria-label={`${step.title} · ${stateLabels[state]}${canOpen ? " · Mở chi tiết" : " · Chưa có chi tiết"}`} className={`relative text-left p-4 lg:pt-6 border min-h-44 transition-all group ${state === "running" ? "border-[#35ea52] bg-[#35ea52]/10 shadow-[0_0_35px_rgba(53,234,82,0.12)] cursor-wait" : state === "complete" ? "border-[#35ea52]/35 bg-[#35ea52]/[0.035] cursor-pointer hover:border-[#35ea52]/60" : state === "failed" ? "border-red-500/50 bg-red-500/5 cursor-pointer" : "border-foreground/10 bg-background cursor-not-allowed"}`}>
                 <div className="flex items-start justify-between"><span className="text-[10px] font-mono text-foreground/25">0{index + 1}</span><span className={`h-6 px-2 inline-flex items-center gap-1 text-[8px] font-mono tracking-wider ${state === "running" ? "text-[#35ea52]" : state === "complete" ? "text-[#35ea52]" : state === "failed" ? "text-red-400" : "text-foreground/25"}`}>{state === "running" && <Loader2 className="h-3 w-3 animate-spin" />}{state === "complete" && <Check className="h-3 w-3" />}{stateLabels[state]}</span></div>
                 <div className={`mt-3 h-10 w-10 flex items-center justify-center border ${state === "running" || state === "complete" ? "border-[#35ea52]/40 text-[#35ea52]" : "border-foreground/10 text-foreground/35"}`}><Icon className="h-5 w-5" /></div>
-                <h2 className="mt-4 text-sm font-display font-bold text-foreground">{step.title}</h2><p className="mt-2 text-[10px] leading-relaxed text-foreground/40">{step.description}</p><div className="mt-4 flex items-center justify-between text-[8px] font-mono text-foreground/25"><span>{step.agent}</span><ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" /></div>
+                <h2 className="mt-4 text-sm font-display font-bold text-foreground">{step.title}</h2><p className="mt-2 text-[10px] leading-relaxed text-foreground/40">{step.description}</p><div className="mt-4 flex items-center justify-between text-[8px] font-mono text-foreground/25"><span>{step.agent}</span>{canOpen && <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />}</div>
               </button>;
             })}
           </div>
