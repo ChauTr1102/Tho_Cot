@@ -67,18 +67,16 @@ export const SidebarNav: React.FC = () => {
     <div className="fixed left-5 top-1/2 -translate-y-1/2 z-[100]" ref={menuRef}>
       {/* Background backdrop blur when open */}
       <div
-        className={`fixed inset-0 -z-10 bg-black/15 backdrop-blur-[1px] transition-opacity duration-300 ${
-          isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-        }`}
+        className={`fixed inset-0 -z-10 bg-black/15 backdrop-blur-[1px] transition-opacity duration-300 ${isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          }`}
         onClick={() => setIsOpen(false)}
         aria-hidden="true"
       />
 
       {/* Decorative Symmetrical Fan Guide Arc */}
       <svg
-        className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 pointer-events-none transition-all duration-500 origin-center -z-10 ${
-          isOpen ? "opacity-100 scale-100" : "opacity-0 scale-50"
-        }`}
+        className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 pointer-events-none transition-all duration-500 origin-center -z-10 ${isOpen ? "opacity-100 scale-100" : "opacity-0 scale-50"
+          }`}
         viewBox="-130 -130 260 260"
         aria-hidden="true"
       >
@@ -137,36 +135,32 @@ export const SidebarNav: React.FC = () => {
                   onClick={() => setIsOpen(false)}
                   onMouseEnter={() => setHoveredItem(item.id)}
                   onMouseLeave={() => setHoveredItem(null)}
-                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 border relative select-none shadow-md ${
-                    isActive
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 border relative select-none shadow-md ${isActive
                       ? "bg-[#28C840] text-white border-[#28C840] shadow-[0_0_18px_rgba(40,200,64,0.4)] scale-105"
                       : "bg-[#FFFFFF]/95 text-[#0D1117] border-[rgba(13,17,23,0.15)] hover:border-[#28C840] hover:text-[#28C840] hover:bg-[#FAF8F5] hover:shadow-[0_0_12px_rgba(40,200,64,0.3)] hover:scale-110"
-                  }`}
+                    }`}
                   aria-label={item.label}
                 >
                   {/* Subtle inner ring */}
                   <div
-                    className={`absolute inset-0.5 rounded-full border pointer-events-none ${
-                      isActive ? "border-white/20" : "border-black/5"
-                    }`}
+                    className={`absolute inset-0.5 rounded-full border pointer-events-none ${isActive ? "border-white/20" : "border-black/5"
+                      }`}
                   />
                   <Icon className="h-4 w-4" />
                 </Link>
 
                 {/* Tooltip / Label chip on the right */}
                 <div
-                  className={`absolute whitespace-nowrap pointer-events-none transition-all duration-200 z-20 left-12 top-1/2 -translate-y-1/2 ${
-                    hoveredItem === item.id || isActive
+                  className={`absolute whitespace-nowrap pointer-events-none transition-all duration-200 z-20 left-12 top-1/2 -translate-y-1/2 ${hoveredItem === item.id || isActive
                       ? "opacity-100 translate-x-0 scale-100"
                       : "opacity-0 -translate-x-1 scale-90"
-                  }`}
+                    }`}
                 >
                   <div
-                    className={`px-2.5 py-1 text-[10px] font-mono tracking-wider font-bold rounded border shadow-md flex items-center gap-1.5 ${
-                      isActive
+                    className={`px-2.5 py-1 text-[10px] font-mono tracking-wider font-bold rounded border shadow-md flex items-center gap-1.5 ${isActive
                         ? "bg-[#28C840] text-white border-[#28C840] shadow-[0_0_10px_rgba(40,200,64,0.25)]"
                         : "bg-[#FFFFFF] text-[#0D1117] border-[rgba(13,17,23,0.15)] shadow-sm"
-                    }`}
+                      }`}
                   >
                     <span>{item.label}</span>
                     {isActive && <span className="text-[8px] opacity-80">●</span>}
@@ -182,11 +176,10 @@ export const SidebarNav: React.FC = () => {
           type="button"
           onClick={() => setIsOpen(!isOpen)}
           aria-label={isOpen ? "Đóng menu điều hướng" : "Mở menu điều hướng dạng quạt"}
-          className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 shadow-md relative border select-none group active:scale-90 ${
-            isOpen
+          className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 shadow-md relative border select-none group active:scale-90 ${isOpen
               ? "bg-[#28C840] text-white border-[#28C840] shadow-[0_0_20px_rgba(40,200,64,0.5)] rotate-90"
               : "bg-[#FFFFFF]/95 text-[#0D1117] border-[rgba(13,17,23,0.15)] hover:border-[#28C840] hover:text-[#28C840] hover:shadow-[0_0_15px_rgba(40,200,64,0.25)] hover:scale-105"
-          }`}
+            }`}
         >
           {/* Subtle pulse ring when closed */}
           {!isOpen && (
@@ -195,14 +188,12 @@ export const SidebarNav: React.FC = () => {
 
           {/* Double inner aesthetic rings */}
           <div
-            className={`absolute inset-0.5 rounded-full border pointer-events-none transition-colors ${
-              isOpen ? "border-white/20" : "border-black/5"
-            }`}
+            className={`absolute inset-0.5 rounded-full border pointer-events-none transition-colors ${isOpen ? "border-white/20" : "border-black/5"
+              }`}
           />
           <div
-            className={`absolute inset-1.5 rounded-full border pointer-events-none opacity-60 transition-colors ${
-              isOpen ? "border-white/10" : "border-black/5"
-            }`}
+            className={`absolute inset-1.5 rounded-full border pointer-events-none opacity-60 transition-colors ${isOpen ? "border-white/10" : "border-black/5"
+              }`}
           />
 
           {/* Icon with smooth rotation */}
