@@ -114,7 +114,12 @@ async def run_research(
                 campaign_id, exc,
             )
         brand = _json_object(brand_kit, "brand_kit")
-        brand.update(asset_paths)
+        # Uploads win over whatever the form declared, but only where there
+        # actually are uploads. `asset_paths` always carries every key, so a
+        # blanket update replaced the extractor's image URLs with an empty list
+        # — a link-started campaign lost its photographs at the last step before
+        # they were saved.
+        brand.update({k: v for k, v in asset_paths.items() if v})
         payload = ResearchInput.model_validate({
             "schema_version": schema_version,
             "campaign_id": campaign_id,

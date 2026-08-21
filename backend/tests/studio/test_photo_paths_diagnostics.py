@@ -8,7 +8,31 @@ from __future__ import annotations
 
 import logging
 
+import pytest
+
 from app.services.studio import demo_briefs, pipeline
+
+
+@pytest.fixture
+def pipeline_logs(caplog):
+    """Listen where the records actually go.
+
+    `app/main.py` sets `logging.getLogger("app").propagate = False`, and
+    `conftest.py` imports the app through `TestClient`, so a record from
+    `app.services.studio.pipeline` stops at the `app` logger and never reaches
+    the root handler `caplog` installs. Attaching caplog's handler to `app`
+    itself puts it back in the path without changing how the app logs in
+    production.
+    """
+    app_logger = logging.getLogger("app")
+    app_logger.addHandler(caplog.handler)
+    previous = app_logger.level
+    app_logger.setLevel(logging.WARNING)
+    try:
+        yield caplog
+    finally:
+        app_logger.removeHandler(caplog.handler)
+        app_logger.setLevel(previous)
 
 
 def _campaign_input():
@@ -36,31 +60,31 @@ def test_photo_paths_empty_input_returns_empty_list():
     assert pipeline._photo_paths(None) == []
 
 
-def test_warns_when_photos_were_provided_but_none_usable(caplog):
+def test_warns_when_photos_were_provided_but_none_usable(pipeline_logs):
     campaign_input = _campaign_input()
     campaign_input.brand_kit.product_photo_urls = ["https://cdn.example.com/product.jpg"]
 
-    with caplog.at_level(logging.WARNING, logger="app.services.studio.pipeline"):
+    with pipeline_logs.at_level(logging.WARNING, logger="app.services.studio.pipeline"):
         pipeline._warn_if_no_usable_photos(campaign_input, photos=[], campaign_id="c-1")
 
-    assert any("no_usable_product_photos" in record.message for record in caplog.records)
+    assert any("no_usable_product_photos" in record.message for record in pipeline_logs.records)
 
 
-def test_no_warning_when_a_usable_photo_exists(caplog):
+def test_no_warning_when_a_usable_photo_exists(pipeline_logs):
     campaign_input = _campaign_input()
     campaign_input.brand_kit.product_photo_urls = ["https://cdn.example.com/product.jpg"]
 
-    with caplog.at_level(logging.WARNING, logger="app.services.studio.pipeline"):
+    with pipeline_logs.at_level(logging.WARNING, logger="app.services.studio.pipeline"):
         pipeline._warn_if_no_usable_photos(campaign_input, photos=["/real/photo.jpg"], campaign_id="c-1")
 
-    assert caplog.records == []
+    assert pipeline_logs.records == []
 
 
-def test_no_warning_when_brief_never_provided_any_photo(caplog):
+def test_no_warning_when_brief_never_provided_any_photo(pipeline_logs):
     campaign_input = _campaign_input()
     campaign_input.brand_kit.product_photo_urls = []
 
-    with caplog.at_level(logging.WARNING, logger="app.services.studio.pipeline"):
+    with pipeline_logs.at_level(logging.WARNING, logger="app.services.studio.pipeline"):
         pipeline._warn_if_no_usable_photos(campaign_input, photos=[], campaign_id="c-1")
 
-    assert caplog.records == []
+    assert pipeline_logs.records == []

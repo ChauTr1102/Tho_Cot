@@ -230,10 +230,30 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
           campaign_objectives: ["conversion", "awareness"],
         },
       },
+      // Drop the pre-attached sample photographs. They are G7's, loaded to make
+      // the demo one click, and they stay attached when the product is replaced
+      // — so a campaign for yoghurt went to the renderer with a coffee pack as
+      // its Brand Lock reference and came back showing a coffee pack. The model
+      // was doing exactly what it was told; nobody had told it the truth.
+      files: { ...current.files, product_photos: [] },
     }));
 
     setExtractedSuccess(true);
-    toast.success(`Đã trích xuất & tự động điền toàn bộ thông tin từ ${sourceLabel}!`);
+    const extractedPhotos = toArr(bk?.product_photos).length;
+    if (extractedPhotos) {
+      toast.success(
+        `Đã trích xuất từ ${sourceLabel} · ${extractedPhotos} ảnh sản phẩm`
+      );
+    } else {
+      // Silence here is what produced the coffee pack. Say it plainly: with no
+      // photograph the model has nothing to hold the product to and will invent
+      // the packaging.
+      toast.warning(
+        `Đã trích xuất từ ${sourceLabel}, nhưng không lấy được ảnh sản phẩm nào. ` +
+          "Hãy tải ảnh lên — không có ảnh thật thì hệ thống sẽ tự vẽ bao bì.",
+        { duration: 8000 }
+      );
+    }
   };
 
   const handleExtractFromUrl = async () => {
