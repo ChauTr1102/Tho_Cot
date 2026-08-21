@@ -270,3 +270,40 @@ export interface Campaign {
   createdAt: string;
   updatedAt: string;
 }
+
+// ── Persisted Campaign API ───────────────────────────────
+
+export type PersistedCampaignStatus = "draft" | "researching" | "researched" | "failed";
+
+export interface PersistedCampaign {
+  id: string;
+  name: string;
+  description: string | null;
+  status: PersistedCampaignStatus;
+  research_input: Record<string, unknown> | null;
+  research_result: Record<string, unknown> | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CampaignListItem {
+  id: string;
+  name: string;
+  description: string | null;
+  status: PersistedCampaignStatus;
+  has_research_result: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateCampaignInput {
+  id?: string;
+  name: string;
+  description?: string | null;
+}
+
+export interface UpdateCampaignInput {
+  name?: string;
+  description?: string | null;
+  status?: PersistedCampaignStatus;
+}

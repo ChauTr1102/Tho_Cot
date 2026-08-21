@@ -1,5 +1,6 @@
 import { CreateItemInput, HealthStatus, Item, StandardResponse, UpdateItemInput, ExtractRequest, ExtractResponse } from "@/types";
 import { parseResearchCampaignPlan, validateResearchSubmission, type ResearchCampaignPlan, type ResearchSubmission } from "@/types/research";
+import type { CampaignListItem, CreateCampaignInput, PersistedCampaign, UpdateCampaignInput } from "@/types/campaign";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
@@ -70,6 +71,23 @@ export const api = {
       method: "DELETE",
     }),
 
+  // Campaigns CRUD and listing
+  getCampaigns: (skip = 0, limit = 50) =>
+    request<CampaignListItem[]>(`/campaigns?skip=${skip}&limit=${limit}`),
+  getCampaign: (id: string) => request<PersistedCampaign>(`/campaigns/${encodeURIComponent(id)}`),
+  createCampaign: (data: CreateCampaignInput) =>
+    request<PersistedCampaign>("/campaigns", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  updateCampaign: (id: string, data: UpdateCampaignInput) =>
+    request<PersistedCampaign>(`/campaigns/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
+  deleteCampaign: (id: string) =>
+    request<{ id: string }>(`/campaigns/${encodeURIComponent(id)}`, { method: "DELETE" }),
+
   // Extractor
   extractProduct: async (input: ExtractRequest): Promise<ExtractResponse> => {
     const response = await fetch(`${API_BASE_URL}/extractor/extract`, {
@@ -128,4 +146,3 @@ export const api = {
     }
   },
 };
-
