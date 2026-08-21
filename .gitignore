@@ -3,6 +3,12 @@ __pycache__/
 *.py[codz]
 *$py.class
 
+# QA_checklist generated output (per-run agent output: placeholder or real
+# images/video). brand_assets/ under each testcase is NOT ignored — those
+# are committed reference photos generated once via generate_testcase_assets.py.
+QA_checklist/ark_out/
+QA_checklist/testcases/*/ark_out/
+
 # C extensions
 *.so
 

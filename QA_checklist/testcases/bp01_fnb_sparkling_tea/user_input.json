@@ -1,0 +1,64 @@
+{
+  "$note": "Mock user input for BP-01 Commerce Campaign Launch Copilot. Mirrors the 'Input' section of BP01-prob.txt (product brief, brand kit, audience brief, market signal, optional past campaign data). Scenario: F&B sparkling tea launch on TikTok Shop / Shopee.",
+  "campaign_id": "camp-bp01-fnb-001",
+  "product_brief": {
+    "product_name": "Fizzy Roots Sparkling Tea - Hibiscus Ginger",
+    "category": "F&B / Functional Beverage",
+    "key_selling_points": [
+      "Zero added sugar, sweetened with monk fruit",
+      "Brewed with real hibiscus and cold-pressed ginger",
+      "Only 15 kcal per 330ml can",
+      "Made in Vietnam with locally sourced hibiscus"
+    ],
+    "price_or_promotion": "25,000 VND/can - Buy 4 Get 1 Free launch week bundle on Shopee",
+    "target_market": "Vietnam",
+    "required_claims": [
+      "zero added sugar",
+      "made in Vietnam"
+    ],
+    "forbidden_claims": [
+      "cures bloating",
+      "medically proven weight loss"
+    ]
+  },
+  "brand_kit": {
+    "logo_url": "./brand_assets/brand_logo.jpg",
+    "brand_colors": ["#0E7C61", "#F4D35E", "#FFFFFF"],
+    "tone_of_voice": "playful, energetic, health-forward, Gen Z friendly",
+    "product_photo_urls": [
+      "./brand_assets/product_photo_studio.jpg",
+      "./brand_assets/product_photo_lifestyle.jpg"
+    ]
+  },
+  "audience_brief": {
+    "target_customer": "Urban Gen Z and young professionals (18-30) in Vietnam who want a low-sugar, functional alternative to soft drinks",
+    "language": "vi",
+    "platform": ["TikTok Shop", "Shopee"],
+    "market": "VN"
+  },
+  "market_signal": {
+    "trend": "Functional 'better-for-you' sparkling beverages replacing soft drinks among Gen Z",
+    "seasonal_moment": "Summer heat season (Apr-Jun) driving cold beverage demand",
+    "consumer_pain_point": "Wants the fizzy soft-drink experience without the sugar guilt",
+    "search_keyword": "tra hoa qua khong duong co ga",
+    "competitor_angle": "Competitors lead with 'diet' framing; whitespace exists for a 'functional ingredient' framing (hibiscus + ginger) instead",
+    "campaign_objective": "Drive trial purchases and TikTok Shop/Shopee add-to-cart during launch week",
+    "sources": [
+      "ref://trend-report-2026/sea-functional-beverages",
+      "ref://social-listening/tiktok-vn-zero-sugar-drinks-q2-2026"
+    ]
+  },
+  "past_campaign_data": {
+    "ctr": 1.8,
+    "cvr": 3.2,
+    "roas": 2.1,
+    "watch_time_sec": 9.5,
+    "add_to_cart_rate": 4.7,
+    "comments": [
+      "Vi ngon hon minh nghi, uong nhu nuoc ngot binh thuong",
+      "Bao bi dep, muon xem review vi hibiscus + gung ket hop the nao",
+      "Gia hoi cao so voi tra sua nhung ok cho san pham healthy"
+    ],
+    "sales_results": "Previous SKU (Lemon Basil) sold 4,200 units in launch week, 62% via TikTok Shop, 38% via Shopee. CTR underperformed benchmark; add-to-cart rate was strong once viewers watched past 3s."
+  }
+}

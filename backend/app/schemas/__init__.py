@@ -1,27 +1,6 @@
 from app.schemas.common import PaginationParams, StandardResponse
 from app.schemas.health import HealthResponse
 from app.schemas.item import ItemBase, ItemCreate, ItemOut, ItemUpdate
-from app.schemas.campaign import (
-    ABTestPlan,
-    AssetBundle,
-    AudienceBrief,
-    BrandKit,
-    CampaignInput,
-    CampaignPlan,
-    CommerceCopy,
-    CreativeRoute,
-    ImageAsset,
-    ImageKind,
-    MarketSignal,
-    PastCampaignData,
-    PerformanceLearning,
-    ProductBrief,
-    ProductPositioning,
-    QAIssue,
-    QAResult,
-    QASeverity,
-    VideoAsset,
-)
 
 __all__ = [
     "StandardResponse",
@@ -31,23 +10,4 @@ __all__ = [
     "ItemCreate",
     "ItemUpdate",
     "ItemOut",
-    "ABTestPlan",
-    "AssetBundle",
-    "AudienceBrief",
-    "BrandKit",
-    "CampaignInput",
-    "CampaignPlan",
-    "CommerceCopy",
-    "CreativeRoute",
-    "ImageAsset",
-    "ImageKind",
-    "MarketSignal",
-    "PastCampaignData",
-    "PerformanceLearning",
-    "ProductBrief",
-    "ProductPositioning",
-    "QAIssue",
-    "QAResult",
-    "QASeverity",
-    "VideoAsset",
 ]
