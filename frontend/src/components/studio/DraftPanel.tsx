@@ -18,7 +18,7 @@
  */
 
 import { useState } from "react";
-import { Check, Pencil, RotateCcw, Sparkles } from "lucide-react";
+import { Check, PanelLeftClose, Pencil, RotateCcw, Sparkles } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,9 +30,8 @@ interface DraftPanelProps {
   approving: boolean;
   onApprove: (edited: Partial<Draft> | undefined) => void;
   onDiscard: () => void;
+  onClose?: () => void;
 }
-
-
 
 export function DraftPanel({
   draft,
@@ -40,6 +39,7 @@ export function DraftPanel({
   approving,
   onApprove,
   onDiscard,
+  onClose,
 }: DraftPanelProps) {
   const [editing, setEditing] = useState(false);
   const [light, setLight] = useState(draft.register.light);
@@ -63,21 +63,36 @@ export function DraftPanel({
 
   return (
     <section
-      className="border-border/70 bg-card/60 flex flex-col gap-5 rounded-none border p-5"
+      className="border-border border-r bg-background flex flex-col gap-4 p-4 lg:sticky lg:top-[4.5rem] lg:max-h-[calc(100vh-5.5rem)] overflow-y-auto"
       aria-label="Đề xuất chiến dịch"
     >
-      <header className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-primary text-[11px] font-semibold tracking-[0.2em] uppercase">
-            Đề xuất
-          </p>
-          <h2 className="font-display mt-1.5 text-[19px] leading-tight font-semibold">
-            Duyệt trước khi dựng
+      <header className="flex items-start justify-between gap-3 border-b border-border pb-3">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="size-2 rounded-full bg-primary animate-pulse" />
+            <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-primary">
+              Proposing Strategy
+            </span>
+          </div>
+          <h2 className="mt-1 font-display text-[15px] font-semibold tracking-tight text-foreground truncate">
+            {draft.register.name}
           </h2>
         </div>
-        <Badge variant="outline" className="shrink-0 font-mono text-[11px]">
-          {nodeCount} bước
-        </Badge>
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="shrink-0 font-mono text-[11px] rounded-none">
+            {nodeCount} bước
+          </Badge>
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              title="Thu gọn sidebar"
+              className="grid size-6 place-items-center rounded-none text-muted-foreground hover:bg-foreground/5 hover:text-foreground transition-colors"
+            >
+              <PanelLeftClose className="size-3.5" />
+            </button>
+          )}
+        </div>
       </header>
 
       {draft.summary ? (
@@ -171,7 +186,7 @@ export function DraftPanel({
         <Button
           onClick={handleApprove}
           disabled={approving}
-          className="bg-cta hover:bg-cta/90 text-cta-foreground h-10 flex-1 rounded-none font-medium"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground h-10 flex-1 rounded-none font-semibold text-[13.5px]"
         >
           {approving ? (
             <>

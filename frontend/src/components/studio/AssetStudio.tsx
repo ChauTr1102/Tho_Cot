@@ -50,6 +50,7 @@ import { StudioHeader } from "@/components/studio/StudioHeader";
 import { estimateKit } from "@/lib/studio-catalog";
 import { useRunClock, useStudioStream } from "@/lib/studio-events";
 import { api, ApiError } from "@/lib/api";
+import { cn } from "@/lib/utils";
 import {
   approveDraft,
   fetchSavedResult,
@@ -118,6 +119,7 @@ export function AssetStudio({
   const [savedResult, setSavedResult] = useState<SavedResult | null>(null);
   const [showSaved, setShowSaved] = useState(true);
 
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [campaignId, setCampaignId] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
   const [startedAt, setStartedAt] = useState<number | null>(null);
@@ -352,38 +354,44 @@ export function AssetStudio({
             : "mx-auto w-full max-w-[1760px] flex-1 px-4 pt-4 pb-10 sm:px-6"
         }
       >
-        <div className="flex-1 grid items-stretch gap-0 lg:grid-cols-[minmax(300px,340px)_minmax(0,1fr)]">
-          {/* One rail, two states. While a proposal is on the table it takes
-              the whole rail — it is the only decision that matters at that
-              moment, and leaving the brief editable beside it invites changes
-              that the proposal no longer reflects. */}
-          {draft ? (
-            <DraftPanel
-              draft={draft}
-              nodeCount={draftGraph.length}
-              approving={approving}
-              onApprove={handleApprove}
-              onDiscard={() => {
-                setDraft(null);
-                setDraftId(null);
-                setDraftGraph([]);
-              }}
-            />
-          ) : (
-            <BriefPanel
-              platforms={platforms}
-              onPlatformsChange={setPlatforms}
-              onRun={handlePropose}
-              campaigns={visibleCampaigns}
-              selectedCampaign={selectedCampaign}
-              onCampaignChange={setSelectedCampaign}
-              campaignPinned={campaignPinned}
-              direction={direction}
-              onDirectionChange={setDirection}
-              running={running}
-              starting={starting}
-              campaignId={campaignId}
-            />
+        <div
+          className={cn(
+            "flex-1 grid items-stretch gap-0 transition-all duration-300",
+            sidebarOpen ? "lg:grid-cols-[minmax(300px,340px)_minmax(0,1fr)]" : "grid-cols-1"
+          )}
+        >
+          {/* One rail, two states. Collapsible to release 100% space for canvas. */}
+          {sidebarOpen && (
+            draft ? (
+              <DraftPanel
+                draft={draft}
+                nodeCount={draftGraph.length}
+                approving={approving}
+                onApprove={handleApprove}
+                onDiscard={() => {
+                  setDraft(null);
+                  setDraftId(null);
+                  setDraftGraph([]);
+                }}
+                onClose={() => setSidebarOpen(false)}
+              />
+            ) : (
+              <BriefPanel
+                platforms={platforms}
+                onPlatformsChange={setPlatforms}
+                onRun={handlePropose}
+                campaigns={visibleCampaigns}
+                selectedCampaign={selectedCampaign}
+                onCampaignChange={setSelectedCampaign}
+                campaignPinned={campaignPinned}
+                direction={direction}
+                onDirectionChange={setDirection}
+                running={running}
+                starting={starting}
+                campaignId={campaignId}
+                onClose={() => setSidebarOpen(false)}
+              />
+            )
           )}
 
           {/* While the director is writing there is no graph to draw and no run
@@ -395,6 +403,8 @@ export function AssetStudio({
               campaignName={campaign?.name ?? null}
               platforms={platforms}
               onRebuild={() => setShowSaved(false)}
+              sidebarOpen={sidebarOpen}
+              onToggleSidebar={() => setSidebarOpen((v) => !v)}
             />
           ) : starting ? (
             <ThinkingPanel
@@ -420,6 +430,8 @@ export function AssetStudio({
                 platforms={platforms}
                 campaignId={campaignId}
                 awaiting={running && stream.nodes.length === 0}
+                sidebarOpen={sidebarOpen}
+                onToggleSidebar={() => setSidebarOpen((v) => !v)}
               />
             </RunStage>
           )}

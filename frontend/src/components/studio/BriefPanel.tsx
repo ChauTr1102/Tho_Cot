@@ -16,7 +16,7 @@
  * rather than being re-invented.
  */
 
-import { Check, Clock, Play, ShoppingBag, Store } from "lucide-react";
+import { Check, Clock, PanelLeftClose, Play, ShoppingBag, Sparkles, Store } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -62,12 +62,7 @@ interface BriefPanelProps {
   selectedCampaign: string | null;
   onCampaignChange: (id: string) => void;
   /**
-   * True when the campaign was named by whoever opened this screen — the
-   * pipeline walking a specific campaign, or a `?campaign=` deep link. The
-   * list then states which campaign is being built rather than offering a
-   * choice: someone two stages into one campaign has no reason to switch, and
-   * every reason not to do it by accident. Two campaigns can carry the same
-   * product name, so a mis-click is silent and expensive.
+   * True when the campaign was named by whoever opened this screen.
    */
   campaignPinned: boolean;
   /** Free text: what the user wants this campaign to feel like. */
@@ -78,6 +73,7 @@ interface BriefPanelProps {
   /** True only while `POST /studio/run` is in flight. */
   starting: boolean;
   campaignId: string | null;
+  onClose?: () => void;
 }
 
 export function BriefPanel({
@@ -93,6 +89,7 @@ export function BriefPanel({
   running,
   starting,
   campaignId,
+  onClose,
 }: BriefPanelProps) {
   const estimate = estimateKit(platforms);
   const locked = running || starting;
@@ -112,22 +109,24 @@ export function BriefPanel({
   };
 
   return (
-    // Sticky with a capped height on desktop: the Run button and the platform
-    // toggles stay on screen and the brand list absorbs any overflow. The
-    // primary action of a control panel must never be below the fold.
-    // `min-w-0` on the rail as well as on the fieldset inside it. In a column
-    // flex container the main axis is vertical, so a child's `min-width: auto`
-    // never resolves to zero horizontally and any child with a wide min-content
-    // — a <fieldset>, which has one by UA rule — pushes past the rail, where
-    // `overflow-hidden` cuts it off instead of wrapping it.
-    <aside className="studio-panel flex min-w-0 flex-col overflow-hidden lg:sticky lg:top-[4.5rem] lg:max-h-[calc(100vh-5.5rem)]">
-      <div className="shrink-0 border-b border-border px-4 py-3">
-        <h2 className="font-display text-[15px] font-semibold tracking-tight">
-          Brief chiến dịch
-        </h2>
-        <p className="mt-0.5 text-[12.5px] text-muted-foreground">
-          Brief, plan và ảnh gốc lấy từ bước nghiên cứu. Kho ảnh không bị ghi đè.
-        </p>
+    <aside className="studio-panel flex min-w-0 flex-col overflow-hidden lg:sticky lg:top-[4.5rem] lg:max-h-[calc(100vh-5.5rem)] border-r border-border bg-background">
+      <div className="shrink-0 flex items-center justify-between border-b border-border px-3.5 py-2.5 bg-foreground/[0.02]">
+        <div className="flex items-center gap-2">
+          <span className="size-2 rounded-full bg-primary" />
+          <h2 className="font-display text-[13px] font-semibold tracking-tight uppercase text-foreground/90">
+            Inspector / Brief
+          </h2>
+        </div>
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            title="Thu gọn sidebar (giải phóng không gian canvas)"
+            className="grid size-6 place-items-center rounded-none text-muted-foreground hover:bg-foreground/5 hover:text-foreground transition-colors"
+          >
+            <PanelLeftClose className="size-3.5" />
+          </button>
+        )}
       </div>
 
       {/* ── Campaign ──────────────────────────────────────────────────────── */}
@@ -378,10 +377,7 @@ export function BriefPanel({
           size="lg"
           onClick={onRun}
           disabled={locked || noPlatform || noCampaign}
-          // `.btn-cta` paints the coral gradient over the primary fill; the
-          // default variant's near-black `text-primary-foreground` is kept on
-          // purpose — white on this orange only reaches 2.8:1.
-          className="btn-cta mt-3 h-11 w-full gap-2 text-[15px] rounded-none disabled:shadow-none"
+          className="btn-cta mt-3.5 h-10 w-full gap-2 text-[13.5px] font-semibold rounded-none disabled:shadow-none"
         >
           {locked ? (
             <>
@@ -393,7 +389,7 @@ export function BriefPanel({
             </>
           ) : (
             <>
-              <Play aria-hidden className="size-4" strokeWidth={2.5} />
+              <Play aria-hidden className="size-3.5 fill-current" strokeWidth={2.5} />
               Đề xuất chiến dịch
             </>
           )}
