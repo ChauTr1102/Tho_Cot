@@ -1,0 +1,245 @@
+{
+  "schema_version": "1.0",
+  "product_positioning": {
+    "main_campaign_angle": {
+      "decision": "Chiến dịch cross-border Trung Quốc 9.9 Shopping Festival làm trọng tâm, đồng bộ triển khai trên Hoa Kỳ, Hàn Quốc, Đông Nam Á, mục tiêu kép nâng cao nhận thức và thúc đẩy chuyển đổi",
+      "rationale": "Khuyến mãi trong brief được gắn riêng cho chiến dịch China 9.9; nghiên cứu thị trường xác nhận 9.9 là sự kiện mua sắm lớn với sức chi tiêu cao, phù hợp đẩy mạnh doanh thu và nhận thức thương hiệu",
+      "evidence": [
+        {
+          "basis": "product_brief",
+          "detail": "Promotion ghi rõ: Chiến dịch cross-border China 9.9: mua 3 túi tặng 1 và miễn phí vận chuyển; mục tiêu chiến dịch bao gồm awareness và conversion; thị trường mục tiêu gồm Trung Quốc, Hoa Kỳ, Hàn Quốc, Đông Nam Á",
+          "source_url": null
+        },
+        {
+          "basis": "supplied_source",
+          "detail": "China 9.9 Shopping Festival là sự kiện mua sắm trực tuyến lớn hàng năm, người tiêu dùng tích cực săn khuyến mãi trên các sàn Tmall, JD, Douyin",
+          "source_url": "https://www.21jingji.com/article/20230922/herald/035ec2c4738c670c478c51772247457f.html"
+        }
+      ]
+    },
+    "target_audience": {
+      "decision": "Ưu tiên 1: dân văn phòng, sinh viên các thị trường mục tiêu; ưu tiên 2: người yêu thích cà phê Việt vị đậm Robusta; ưu tiên 3: khách du lịch / mua quà mang về",
+      "rationale": "Cả brief và nghiên cứu thị trường đều xác định các nhóm này là phân khúc tiêu dùng chính của cà phê hòa tan 3in1, phù hợp với đặc tính sản phẩm và mục tiêu chiến dịch",
+      "evidence": [
+        {
+          "basis": "product_brief",
+          "detail": "Đối tượng mục tiêu trong brief: khách hàng quốc tế yêu thích cà phê Việt vị đậm, dân văn phòng, sinh viên, khách mua quà mang về",
+          "source_url": null
+        },
+        {
+          "basis": "supplied_source",
+          "detail": "Nghiên cứu thị trường xác nhận dân văn phòng và sinh viên là nhóm chính tiêu thụ cà phê hòa tan để tỉnh táo khi làm việc/học tập; nhóm gia đình, người yêu thích vị đậm Robusta và khách mua quà là phân khúc mở rộng",
+          "source_url": "https://www.chinairn.com/scfx/20240523/155248489.shtml"
+        }
+      ]
+    },
+    "key_selling_message": {
+      "decision": "Cà phê hòa tan 3in1 Trung Nguyên G7 – vị đậm Robusta Buôn Ma Thuột Việt Nam, pha nhanh tiện lợi, tràn đầy năng lượng bắt đầu ngày mới, thương hiệu Việt có mặt tại hơn 100 quốc gia",
+      "rationale": "Lấy trực tiếp từ key selling points và required claims trong brief, tuân thủ tuyệt đối các hạn chế về claim so sánh đối thủ, sức khỏe, siêu hạng",
+      "evidence": [
+        {
+          "basis": "product_brief",
+          "detail": "Required claims: cà phê hòa tan 3in1, cà phê Robusta Việt Nam / Buôn Ma Thuột; key selling points bao gồm vị đậm mạnh đặc trưng, công thức 3in1 pha nhanh tiện lợi, thương hiệu xuất khẩu hơn 100 quốc gia, thông điệp năng lượng tỉnh táo bứt tốc; restricted claims cấm so sánh đối thủ, claim sức khỏe, superlative",
+          "source_url": null
+        }
+      ]
+    },
+    "benefit_hierarchy": [
+      {
+        "rank": 1,
+        "benefit": "Vị đậm mạnh đặc trưng cà phê Robusta Buôn Ma Thuột Việt Nam",
+        "rationale": "Nghiên cứu thị trường chứng minh vị đậm phù hợp khẩu vị châu Á là lợi thế cạnh tranh cốt lõi của G7 so với các thương hiệu toàn cầu, đồng thời là điểm khác biệt thu hút nhóm khách yêu thích cà phê Việt",
+        "evidence": [
+          {
+            "basis": "product_brief",
+            "detail": "Key selling point đầu tiên: Robusta Buôn Ma Thuột, Đắk Lắk, với vị đậm và mạnh đặc trưng cà phê Việt; là một trong hai required claim bắt buộc",
+            "source_url": null
+          },
+          {
+            "basis": "supplied_source",
+            "detail": "Robusta Việt Nam có vị đậm, mạnh, ít chua, kết hợp sữa và đường trong công thức 3in1 rất hợp khẩu vị người tiêu dùng châu Á, là lợi thế cạnh tranh chính của G7",
+            "source_url": "https://nongthonviet.vn/ca-phe-hoa-tan-viet-nam-lay-gia-re-de-giu-ngoi-dau-hay-dat-cuoc-tuong-lai-bang-cong-nghe-va-gia-tri-cao-11324.html"
+          }
+        ]
+      },
+      {
+        "rank": 2,
+        "benefit": "Tiện lợi 3 trong 1: có sẵn cà phê, đường, kem, chỉ cần pha với nước nóng, gói nhỏ dễ mang theo",
+        "rationale": "Nghiên cứu thị trường xác nhận tiện lợi là giá trị cốt lõi giữ vững phân khúc 3in1 dù có xu hướng chuyển dịch, phù hợp với lối sống nhanh của dân văn phòng và sinh viên là nhóm khách chính",
+        "evidence": [
+          {
+            "basis": "product_brief",
+            "detail": "Key selling point: Công thức 3in1 gồm cà phê, đường và kem; pha nhanh, tiện mang theo",
+            "source_url": null
+          },
+          {
+            "basis": "supplied_source",
+            "detail": "Dù thị trường có chuyển dịch, 3in1 vẫn là phân khúc lớn nhất nhờ tính tiện lợi, phù hợp lối sống nhanh của dân văn phòng và sinh viên",
+            "source_url": "https://nongthonviet.vn/ca-phe-hoa-tan-viet-nam-lay-gia-re-de-giu-ngoi-dau-hay-dat-cuoc-tuong-lai-bang-cong-nghe-va-gia-tri-cao-11324.html"
+          }
+        ]
+      },
+      {
+        "rank": 3,
+        "benefit": "Thương hiệu uy tín: thương hiệu Việt đã xuất khẩu đến hơn 100 quốc gia",
+        "rationale": "Là điểm nhấn xây dựng niềm tin với khách hàng quốc tế, phù hợp với nhóm khách tìm thương hiệu đáng tin và khách mua quà",
+        "evidence": [
+          {
+            "basis": "product_brief",
+            "detail": "Key selling point: Thương hiệu Việt Nam đã xuất khẩu tới hơn 100 quốc gia",
+            "source_url": null
+          }
+        ]
+      },
+      {
+        "rank": 4,
+        "benefit": "Năng lượng tỉnh táo cho ngày làm việc, học tập hiệu quả",
+        "rationale": "Phù hợp với thông điệp thương hiệu và nhu cầu chính của nhóm khách dân văn phòng, sinh viên là đối tượng ưu tiên cao nhất",
+        "evidence": [
+          {
+            "basis": "product_brief",
+            "detail": "Key selling point: Thông điệp năng lượng cho ngày mới với tinh thần tỉnh táo và bứt tốc",
+            "source_url": null
+          },
+          {
+            "basis": "general_marketing_knowledge",
+            "detail": "Nguyên tắc liên kết lợi ích sản phẩm với nhu cầu cốt lõi của nhóm khách mục tiêu để tăng độ đồng cảm và khả năng chuyển đổi",
+            "source_url": null
+          }
+        ]
+      }
+    ]
+  },
+  "creative_routes": [
+    {
+      "route_name": "Vị đậm Việt đúng gu – mở đầu ngày bứt tốc",
+      "hook_idea": "Cận cảnh bàn tay lật gói G7, đổ bột cà phê vào cốc, rót nước nóng và khuấy. Dòng chữ nhảy ra: 'Mệt buổi sáng? Pha nhanh một ly cà phê vị đậm Việt Nam'",
+      "visual_direction": "Dùng ảnh gói cà phê đơn product_02.jpg làm điểm nhấn trong cảnh mở đầu; sau đó cắt cảnh uống cà phê xong nhân viên văn phòng gõ bàn phím nhanh, sinh viên tập trung đọc sách. Góc dưới bên phải giữ logo Trung Nguyên G7 theo đúng bao bì, không chỉnh sửa thiết kế gốc",
+      "message_angle": "Cà phê hòa tan 3in1 Trung Nguyên G7 – Robusta Buôn Ma Thuột Đắk Lắk, vị đậm mạnh đặc trưng cà phê Việt, pha nhanh tiện lợi, tràn năng lượng cho ngày làm việc. Thương hiệu Việt có mặt tại hơn 100 quốc gia. [Placeholder khuyến mãi 9.9: chưa xác nhận điều kiện áp dụng]",
+      "suggested_platform_usage": [
+        "Douyin",
+        "TikTok Shop",
+        "Livestream commerce"
+      ],
+      "rationale": "Nội dung dạng video ngắn, hook hành động giải quyết đau điểm tức thời phù hợp với thói quen scroll của người dùng Douyin/TikTok, nhắm đến nhóm dân văn phòng sinh viên là đối tượng ưu tiên cao nhất; tuân thủ các yêu cầu hạn chế claim và đã loại bỏ tuyên bố thành phần tuyệt đối không có căn cứ theo yêu cầu audit",
+      "evidence": [
+        {
+          "basis": "product_brief",
+          "detail": "Key selling points: công thức 3in1 pha nhanh, thông điệp năng lượng tỉnh táo, Robusta Buôn Ma Thuột; restricted claims cấm so sánh đối thủ, claim sức khỏe, superlative; khuyến mãi cần xác nhận điều kiện trước khi xuất bản",
+          "source_url": null
+        },
+        {
+          "basis": "supplied_source",
+          "detail": "Hình ảnh sản phẩm từ trang chính thức Trung Nguyên Legend US: product_02.jpg là gói cà phê đơn, logo.png là logo thương hiệu; tiện lợi là nhu cầu cốt lõi của nhóm văn phòng/sinh viên",
+          "source_url": "https://trungnguyenlegend.us/cdn/shop/files/G7SACHET.jpg?v=1685340728&width=1946"
+        },
+        {
+          "basis": "general_marketing_knowledge",
+          "detail": "Hook hành động giải quyết đau điểm tức thời thu hút hơn đối với nội dung ngắn dạng scroll trên nền tảng video ngắn",
+          "source_url": null
+        },
+        {
+          "basis": "assumption",
+          "detail": "Giả thuyết kiểm chứng: nội dung nhấn mạnh tiện lợi + năng lượng sẽ có tỷ lệ hoàn thành video cao hơn và tỷ lệ chuyển đổi cao hơn với nhóm người dùng có thói quen uống cà phê hàng ngày",
+          "source_url": null
+        }
+      ]
+    },
+    {
+      "route_name": "Quà đặc sản Việt – vị nức tiếng thế giới",
+      "hook_idea": "Hình túi 50 gói G7 lớn ở trung tâm, kèm placeholder vùng nguyên liệu có ghi chú rõ 'không phải ảnh thực tế vùng nguyên liệu sản phẩm' và dòng chữ nổi: 'Cà phê Việt Nam nổi tiếng – 50 gói tiện dùng gia đình hoặc làm quà'",
+      "visual_direction": "Dùng ảnh túi sản phẩm product_01.jpg làm hình chính, giữ nguyên thiết kế bao bì đỏ-đen-vàng đồng, logo và dòng chữ 'G7 INSTANT COFFEE' gốc; thay minh họa 3 túi + 1 túi tặng bằng placeholder khuyến mãi có ghi chú 'chưa xác nhận điều kiện áp dụng' để tránh hiểu lầm",
+      "message_angle": "Cà phê hòa tan 3in1 Trung Nguyên G7 – hạt cà phê Robusta Buôn Ma Thuột Đắk Lắk, vị đậm mạnh đúng hương vị cà phê Việt. Gói nhỏ tiện mang đi làm, đi học; túi 50 gói hợp dùng gia đình hoặc làm quà tặng đặc sản. Thương hiệu Việt đã xuất khẩu đến hơn 100 quốc gia. [Placeholder khuyến mãi 9.9: chưa xác nhận điều kiện áp dụng]",
+      "suggested_platform_usage": [
+        "Taobao",
+        "Tmall International",
+        "Shopee"
+      ],
+      "rationale": "Nội dung trang thương mại điện tử nhấn mạnh giá trị văn hóa và thương hiệu uy tín phù hợp với hành vi mua sắm chủ động trên sàn, nhắm đến nhóm khách mua quà và mua số lượng lớn; đã sửa lỗi 'chọn lọc', 'đủ dùng 50 ngày', minh họa khuyến mãi và placeholder hình ảnh theo yêu cầu audit",
+      "evidence": [
+        {
+          "basis": "product_brief",
+          "detail": "Quy cách 50 gói x 16g, cà phê Robusta Buôn Ma Thuột; đối tượng khách mua quà trong audience_brief; khuyến mãi cần xác nhận điều kiện trước khi xuất bản; restricted claims cấm superlative, so sánh đối thủ, claim sức khỏe",
+          "source_url": null
+        },
+        {
+          "basis": "supplied_source",
+          "detail": "Hình ảnh sản phẩm từ trang chính thức Trung Nguyên Legend US: product_01.jpg là túi 50 gói; trải nghiệm văn hóa cà phê Việt là động lực mua hàng của nhóm khách quốc tế",
+          "source_url": "https://trungnguyenlegend.us/cdn/shop/files/TNG750SACHETS1.jpg?v=1685340728&width=1946"
+        },
+        {
+          "basis": "general_marketing_knowledge",
+          "detail": "Nội dung trang thương mại điện tử nhấn mạnh giá trị lâu dài và uy tín phù hợp hơn với hành vi mua sắm chủ động trên sàn",
+          "source_url": null
+        },
+        {
+          "basis": "assumption",
+          "detail": "Giả thuyết kiểm chứng: nội dung nhấn mạnh giá trị văn hóa + thương hiệu uy tín sẽ có tỷ lệ thêm vào giỏ hàng cao hơn với nhóm khách mua số lượng lớn và mua quà",
+          "source_url": null
+        }
+      ]
+    }
+  ],
+  "source_summary": {
+    "external_sources_supplied": true,
+    "sources": [
+      {
+        "title": "Trang chính thức Trung Nguyên Legend US - Logo thương hiệu",
+        "url": "https://trungnguyenlegend.us/cdn/shop/files/LOGO_TRUNG_NGUYEN_LEGEND.png?v=1781135244&width=600",
+        "usage": "Xác nhận hình ảnh logo thương hiệu làm tài liệu tham khảo brand kit"
+      },
+      {
+        "title": "Trang chính thức Trung Nguyên Legend US - Ảnh túi sản phẩm G7 50 gói",
+        "url": "https://trungnguyenlegend.us/cdn/shop/files/TNG750SACHETS1.jpg?v=1685340728&width=1946",
+        "usage": "Xác nhận hình ảnh bao bì túi 50 gói dùng cho định hướng sáng tạo"
+      },
+      {
+        "title": "Trang chính thức Trung Nguyên Legend US - Ảnh gói cà phê đơn G7",
+        "url": "https://trungnguyenlegend.us/cdn/shop/files/G7SACHET.jpg?v=1685340728&width=1946",
+        "usage": "Xác nhận hình ảnh gói cà phê đơn dùng cho định hướng sáng tạo"
+      },
+      {
+        "title": "Báo cáo thị trường cà phê Trung Quốc - 21 Jingji",
+        "url": "https://www.21jingji.com/article/20230922/herald/035ec2c4738c670c478c51772247457f.html",
+        "usage": "Dữ liệu quy mô thị trường cà phê Trung Quốc, vị thế cà phê Việt, xu hướng cà phê Việt hot trên mạng xã hội, xu hướng tinh tuyền hóa sản phẩm"
+      },
+      {
+        "title": "Nghiên cứu thị trường cà phê hòa tan Trung Quốc - ChinaIRN",
+        "url": "https://www.chinairn.com/scfx/20240523/155248489.shtml",
+        "usage": "Dữ liệu sản lượng và tiêu dùng cà phê hòa tan Trung Quốc, xu hướng livestream thương mại điện tử, đối tượng tiêu dùng chính"
+      },
+      {
+        "title": "Xu hướng tiêu dùng cà phê hòa tan Trung Quốc - ChinaIRN",
+        "url": "https://www.chinairn.com/scfx/20240927/151543228.shtml",
+        "usage": "Thông tin xu hướng chuyển dịch từ 3in1 sang cà phê đen/sức khỏe, động lực tiện lợi của người tiêu dùng"
+      },
+      {
+        "title": "Vị thế cà phê hòa tan Việt Nam - Nông Thôn Việt",
+        "url": "https://nongthonviet.vn/ca-phe-hoa-tan-viet-nam-lay-gia-re-de-giu-ngoi-dau-hay-dat-cuoc-tuong-lai-bang-cong-nghe-va-gia-tri-cao-11324.html",
+        "usage": "Thông tin vị thế cà phê hòa tan Việt Nam, lợi thế vị đậm phù hợp khẩu vị châu Á, giá trị tiện lợi của 3in1"
+      },
+      {
+        "title": "Báo cáo vị thế G7 tại thị trường Trung Quốc - Cafebiz",
+        "url": "https://cafebiz.vn/bat-chap-mau-thuan-cua-vo-chong-ong-dang-le-nguyen-vu-g7-van-tang-truong-than-toc-lot-top-1-thuong-hieu-ca-phe-duoc-yeu-thich-nhat-tai-trung-quoc-2019051408473845.chn",
+        "usage": "Thông tin G7 có mặt tại Hàn Quốc và Mỹ qua các hệ thống siêu thị; dữ liệu khảo sát 2019 không dùng cho claim quảng cáo theo yêu cầu audit"
+      },
+      {
+        "title": "Hỗ trợ doanh nghiệp xuất khẩu cà phê sang Trung Quốc - Thị trường nông sản",
+        "url": "http://thitruongnongsan.gov.vn/vn/tID27304_ho-tro-doanh-nghiep-day-manh-xuat-khau-ca-phe-sang-trung-quoc.html",
+        "usage": "Thông tin tốc độ tăng tiêu dùng cà phê Trung Quốc, vị thế thị trường xuất khẩu của Việt Nam"
+      },
+      {
+        "title": "Dữ liệu giá tham khảo Tmall - Guangdiu",
+        "url": "https://guangdiu.com/detail.php?id=27144710",
+        "usage": "Giá tham khảo sản phẩm G7 trên sàn Tmall International, không dùng để công bố giá chính thức theo yêu cầu audit"
+      }
+    ],
+    "assumptions": [
+      "Giả thuyết kiểm chứng Hướng A: nội dung nhấn mạnh tiện lợi + năng lượng sẽ có tỷ lệ hoàn thành video cao hơn và tỷ lệ chuyển đổi cao hơn với nhóm người dùng có thói quen uống cà phê hàng ngày",
+      "Giả thuyết kiểm chứng Hướng B: nội dung nhấn mạnh giá trị văn hóa + thương hiệu uy tín sẽ có tỷ lệ thêm vào giỏ hàng cao hơn với nhóm khách mua số lượng lớn và mua quà",
+      "Giả thuyết: với người dùng uống 1 gói/ngày, 1 túi 50 gói có thể dùng trong 50 ngày (không dùng làm claim quảng cáo công khai)",
+      "Giá bán và điều kiện khuyến mãi 9.9 cần xác nhận chính thức trước khi xuất bản nội dung cuối cùng",
+      "Hình ảnh placeholder vùng nguyên liệu Buôn Ma Thuột không phải ảnh thực tế vùng nguyên liệu của sản phẩm G7, cần thay thế hoặc xóa khi xác minh nguồn gốc"
+    ]
+  }
+}
