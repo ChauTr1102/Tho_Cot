@@ -92,6 +92,11 @@ class StudioSettings(BaseSettings):
     # native-resolution crops instead of one resize.
     QA_TILE_PX: int = 1024
     QA_MAX_ATTEMPTS: int = 2                  # regeneration attempts per asset
+    QA_ENABLED: bool = True
+    # Inspect only images that carry marketing copy. A vision pass costs 41-109s
+    # on top of a 60s render, and an image with no text on it has nothing the
+    # gate can catch -- gating everything turned a one-minute hero into five.
+    QA_TEXT_ONLY: bool = True
 
     # --- subtitles (rendered by Pillow; this ffmpeg has no drawtext) ---
     SUBTITLE_FONT_PATH: str = "/System/Library/Fonts/Supplemental/Arial Unicode.ttf"

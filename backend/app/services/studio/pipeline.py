@@ -89,6 +89,12 @@ def _render_with_qa(fn: Callable[[str], render.RenderedImage],
     forgives. Retries reuse the same corrective channel the gate reports on, so
     a second attempt is aimed rather than merely repeated.
     """
+    # An image with no copy on it gives the gate nothing to check, and a vision
+    # pass costs 41-109s on top of a 60s render. Skipping those is what keeps a
+    # run in minutes rather than tens of minutes.
+    if gate and studio_settings.QA_TEXT_ONLY and not expected:
+        gate = False
+
     attempts = studio_settings.QA_MAX_ATTEMPTS if gate else 0
     hint = ""
     result = fn(hint)
@@ -126,7 +132,7 @@ def build_nodes(plan: CampaignPlan, campaign_input: CampaignInput | None,
     when several routes share one triage pass.
     """
     platforms = tuple(platforms or DEFAULT_PLATFORMS)
-    gate = studio_settings.CACHE_ENABLED if qa is None else qa
+    gate = studio_settings.QA_ENABLED if qa is None else qa
     campaign_id = plan.campaign_id or "campaign"
     out_dir = _campaign_dir(campaign_id)
     photos = _photo_paths(campaign_input)
