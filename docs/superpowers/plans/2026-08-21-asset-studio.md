@@ -50,6 +50,12 @@ Research logs: `probe_out/` in the BHN working directory. These are experimental
 - **`reference_images` is silently ignored.** It returns HTTP 200 and produces an image identical to the single-reference case. Do not use it. HTTP 200 is not proof a parameter took effect.
 - **Text rendering is reliable when every string is explicit.** Vietnamese stacked diacritics (`Ễ`, `Ậ`, `Ể`, `Ụ`, `Ồ`) render correctly. Text the model invents on its own is garbage (`LUNAÁIRA`, `EFFFECTIVE`) — in English too. The failure axis is *specified vs invented*, not Vietnamese vs English.
 
+- **Verified end-to-end against a real brand product** (COSRX Advanced Snail 96, `sample_data/01_.../product_01.jpg`): a hero rendered from the real photo, then four kit images rendered from `image:[product_photo, hero]`. The bottle, cap and label layout carried across every image; the travertine surface, cool diffused light and airy grade stayed consistent; `PHỤC HỒI HÀNG RÀO DA` and `Tinh chất ốc sên 96%` rendered perfectly; the pure-white-background slot correctly overrode the art direction. Five images in ~100s (hero 53s, then four in parallel at ~50s).
+
+- **⚠️ Rotated label text degrades.** In every generated image the vertical wordmark running up the bottle's black band rendered as **`COSRᴀ`** instead of `COSRX`, while the *same string* printed horizontally on the gold label rendered correctly. This is the model redrawing the product's own packaging, not a string we asked for. Two consequences:
+  1. It is an independent argument for REUSE on label-critical slots. Shopee's main image and SKU close-up use the brand's real photograph not to save an API call but because regenerating a label risks misspelling the brand name on a listing.
+  2. Where a slot must be generated, prefer scenes that present the label face-on, and have the QA gate check every `label_text` string explicitly — a wrong brand name is the most expensive defect this system can ship.
+
 ### Seedance 2.5 — `dreamina-seedance-2-5-260628`
 
 `POST /contents/generations/tasks` → `{"id": "cgt-..."}`, then poll `GET /contents/generations/tasks/{id}` until `status == "succeeded"`.
