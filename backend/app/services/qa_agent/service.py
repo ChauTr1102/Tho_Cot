@@ -27,6 +27,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from app.schemas.campaign_dto import CampaignOutputDTO
 from app.schemas.qa_checklist import (
+    QACheckedItem,
     QAIssue,
     QASeverity,
     RegenerateTarget,
@@ -173,6 +174,7 @@ class AgentQAChecklistService:
         )
 
         issues: list[QAIssue] = []
+        failed_ids: set[str] = set()
         with ThreadPoolExecutor(max_workers=_MAX_PARALLEL_VERIFIERS) as pool:
             futures = {
                 pool.submit(self._verify_item, client, item, request): item
@@ -191,6 +193,7 @@ class AgentQAChecklistService:
                     )
                 if issue is not None:
                     issues.append(issue)
+                    failed_ids.add(item["id"])
 
         # TEMP: only surface WARNING severity for now — never block the
         # pipeline. Agent still judges each item using its real BLOCKER/
@@ -199,6 +202,17 @@ class AgentQAChecklistService:
         # is only False on a pipeline crash (see the endpoint's exception
         # handling), never because of a detected QA issue.
         issues = [issue.model_copy(update={"severity": QASeverity.WARNING}) for issue in issues]
+
+        # Full tick-list (pass + fail) for the client-facing checklist UI —
+        # each generated item is "ticked" (passed=True) unless it produced
+        # an issue above.
+        checked_items = [
+            QACheckedItem(
+                rule_id=item["id"], description=item["description"],
+                passed=item["id"] not in failed_ids, category=RegenerateTarget(item["category"]),
+            )
+            for item in checklist
+        ]
 
         passed = not any(issue.severity == QASeverity.BLOCKER for issue in issues)
         seen = {issue.regenerate for issue in issues}
@@ -209,7 +223,8 @@ class AgentQAChecklistService:
             request.iteration, passed, len(issues),
         )
         return VerifyChecklistResponse(
-            passed=passed, iteration=request.iteration, issues=issues, regenerate=regenerate,
+            passed=passed, iteration=request.iteration, issues=issues,
+            checked_items=checked_items, regenerate=regenerate,
         )
 
 

@@ -129,7 +129,7 @@ export const StageQAGate: React.FC<Props> = ({ campaignInput, campaignOutput, it
           QA & POLICY GATE
         </h2>
         <p className="text-sm font-mono text-foreground/40">
-          Agent-based verification of generated assets against the campaign brief. Chỉ hiển thị mức WARNING — không chặn pipeline.
+          AI tự động rà soát các tài sản đã tạo so với brief chiến dịch và gửi vài lưu ý nhỏ để bạn tham khảo trước khi tiếp tục.
         </p>
       </div>
 
@@ -163,9 +163,9 @@ export const StageQAGate: React.FC<Props> = ({ campaignInput, campaignOutput, it
               <div className="border-l-2 border-[#35ea52] bg-[#35ea52]/[0.05] p-4 flex items-start gap-4">
                 <CheckCircle2 className="h-6 w-6 text-[#35ea52] shrink-0" />
                 <div>
-                  <h3 className="text-[15px] font-mono font-bold text-[#35ea52]">KIỂM DUYỆT CHẤT LƯỢNG THÀNH CÔNG</h3>
+                  <h3 className="text-[15px] font-mono font-bold text-[#35ea52]">MỌI THỨ ĐỀU ỔN</h3>
                   <p className="text-sm font-mono text-foreground/70">
-                    Agent QA không phát hiện vấn đề nào trên campaign này (iteration {result.iteration}).
+                    AI không thấy điểm nào cần lưu ý thêm trên campaign này (lần kiểm tra {result.iteration}). Bạn có thể yên tâm tiếp tục.
                   </p>
                 </div>
               </div>
@@ -174,17 +174,17 @@ export const StageQAGate: React.FC<Props> = ({ campaignInput, campaignOutput, it
                 <ShieldAlert className="h-6 w-6 text-amber-400 shrink-0" />
                 <div className="space-y-2 flex-1">
                   <h3 className="text-[15px] font-mono font-bold text-amber-400">
-                    {result.issues.length} CẢNH BÁO — KHÔNG CHẶN PIPELINE
+                    {result.issues.length} LƯU Ý NHỎ ĐỂ BẠN THAM KHẢO
                   </h3>
                   <p className="text-sm font-mono text-foreground/70">
-                    Agent QA phát hiện các điểm nên cải thiện. Đây chỉ là cảnh báo (WARNING); bạn có thể tiếp tục
-                    pipeline hoặc regenerate các phần được gợi ý dưới đây.
+                    AI gợi ý vài điểm có thể cải thiện thêm — đây chỉ là gợi ý, không chặn tiến trình của bạn. Bạn có
+                    thể tiếp tục ngay hoặc regenerate lại phần được gợi ý dưới đây nếu muốn.
                   </p>
                   <button
                     onClick={runVerify}
                     className="mt-2 px-4 py-2 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-mono transition-colors flex items-center gap-2"
                   >
-                    <RefreshCw className="h-3 w-3" /> CHẠY LẠI QA
+                    <RefreshCw className="h-3 w-3" /> KIỂM TRA LẠI
                   </button>
                 </div>
               </div>

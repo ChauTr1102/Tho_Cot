@@ -43,6 +43,15 @@ class QAIssue(BaseModel):
     )
 
 
+class QACheckedItem(BaseModel):
+    """One generated checklist item and its pass/fail outcome, so the
+    frontend can render a full tick-list (not just the failures)."""
+    rule_id: str
+    description: str
+    passed: bool
+    category: RegenerateTarget
+
+
 class VerifyChecklistRequest(BaseModel):
     campaign_input: CampaignInputDTO = Field(description="Original campaign brief (BP-01 'Input').")
     campaign_output: CampaignOutputDTO = Field(description="Generated plan + assets to verify (BP-01 'Expected Output').")
@@ -53,6 +62,10 @@ class VerifyChecklistResponse(BaseModel):
     passed: bool = Field(description="True only when there are zero BLOCKER issues.")
     iteration: int
     issues: List[QAIssue] = Field(default_factory=list)
+    checked_items: List[QACheckedItem] = Field(
+        default_factory=list,
+        description="Every generated checklist item with its pass/fail outcome, for rendering a full tick-list.",
+    )
     regenerate: List[RegenerateTarget] = Field(
         default_factory=list,
         description=(

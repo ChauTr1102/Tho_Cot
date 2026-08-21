@@ -13,10 +13,18 @@ export interface QAIssue {
   regenerate: RegenerateTarget;
 }
 
+export interface QACheckedItem {
+  rule_id: string;
+  description: string;
+  passed: boolean;
+  category: RegenerateTarget;
+}
+
 export interface VerifyChecklistResponseData {
   passed: boolean;
   iteration: number;
   issues: QAIssue[];
+  checked_items: QACheckedItem[];
   regenerate: RegenerateTarget[];
 }
 

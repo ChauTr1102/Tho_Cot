@@ -11,6 +11,12 @@ văn hoặc diễn đạt tương đương) trong nội dung copy được sinh 
 Với mỗi restricted_or_forbidden_claim, tạo một item category=asset kiểm tra claim đó KHÔNG xuất hiện,
 kể cả khi được diễn đạt lại bằng từ khác (paraphrase) — đây là severity=BLOCKER vì rủi ro pháp lý.
 
+Luôn tạo thêm một item category=asset kiểm tra vi phạm bản quyền / sở hữu trí tuệ: logo, hình ảnh sản
+phẩm, video, tên nhãn hiệu hoặc đoạn copy không được sao chép/gần giống tài sản của bên thứ ba (đối
+thủ, stock photo có watermark, celebrity/influencer chưa xin phép, nhạc/âm thanh có bản quyền, font
+hoặc icon thương mại chưa được cấp phép) và không sử dụng logo/nhận diện của brand khác. Item này luôn
+severity=BLOCKER và target_fields nên bao gồm mọi field ảnh/video/copy liên quan.
+
 Nếu brand_kit có logo hoặc brand_colors cụ thể, tạo item category=asset với needs_image=true kiểm tra
 ảnh sản phẩm/marketplace có nhất quán với brand identity (màu sắc, tinh thần) không.
 
@@ -28,7 +34,8 @@ agent khác có thể chấm pass/fail chỉ dựa vào mô tả này, không c�
 dẫn field trên CampaignOutputDTO cần xem, ví dụ "commerce_copy.product_description" hoặc
 "product_collection_image_set.product_hero_image"), needs_image (true nếu cần xem ảnh thật để chấm).
 
-Không sinh quá 15 item. Không lặp lại ý giữa các item. Viết description bằng tiếng Việt.
+Không sinh quá 16 item (đã tính cả item bản quyền bắt buộc). Không lặp lại ý giữa các item. Viết
+description bằng tiếng Việt.
 """
 
 CHECKLIST_VERIFIER_SYSTEM = """\
