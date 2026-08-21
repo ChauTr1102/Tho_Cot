@@ -11,13 +11,27 @@ identical. Slot describes the *shot*; look describes the *room*.
 
 `SHOT_TEMPLATES` is the ad itself: four beats, hook, product, benefit, cta.
 
-This module is DATA. Every string here is written to be rewritten. Two rules to
-keep in mind while rewriting:
+This module is DATA. Every string here is written to be rewritten. Five rules
+to keep in mind while rewriting, four of them learned from looking at output:
 
   * The only placeholders allowed in a scene are `{surface}` and `{light}`.
     Any other brace will raise when the prompt is assembled.
   * Nouns beat adjectives. "a wooden board with fresh ingredients" renders;
     "a lovely natural feel" does not.
+  * A scene states a COMPOSITION, not a location. "three products arranged on
+    a board" is a location; "three in a tight overlapping row, the nearest
+    turned three-quarters, the two behind falling out of focus" is a picture.
+  * A scene states an EVENT. Props that are merely present read as a
+    supermarket flyer; props that are doing something - a pour frozen
+    mid-arc, steam curling, an ingredient still falling - read as a campaign.
+    Every scene therefore names the product's own material in motion, in a
+    form general enough that the model picks the right one for the category.
+  * A scene that carries copy must RESERVE THE SPACE FOR IT, out loud. This is
+    measured, not stylistic: the same headline that rendered correctly over a
+    frame whose scene said "generous empty space in the top third" vanished
+    entirely from a busier frame whose scene did not say it. Elaborate staging
+    and legible type are not in tension, but the negative space has to be
+    written down.
 """
 from __future__ import annotations
 
@@ -54,48 +68,74 @@ TEXT_KEYS: dict[str, str] = {
 
 SLOT_SCENES: dict[str, str] = {
     # --- TikTok Shop --------------------------------------------------
-    # Cover frame. The product sits low so the headline has the top third to
-    # itself, and the platform's own buttons live in the corners we keep empty.
+    # Cover frame. A low hero angle so the product towers, its own material
+    # caught mid-motion beside it, and the top third held empty - measured: a
+    # busy frame with no reserved space swallowed the headline completely.
     "tiktok_cover": (
-        "the product held towards the camera on {surface}, {light}, the product low "
-        "in the frame with the top third left empty for the headline, and nothing "
-        "important in the bottom fifth or along the right edge"
+        "the top third of the frame held completely empty as flat negative space for the "
+        "headline; below it a low hero angle looking up at the product standing tall, its own "
+        "material caught mid-motion beside it - a pour, a splash, a drift of steam or a scatter "
+        "of its raw ingredient - frozen as it arcs through the key light on {surface}, {light}, "
+        "one element far behind in deep bokeh, nothing important in the bottom fifth or along "
+        "the right edge"
     ),
     # Shop tile. The buyer taps this to inspect the product, so it is the plain
-    # truth of the object: no props, no words, nothing to distrust.
+    # truth of the object: no props, no words, nothing to distrust. Beautiful,
+    # though - a rim light and one honest contact shadow cost nothing.
     "tiktok_product": (
-        "the product standing alone and filling most of the frame on {surface}, "
-        "{light}, straight on, no props and no text"
+        "the product alone and filling most of the frame, turned a few degrees off square so one "
+        "front face and one side face both read, a specular rim separating its edge from the "
+        "background and one soft contact shadow anchoring it to {surface}, {light}, the label "
+        "square enough to stay fully legible, no props and no text anywhere"
     ),
-    # Offer frame. The discount is the subject; the product is the evidence.
+    # Offer frame. The discount is the subject; the product is the evidence, so
+    # the light is aimed at the card and everything else falls away.
     "tiktok_promo": (
-        "the product on {surface} beside a clean rectangular offer card, {light}, the "
-        "offer card brighter than everything around it and sitting above the centre line"
+        "the product standing in the lower half of the frame on {surface}, {light}, a hard-edged "
+        "beam of the key light landing on one clean flat rectangular card floating just above it "
+        "so the card is the brightest thing in the picture, everything behind falling off into "
+        "shadow, the face of the card held completely empty for the offer text, nothing important "
+        "in the bottom fifth or along the right edge"
     ),
 
     # --- Shopee -------------------------------------------------------
-    # The one slot with no look placeholders. Shopee's white-background rule
-    # overrides the art direction, and a marketplace takedown costs more than a
-    # consistent kit. Do not add {surface} or {light} here.
+    # The one slot with no look placeholders, and deliberately the one plain
+    # picture in the kit. Shopee's white-background rule overrides the art
+    # direction, and a marketplace takedown costs more than a consistent kit.
+    # Do not add {surface} or {light} here, and do not make this cinematic.
     "shopee_main": (
-        "the product centred on a pure white seamless background, soft contact shadow "
+        "the product centred on a pure white seamless background, square to the camera with "
+        "the whole label legible, evenly lit with no dramatic shadow, a soft contact shadow "
         "under it, nothing else in the frame"
     ),
     # Label close-up. Square to the camera because a shopper is reading it, not
-    # admiring it.
+    # admiring it - and focus-stacked, because a soft corner on a label is the
+    # difference between reading an ingredient list and guessing at it.
     "shopee_sku": (
-        "a close macro of the product's label and cap on {surface}, {light}, square to "
-        "the camera with the whole label legible"
+        "a tight macro of the product's label and cap filling the frame edge to edge, the label "
+        "square to the camera and focus-stacked so every printed character stays sharp corner to "
+        "corner, only the nearest edge of {surface} showing below it, {light} raking across the "
+        "pack so the emboss and the paper texture read, no props and no text beyond what is "
+        "printed on the pack itself"
     ),
-    # The range. Even spacing and matching angles, so it reads as one family.
+    # The range. Not a row of identical items evenly spaced - that is a
+    # catalogue page. A tight overlapping row with one unit turned forward
+    # reads as a family and gives the frame depth.
     "shopee_collection": (
-        "the full product range lined up in a row on {surface}, {light}, even spacing "
-        "between items, every label facing the camera"
+        "the top third of the frame held completely empty as flat negative space for the "
+        "headline; below it three of the product in a tight overlapping row, the nearest turned "
+        "three-quarters and closest to the lens, the two behind stepped back and falling out of "
+        "focus, the product's own material caught mid-motion between them - a pour, a splash or a "
+        "scatter of its raw ingredient - catching the key light on {surface}, {light}"
     ),
-    # Wide banner. The product holds one side and cedes the other to the copy.
+    # Wide banner. The product holds one side and cedes the other to the copy,
+    # and the light does the handover: the shadow and the ingredient trail lead
+    # the eye from the product into the empty half.
     "shopee_banner": (
-        "the product standing to the left on {surface}, {light}, the right half of the "
-        "frame left open for the promotion text"
+        "the product standing in the left third of the frame, turned three-quarters, a long "
+        "shadow and a trail of its own raw ingredient running away from it across {surface} into "
+        "the right of the picture, {light}, the right half falling into an even uncluttered "
+        "gradient and held completely empty for the promotion text"
     ),
 }
 

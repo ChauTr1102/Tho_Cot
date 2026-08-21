@@ -63,69 +63,169 @@ class Look:
 # ---------------------------------------------------------------------------
 # The six looks
 # ---------------------------------------------------------------------------
-# Each one is a small brief you could hand to a photographer. Keep them
-# concrete: "wet travertine" beats "a nice surface", because the image model
-# renders nouns and ignores adjectives it cannot picture.
+# Each one is a small brief you could hand to a photographer, and the standard
+# is a lighting diagram rather than an adjective. Four rules, all of them
+# learned from looking at output rather than from theory:
+#
+#   lens     names a focal length AND an aperture. "85mm macro, shallow depth
+#            of field" is a wish; "100mm macro at f/8, focus-stacked" is an
+#            instruction, and the f-number is what actually moves the image.
+#   light    describes a SETUP - key, fill, modifier, direction, what the
+#            shadow does - not a weather condition. "bright even daylight"
+#            produced a supermarket flyer; "hard sun through a slatted blind
+#            raking from back-left" produced a campaign.
+#   surface  describes a SET, not a noun. "a wooden board with fresh
+#            ingredients" is a prop list; a set says what is on the table,
+#            where it is, and what has already happened on it.
+#   grade    describes a LOOK - black point, split tone, grain, saturation
+#            discipline - not a mood word.
+#
+# Concrete beats abstract throughout: the model renders nouns and named
+# techniques, and ignores adjectives it cannot picture. Every look is also
+# written to hold one disciplined palette - warm subject against one cool
+# shadow tone - because an undisciplined palette is the single thing that most
+# reliably makes a generated image read as stock rather than as advertising.
 
 LOOKS: dict[str, Look] = {
     # Laboratory-clean. The default for serums, essences and anything that
-    # sells on efficacy rather than on feeling.
+    # sells on efficacy rather than on feeling. The setup is the cosmetics
+    # advertising standard: a big overhead scrim for weightless shadows,
+    # clamshell fill from below, and a gridded strip behind the bottle so the
+    # liquid inside lights up.
     "clinical_lab": Look(
-        lens="85mm macro, shallow depth of field",
-        light="cool diffused softbox from the left, gentle falloff",
-        surface="wet travertine and white acrylic",
-        grade="neutral, low contrast, airy",
-        palette_hint="white, pale grey, one cool accent",
+        lens="100mm macro at f/8, focus-stacked so the label stays sharp corner to corner",
+        light=(
+            "a large diffusion scrim overhead, a white clamshell bounce below filling the shadow "
+            "to almost nothing, and a gridded strip softbox hidden behind the product throwing a "
+            "cold edge light through the liquid"
+        ),
+        surface=(
+            "a pale grey-to-white gradient sweep, a low frosted acrylic riser at its centre, a "
+            "shallow film of water returning one clean mirror reflection, a few deliberate "
+            "droplets, nothing else"
+        ),
+        grade=(
+            "high-key and airy, lifted blacks, near-neutral white balance with one cool cyan cast "
+            "held in the shadows, low contrast, no grain"
+        ),
+        palette_hint="paper white, pale grey, water-clear, one cool cyan accent",
         axes={"light": "cool_diffuse", "contrast": "low", "surface": "clinical"},
     ),
     # A real home in the morning. Sells ritual and habit: the coffee you make
-    # every day, the chocolate you give someone.
+    # every day, the chocolate you give someone. One window, one cookie, one
+    # black flag - the cheapest lighting diagram in advertising and still the
+    # most persuasive, because it is the light the buyer already lives in.
     "warm_home": Look(
-        lens="50mm, eye level",
-        light="morning window sunlight with soft falling shadow",
-        surface="washed linen and light oak",
-        grade="warm, mid contrast, creamy highlights",
-        palette_hint="cream, oat, warm wood",
+        lens="50mm at f/2.0 at eye level across the table, the far side of the room out of focus",
+        light=(
+            "one soft window as the only key, from camera-left and slightly behind, broken by a "
+            "cookie so a dappled leaf shadow falls across the table, a black flag opposite for "
+            "negative fill so the shadow side stays rich instead of grey"
+        ),
+        surface=(
+            "a linen-covered oak table beside that window, a folded napkin, a ceramic cup ringed "
+            "with coffee, a brass spoon and a jug of milk within arm's reach of someone who has "
+            "just sat down"
+        ),
+        grade=(
+            "warm and creamy, gently lifted shadows, split-toned amber highlights against a cool "
+            "blue shade, mid contrast, fine Portra 400 grain"
+        ),
+        palette_hint="cream, oat, honey, warm oak, one cool blue shade tone",
         axes={"light": "warm_window", "contrast": "mid", "surface": "domestic"},
     ),
     # Deliberately unpolished - it should read as a customer's own photo, not
-    # as advertising. Reserved for routes that past performance has proven.
+    # as advertising. Not sloppy, though: direct on-camera flash against warm
+    # room light is a deliberate, current commercial look, and it is what makes
+    # a phone snapshot read as authentic rather than as a bad photograph.
+    # Reserved for routes that past performance has proven.
     "street_ugc": Look(
-        lens="35mm handheld, slight tilt",
-        light="mixed uneven daylight, small blown highlights",
-        surface="a real cluttered desk with everyday objects",
-        grade="warm, high contrast, slight grain",
-        palette_hint="unstyled everyday colour",
+        lens="26mm phone camera at f/1.8, handheld a little too close and a few degrees off level",
+        light=(
+            "direct on-camera phone flash as the key against warm apartment tungsten, a hard-edged "
+            "shadow thrown on the wall right behind, mixed colour temperature left uncorrected, "
+            "one window corner blown out"
+        ),
+        surface=(
+            "a real desk in a rented flat with the edge of a laptop, an open notebook, a set of "
+            "keys and an iced coffee sweating a ring into the wood"
+        ),
+        grade=(
+            "punchy phone-camera contrast, crushed blacks, over-sharpened edges, a green tungsten "
+            "cast the phone failed to correct, visible sensor noise in the shadows"
+        ),
+        palette_hint="unstyled everyday colour with one blown flash-white hotspot",
         axes={"light": "mixed_daylight", "contrast": "high", "surface": "domestic"},
     ),
     # Loud and graphic. Reads at thumbnail size on a scrolling feed, and is the
-    # safe choice for a product category the studio does not recognise.
+    # safe choice for a product category the studio does not recognise. Hard
+    # bare-bulb key plus a gelled kicker: a poster, not a photograph.
     "studio_pop": Look(
-        lens="50mm, straight on",
-        light="hard key light with a coloured rim",
-        surface="seamless coloured backdrop",
-        grade="saturated, high contrast, punchy",
-        palette_hint="one bold brand colour plus white",
+        lens="85mm at f/8, straight on at product centre height, sharp front to back",
+        light=(
+            "one bare-bulb hard key high camera-right cutting a crisp graphic shadow to the left, "
+            "a gelled kicker opposite rimming the product in a saturated complementary colour, a "
+            "gridded background light burning a halo behind it, nothing soft anywhere"
+        ),
+        surface=(
+            "a saturated seamless colour sweep, a stepped colour-block plinth at its centre, one "
+            "hard sun-shaped shadow cut across the sweep, one or two geometric props placed like "
+            "a poster layout"
+        ),
+        grade=(
+            "high saturation, deep contrast, punchy blacks, colours pushed to poster strength, "
+            "crisp digital cleanliness, no grain"
+        ),
+        palette_hint="one bold brand colour at full strength, its complementary as the rim, white",
         axes={"light": "hard_key", "contrast": "high", "surface": "studio"},
     ),
     # Expensive and quiet. Hardware, premium confectionery, anything where the
-    # object itself is the argument.
+    # object itself is the argument. Classic low-key chiaroscuro: one snooted
+    # key carves the form, black flags kill everything else, the object floats
+    # out of the dark on its own reflection.
     "dark_luxe": Look(
-        lens="100mm macro",
-        light="single hard light with deep falloff",
-        surface="black stone with a mirror reflection",
-        grade="deep contrast, cool specular highlights",
-        palette_hint="near-black, graphite, one metallic accent",
+        lens=(
+            "100mm macro at f/2.8, low three-quarter hero angle looking slightly up so the "
+            "product towers"
+        ),
+        light=(
+            "a single snooted hard key from high back-left carving one bright edge down the front "
+            "face and letting the rest fall to black, a gridded strip behind camera-right as a "
+            "cold specular rim, black flags either side"
+        ),
+        surface=(
+            "a black acrylic tabletop returning one clean mirror reflection, in an unlit room with "
+            "a faint pool of light on the far wall and slow smoke drifting through the beam"
+        ),
+        grade=(
+            "low-key chiaroscuro, crushed blacks, one warm specular highlight against cold "
+            "graphite shadow, deep contrast, gentle halation on the brightest edges"
+        ),
+        palette_hint="near-black, graphite, one warm metallic accent",
         axes={"light": "single_hard", "contrast": "high", "surface": "studio"},
     ),
-    # Ingredients on a board. Food, drink, and the botanical end of beauty,
-    # where the raw material is the story.
+    # Food, drink, and the botanical end of beauty, where the raw material is
+    # the story. This is NOT flat daylight on a chopping board - that reads as a
+    # supermarket flyer. It is hard directional sun through a slatted blind:
+    # long striped shadows, one cool shadow tone against warm highlights, and
+    # the ingredient caught doing something rather than merely lying there.
     "fresh_market": Look(
-        lens="35mm, slightly above",
-        light="bright even daylight",
-        surface="a wooden board with fresh ingredients",
-        grade="natural, saturated, clean whites",
-        palette_hint="fresh greens and warm neutrals",
+        lens="35mm at f/4 from just above the tabletop, tilted a few degrees down",
+        light=(
+            "hard late-morning sun through a slatted blind as the only key, raking from back-left "
+            "so long striped shadows run diagonally across the table, a white bounce card "
+            "camera-right opening the shadow side"
+        ),
+        surface=(
+            "a pale limewashed table laid for a real morning, the raw ingredient scattered loose "
+            "across it, a linen cloth pushed aside, a glass and a ceramic bowl, condensation "
+            "beading and one spill left where it fell"
+        ),
+        grade=(
+            "sunlit and natural, warm highlights against a single cool blue shadow tone, mid "
+            "contrast, clean whites, fine film grain, saturation held back"
+        ),
+        palette_hint="warm cream and toasted amber against one cool shadow tone, a single fresh green",
         axes={"light": "mixed_daylight", "contrast": "mid", "surface": "natural"},
     ),
 }

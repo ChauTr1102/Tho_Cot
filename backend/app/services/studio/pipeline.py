@@ -29,6 +29,7 @@ thumbnails without a second round trip.
 from __future__ import annotations
 
 import time
+from dataclasses import replace
 from pathlib import Path
 from typing import Any, Callable, Sequence
 
@@ -164,13 +165,17 @@ def build_nodes(plan: CampaignPlan, campaign_input: CampaignInput | None,
             or (ws.items[0] if ws.items else None)
         if anchor is None:
             raise ValueError("worksheet produced no items")
-        expected = [t for _, t in anchor.texts]
-        img = _render_with_qa(
-            lambda hint: render.render_hero(
-                anchor, ws.spine, photos[0] if photos else None,
-                ws.label_text, out_dir, extra_instruction=hint),
-            expected, ws.label_text, forbidden, gate=gate)
-        return img
+
+        # The hero is a style anchor, not a deliverable. Its job is to fix the
+        # light, the surface and the grade that every later image inherits as
+        # reference 2 — copy on it would only be re-rendered, differently, on
+        # each of them. Stripping the text also takes it out of the QA gate,
+        # and since the whole graph waits on this one node that is the
+        # difference between a run measured in minutes and one in tens of them.
+        anchor = replace(anchor, texts=[])
+        return render.render_hero(
+            anchor, ws.spine, photos[0] if photos else None,
+            ws.label_text, out_dir)
 
     nodes.append(Node(id=hero_id, kind="image", deps=[ws_id],
                       run=_run_hero, concurrency_group="image"))
