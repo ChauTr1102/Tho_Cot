@@ -1,0 +1,62 @@
+# Host nginx config (installed at /etc/nginx/sites-enabled/thocot.io.vn on the VPS).
+# Terminates TLS and reverse-proxies to the Docker containers started by
+# docker-compose.yml (backend on host port 8000, frontend on host port 3000).
+#
+# Deploy with:
+#   sudo cp nginx/thocot.io.vn /etc/nginx/sites-enabled/thocot.io.vn
+#   sudo nginx -t && sudo systemctl reload nginx
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name thocot.io.vn www.thocot.io.vn;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name thocot.io.vn www.thocot.io.vn;
+
+    ssl_certificate     /etc/letsencrypt/live/thocot.io.vn/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/thocot.io.vn/privkey.pem;
+
+    client_max_body_size 20M;
+
+    # Next.js frontend (docker-compose service "frontend", published on
+    # host port 3000 — see FRONTEND_PORT in .env).
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    # FastAPI backend (docker-compose service "backend", published on host
+    # port 8000 — see BACKEND_PORT in .env). The app itself is mounted under
+    # the "/api" prefix (see API_V1_STR in backend/.env), so the prefix is
+    # forwarded as-is — no trailing slash on proxy_pass, no path stripping.
+    location /api/ {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
