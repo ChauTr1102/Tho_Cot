@@ -41,7 +41,11 @@ export function buildMockCampaignOutput(
   const product_positioning = {
     main_campaign_angle:
       positioning?.main_campaign_angle.decision ??
-      `${productName} — vị đậm chuẩn Việt, tiện lợi mỗi ngày.`,
+      // Neutral, and built from this product. "Vị đậm chuẩn Việt" is coffee
+      // language: it was written while the only campaign was G7, and it read
+      // out over a pair of children's trainers as "Giày Thể Thao Bé Gái Biti's
+      // Cool — vị đậm chuẩn Việt". A placeholder must not describe a taste.
+      `${productName} — ${input.product_brief.key_selling_points[0] ?? "điểm bán chưa xác định"}`,
     target_audience:
       positioning?.target_audience.decision ?? input.audience_brief.target_customer[0] ?? "Khách hàng mục tiêu",
     key_selling_message:

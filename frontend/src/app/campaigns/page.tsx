@@ -183,6 +183,17 @@ export default function CampaignsPage() {
 
   const openCampaign = async (campaign: CampaignListItem) => {
     if (!campaign.has_research_result) return;
+
+    // Forget the campaign that was open before. `startNewCampaign` and the
+    // autopilot path both clear these and this one did not, so opening a second
+    // campaign in the same session inherited the first one's generated output
+    // and its QA verdict — open a G7 campaign, then open one for children's
+    // shoes, and the QA gate read back a report about instant coffee. The
+    // fetch below refills them for this campaign, or leaves them empty if it
+    // has never been built.
+    setCampaignOutput(null);
+    setQaResult(null);
+
     setOpeningCampaignId(campaign.id);
     try {
       const response = await api.getCampaign(campaign.id);
