@@ -93,7 +93,12 @@ export function BriefPanel({
     // Sticky with a capped height on desktop: the Run button and the platform
     // toggles stay on screen and the brand list absorbs any overflow. The
     // primary action of a control panel must never be below the fold.
-    <aside className="studio-panel flex flex-col overflow-hidden lg:sticky lg:top-[4.5rem] lg:max-h-[calc(100vh-5.5rem)]">
+    // `min-w-0` on the rail as well as on the fieldset inside it. In a column
+    // flex container the main axis is vertical, so a child's `min-width: auto`
+    // never resolves to zero horizontally and any child with a wide min-content
+    // — a <fieldset>, which has one by UA rule — pushes past the rail, where
+    // `overflow-hidden` cuts it off instead of wrapping it.
+    <aside className="studio-panel flex min-w-0 flex-col overflow-hidden lg:sticky lg:top-[4.5rem] lg:max-h-[calc(100vh-5.5rem)]">
       <div className="shrink-0 border-b border-border px-4 py-3">
         <h2 className="font-display text-[15px] font-semibold tracking-tight">
           Brief chiến dịch

@@ -168,6 +168,44 @@ def resolve_photos(names: list[str], campaign_id: str,
     return found, missing
 
 
+def save_uploads(campaign_id: str,
+                 assets: list[tuple[str, str, str | None, bytes]]) -> list[str]:
+    """Write the brand's uploaded files where `resolve_photos` will look.
+
+    The research endpoint reads each upload into memory, base64-encodes it for
+    the model, and lets it go: the row records `input_assets` — label, filename,
+    size, mime — but never the bytes. That is fine for research, which only
+    needs to look at the pictures once, and fatal for the studio, which needs
+    the actual file. Without it a campaign for a product nobody has a sample
+    folder for resolves to no photographs at all, every slot falls to GENERATE,
+    and the model invents the packaging — which is how a real brand name came
+    back rendered as `COSRᴀ`.
+
+    Files land in the campaign's own `source/` directory, the first root
+    `resolve_photos` searches, so the writer and the reader cannot drift apart.
+    Called for its side effect during research; the returned paths are for
+    logging.
+
+    `Path(...).name` is not cosmetic: the filename arrives from a browser
+    upload, so `../../etc/whatever` has to lose its directories before it is
+    joined to a root.
+    """
+    root = Path(studio_settings.DATA_DIR) / campaign_id / "source"
+    root.mkdir(parents=True, exist_ok=True)
+
+    saved: list[str] = []
+    for _label, filename, _mime, content in assets:
+        if not content:
+            continue
+        name = Path(str(filename or "")).name.strip()
+        if not name or name in {".", ".."}:
+            continue
+        target = root / name
+        target.write_bytes(content)
+        saved.append(str(target))
+    return saved
+
+
 def build_input(research_input: dict[str, Any], campaign_id: str,
                 photos: list[str] | None = None) -> CampaignInput:
     """The research form's brief, in the studio's own shape."""
