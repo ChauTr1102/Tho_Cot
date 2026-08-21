@@ -24,8 +24,8 @@ export const StageFinalOutput: React.FC = () => {
               Campaign Output DTO đã được render hoàn chỉnh. Các tài sản có thể được tải xuống trực tiếp hoặc chuyển sang luồng Deploy.
             </p>
             <div className="flex gap-2 mt-2">
-              <span className="px-2 py-0.5 border border-[#35ea52]/30 text-[#35ea52] text-[11px] font-mono">2 VIDEOS</span>
-              <span className="px-2 py-0.5 border border-[#35ea52]/30 text-[#35ea52] text-[11px] font-mono">5 IMAGES</span>
+              <span className="px-2 py-0.5 border border-[#35ea52]/30 text-[#35ea52] text-[11px] font-mono">2 VIDEO</span>
+              <span className="px-2 py-0.5 border border-[#35ea52]/30 text-[#35ea52] text-[11px] font-mono">5 HÌNH ẢNH</span>
             </div>
           </div>
         </div>
@@ -70,7 +70,7 @@ export const StageFinalOutput: React.FC = () => {
                 <Play className="h-6 w-6 text-foreground/30 relative z-10" />
               </div>
               <div>
-                <p className="text-sm font-mono font-bold text-foreground">Square Format Cut</p>
+                <p className="text-sm font-mono font-bold text-foreground">Bản cắt khung vuông</p>
                 <p className="text-[11px] font-mono text-foreground/40">additional_cuts [0]</p>
               </div>
             </div>
