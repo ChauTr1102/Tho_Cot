@@ -40,6 +40,7 @@ export default function CampaignsPage() {
   const [isCreatingCampaign, setIsCreatingCampaign] = React.useState(false);
   const [workflowMode, setWorkflowMode] = React.useState<"manual" | "autopilot">("manual");
   const [showAutopilotOverview, setShowAutopilotOverview] = React.useState(false);
+  const [autopilotInitiallyComplete, setAutopilotInitiallyComplete] = React.useState(false);
   const [currentStage, setCurrentStage] = React.useState<CampaignStage>("product_input");
   const [researchSubmission, setResearchSubmission] = React.useState<ResearchSubmission>(createInitialResearchSubmission);
   const [researchPlan, setResearchPlan] = React.useState<ResearchCampaignPlan | null>(null);
@@ -103,6 +104,7 @@ export default function CampaignsPage() {
     setCurrentStage("product_input");
     setWorkflowMode("manual");
     setShowAutopilotOverview(false);
+    setAutopilotInitiallyComplete(false);
     setIsCreatingCampaign(true);
   };
 
@@ -114,6 +116,7 @@ export default function CampaignsPage() {
     setCurrentStage("product_input");
     setWorkflowMode("autopilot");
     setShowAutopilotOverview(false);
+    setAutopilotInitiallyComplete(false);
     setIsCreatingCampaign(true);
     try {
       setResearchSubmission(await attachDefaultSampleProductPhotos(initialSubmission));
@@ -133,15 +136,23 @@ export default function CampaignsPage() {
     setOpeningCampaignId(campaign.id);
     try {
       const response = await api.getCampaign(campaign.id);
-      const savedResult = response.data?.research_result;
+      const campaignData = response.data;
+      const savedResult = campaignData?.research_result;
       if (!savedResult || typeof savedResult !== "object" || !("plan" in savedResult)) {
         throw new Error("Chiến dịch chưa có kết quả nghiên cứu hợp lệ.");
       }
       setResearchPlan(parseResearchCampaignPlan(savedResult.plan));
+      if (campaignData?.research_input) {
+        setResearchSubmission((current) => ({
+          ...current,
+          input: campaignData.research_input as unknown as ResearchSubmission["input"],
+        }));
+      }
       setResearchError(null);
-      setCurrentStage("research");
-      setWorkflowMode("manual");
-      setShowAutopilotOverview(false);
+      setCurrentStage("final_output");
+      setWorkflowMode("autopilot");
+      setAutopilotInitiallyComplete(true);
+      setShowAutopilotOverview(true);
       setIsCreatingCampaign(true);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Không thể mở chiến dịch.");
@@ -326,6 +337,7 @@ export default function CampaignsPage() {
                 <AutopilotWorkflow
                   productName={researchSubmission.input.product_brief.product_name}
                   errorMessage={researchError}
+                  initialComplete={autopilotInitiallyComplete}
                   onRun={() => runResearch(false)}
                   onOpenStep={(stage) => { setCurrentStage(stage); setShowAutopilotOverview(false); }}
                 />

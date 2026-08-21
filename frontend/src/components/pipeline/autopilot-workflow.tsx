@@ -30,15 +30,20 @@ const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resol
 interface Props {
   productName: string;
   errorMessage?: string | null;
+  initialComplete?: boolean;
   onRun: () => Promise<boolean>;
   onOpenStep: (stage: CampaignStage) => void;
 }
 
-export const AutopilotWorkflow: React.FC<Props> = ({ productName, errorMessage, onRun, onOpenStep }) => {
-  const [runState, setRunState] = React.useState<RunState>("idle");
-  const [nodeStates, setNodeStates] = React.useState<Record<CampaignStage, NodeState>>({
-    product_input: "waiting", research: "waiting", content_generation: "waiting", qa_gate: "waiting", final_output: "waiting",
-  });
+export const AutopilotWorkflow: React.FC<Props> = ({ productName, errorMessage, initialComplete = false, onRun, onOpenStep }) => {
+  const [runState, setRunState] = React.useState<RunState>(initialComplete ? "complete" : "idle");
+  const [nodeStates, setNodeStates] = React.useState<Record<CampaignStage, NodeState>>(() => ({
+    product_input: initialComplete ? "complete" : "waiting",
+    research: initialComplete ? "complete" : "waiting",
+    content_generation: initialComplete ? "complete" : "waiting",
+    qa_gate: initialComplete ? "complete" : "waiting",
+    final_output: initialComplete ? "complete" : "waiting",
+  }));
   const [activityIndex, setActivityIndex] = React.useState(0);
   const [elapsedSeconds, setElapsedSeconds] = React.useState(0);
 
@@ -121,11 +126,11 @@ export const AutopilotWorkflow: React.FC<Props> = ({ productName, errorMessage, 
           </div>
         </div>
 
-        {runState !== "idle" && (
+        {(runState === "running" || runState === "failed") && (
           <section className="grid grid-cols-1 lg:grid-cols-[1fr_240px] gap-4 border border-foreground/10 bg-black/10 p-5">
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-[10px] font-mono text-[#35ea52] tracking-wider"><Activity className="h-4 w-4" /> HOẠT ĐỘNG ĐANG DIỄN RA</div>
-              {activeStage ? <><p className="text-sm font-mono font-bold text-foreground">{activities[activeStage][activityIndex]}</p><div className="space-y-2">{activities[activeStage].map((activity, index) => <div key={activity} className={`flex items-center gap-2 text-[10px] font-mono ${index === activityIndex ? "text-[#35ea52]" : index < activityIndex ? "text-foreground/50" : "text-foreground/25"}`}>{index < activityIndex ? <Check className="h-3 w-3 text-[#35ea52] shrink-0" /> : <span className={`h-1.5 w-1.5 rounded-full mx-[3px] ${index === activityIndex ? "bg-[#35ea52] animate-pulse" : "bg-foreground/15"}`} />}{activity}</div>)}</div></> : <p className={`text-sm font-mono ${runState === "failed" ? "text-red-400" : "text-[#35ea52]"}`}>{runState === "complete" ? "Đã hoàn tất toàn bộ quy trình." : errorMessage}</p>}
+              {activeStage ? <><p className="text-sm font-mono font-bold text-foreground">{activities[activeStage][activityIndex]}</p><div className="space-y-2">{activities[activeStage].map((activity, index) => <div key={activity} className={`flex items-center gap-2 text-[10px] font-mono ${index === activityIndex ? "text-[#35ea52]" : index < activityIndex ? "text-foreground/50" : "text-foreground/25"}`}>{index < activityIndex ? <Check className="h-3 w-3 text-[#35ea52] shrink-0" /> : <span className={`h-1.5 w-1.5 rounded-full mx-[3px] ${index === activityIndex ? "bg-[#35ea52] animate-pulse" : "bg-foreground/15"}`} />}{activity}</div>)}</div></> : <p className={`text-sm font-mono ${runState === "failed" ? "text-red-400" : "text-[#35ea52]"}`}>{errorMessage || "Đang chờ cập nhật từ agent."}</p>}
             </div>
             <div className="grid grid-cols-2 lg:grid-cols-1 gap-3 lg:border-l border-foreground/10 lg:pl-5"><div><p className="text-[9px] font-mono text-foreground/30">TIẾN ĐỘ</p><p className="text-2xl font-display font-bold text-foreground mt-1">{completedCount}/5</p></div><div><p className="text-[9px] font-mono text-foreground/30">THỜI GIAN ĐÃ CHẠY</p><p className="text-2xl font-display font-bold text-foreground mt-1">{Math.floor(elapsedSeconds / 60).toString().padStart(2, "0")}:{(elapsedSeconds % 60).toString().padStart(2, "0")}</p></div></div>
           </section>
