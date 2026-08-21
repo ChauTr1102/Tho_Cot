@@ -46,7 +46,7 @@ from app.schemas.campaign import (
 )
 from app.services.studio import assemble, direct, inventory, motion, qa_visual, render
 from app.services.studio.config import studio_settings
-from app.services.studio.graph import GraphEvent, Node, degraded, run_graph
+from app.services.studio.graph import GraphEvent, Node, NodeState, degraded, run_graph
 from app.services.studio.platforms import KITS
 
 DEFAULT_PLATFORMS = (Platform.TIKTOK_SHOP, Platform.SHOPEE)
@@ -335,6 +335,17 @@ def run_studio(plan: CampaignPlan, campaign_input: CampaignInput | None = None,
     campaign_id = plan.campaign_id or "campaign"
     nodes = build_nodes(plan, campaign_input, None, route_id, platforms,
                         qa=qa, with_video=with_video)
+
+    # The shape of the graph goes out before any node runs, so the screen can
+    # lay out every box and grey them in rather than growing the canvas as
+    # results trickle in over the next several minutes.
+    if on_event:
+        on_event(GraphEvent(
+            node_id="__graph__", kind="graph", state=NodeState.PENDING,
+            payload={"nodes": [{"id": n.id, "kind": n.kind, "deps": list(n.deps)}
+                               for n in nodes]},
+        ))
+
     results = run_graph(nodes, on_event=on_event)
 
     images: list[ImageAsset] = []
@@ -386,7 +397,7 @@ def run_studio(plan: CampaignPlan, campaign_input: CampaignInput | None = None,
     bundle = AssetBundle(campaign_id=campaign_id, images=images, videos=videos,
                          listing_copy=_listing_copy(plan, campaign_input))
     if on_event:
-        on_event(GraphEvent(node_id="__done__", kind="pack", state=None,  # type: ignore[arg-type]
+        on_event(GraphEvent(node_id="__pack__", kind="compose", state=NodeState.DONE,
                             payload={"images": len(images), "videos": len(videos)},
                             elapsed_sec=time.time() - started))
     return bundle

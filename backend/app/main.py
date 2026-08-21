@@ -42,6 +42,19 @@ def create_application() -> FastAPI:
     # Include Versioned API Routers
     application.include_router(api_router, prefix=settings.API_V1_STR)
 
+    # Serve generated assets. The studio writes images and video under DATA_DIR
+    # and hands out /media/... URLs, so the browser can display a kit without
+    # the API streaming bytes through itself.
+    from pathlib import Path
+
+    from fastapi.staticfiles import StaticFiles
+
+    from app.services.studio.config import studio_settings
+
+    media_root = Path(studio_settings.DATA_DIR)
+    media_root.mkdir(parents=True, exist_ok=True)
+    application.mount("/media", StaticFiles(directory=media_root), name="media")
+
     @application.get("/", tags=["Root"])
     def root():
         return {
