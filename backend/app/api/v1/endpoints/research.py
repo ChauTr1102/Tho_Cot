@@ -66,7 +66,10 @@ async def run_research(
     audience_brief: str = Form(..., description="JSON object audience_brief"),
     market_signal: str = Form(..., description="JSON object market_signal"),
     logo: UploadFile | None = File(default=None),
-    product_photos: list[UploadFile] = File(...),
+    # Optional: a campaign started from a link has its photographs as URLs on
+    # `brand_kit.product_photos`, not as uploads. Requiring a file here made the
+    # link flow impossible to submit — 422 before any of it ran.
+    product_photos: list[UploadFile] | None = File(default=None),
     existing_product_visuals: list[UploadFile] | None = File(default=None),
     schema_version: Literal["1.0"] = Form("1.0"),
     evidence: str | None = Form(default=None),
@@ -79,13 +82,13 @@ async def run_research(
         "existing_product_visuals=%d evidence_supplied=%s",
         campaign_id,
         schema_version,
-        len(product_photos),
+        len(product_photos or []),
         len(existing_product_visuals or []),
         bool(evidence and evidence.strip()),
     )
     try:
         uploaded, asset_paths = await _read_assets(
-            logo, product_photos, existing_product_visuals or []
+            logo, product_photos or [], existing_product_visuals or []
         )
         logger.info(
             "research_api.assets_read campaign_id=%s asset_count=%d total_bytes=%d",

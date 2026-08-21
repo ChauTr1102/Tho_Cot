@@ -84,7 +84,14 @@ export function validateResearchSubmission({ input, files }: ResearchSubmission)
   if (!input.brand_kit.tone_of_voice.length) errors.push("Cần ít nhất một tone of voice.");
   if (!input.audience_brief.target_customer.length || !input.audience_brief.languages.length || !input.audience_brief.platforms.length || !input.audience_brief.markets.length) errors.push("Audience brief còn thiếu danh sách bắt buộc.");
   if (!input.market_signal.campaign_objectives.length) errors.push("Cần ít nhất một campaign objective.");
-  if (!files.product_photos.length) errors.push("Cần ít nhất một product photo.");
+  // A photograph counts whether it was uploaded or found on the product page.
+  // The rule used to read `files.product_photos` alone, which was true while the
+  // only way in was an upload. Extraction fills `brand_kit.product_photos` with
+  // URLs instead — and once the sample files stopped being left attached, a
+  // campaign with twenty extracted photographs on screen was told it had none.
+  if (!files.product_photos.length && !input.brand_kit.product_photos.length) {
+    errors.push("Cần ít nhất một product photo.");
+  }
   const images = [...(files.logo ? [files.logo] : []), ...files.product_photos, ...files.existing_product_visuals];
   if (images.some((file) => !ALLOWED_IMAGE_TYPES.has(file.type) || file.size === 0 || file.size > 20 * 1024 * 1024)) errors.push("Ảnh phải đúng định dạng, không rỗng và không vượt quá 20 MB.");
   return errors;
