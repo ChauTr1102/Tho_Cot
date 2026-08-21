@@ -563,6 +563,74 @@ def describe_image(image_bytes: bytes, prompt: str, max_tokens: int = 600) -> st
         raise ArkError(status=0, body=f"unexpected response: {str(body)[:400]}", label="vision") from exc
 
 
+def chat(prompt: str, system: str | None = None, max_tokens: int = 2000,
+         json_mode: bool = False) -> str:
+    """Ask the LLM a text-only question. `POST /chat/completions`.
+
+    Same model as `describe_image` — Seed 2.1 Turbo is multimodal, and the only
+    model this key reaches for either job. Text-only calls are fast (a few
+    seconds) where image calls take a minute, so the timeout is much shorter.
+
+    `json_mode` asks the model to answer with a JSON object and nothing else.
+    It is a request, not a guarantee: callers must still be prepared for a
+    fenced code block or a sentence of preamble, which is why `parse_json`
+    exists beside this.
+    """
+    messages: list[dict[str, Any]] = []
+    if system:
+        messages.append({"role": "system", "content": system})
+    messages.append({"role": "user", "content": prompt})
+
+    payload: dict[str, Any] = {
+        "model": studio_settings.VISION_MODEL,
+        "max_tokens": max_tokens,
+        "messages": messages,
+    }
+    if json_mode:
+        payload["response_format"] = {"type": "json_object"}
+
+    body = _post_json(
+        f"{studio_settings.ARK_BASE_URL}/chat/completions",
+        payload, label="chat", timeout=180,
+    )
+    try:
+        return body["choices"][0]["message"]["content"]
+    except (KeyError, IndexError, TypeError) as exc:
+        raise ArkError(status=0, body=f"unexpected response: {str(body)[:400]}",
+                       label="chat") from exc
+
+
+def parse_json(text: str) -> Any:
+    """Pull a JSON value out of an LLM reply.
+
+    Models wrap JSON in ```json fences, prefix it with a sentence, or both, even
+    when asked not to. Rather than fail on that, take the outermost balanced
+    object or array in the string.
+    """
+    import json as _json
+
+    cleaned = text.strip()
+    if cleaned.startswith("```"):
+        cleaned = cleaned.split("```", 2)[1]
+        if cleaned.lstrip().lower().startswith("json"):
+            cleaned = cleaned.lstrip()[4:]
+    cleaned = cleaned.strip()
+
+    try:
+        return _json.loads(cleaned)
+    except _json.JSONDecodeError:
+        pass
+
+    for opener, closer in (("{", "}"), ("[", "]")):
+        start, end = cleaned.find(opener), cleaned.rfind(closer)
+        if start != -1 and end > start:
+            try:
+                return _json.loads(cleaned[start:end + 1])
+            except _json.JSONDecodeError:
+                continue
+    raise ArkError(status=0, body=f"reply was not JSON: {text[:300]}", label="chat")
+
+
 # --------------------------------------------------------------------------
 # Seed Audio 1.0 — text to speech
 # --------------------------------------------------------------------------
