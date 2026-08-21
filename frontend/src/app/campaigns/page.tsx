@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
 import { CampaignStage, StageStatus, CAMPAIGN_STAGES, type CampaignListItem } from "@/types/campaign";
 import { PipelineLayout } from "@/components/pipeline/pipeline-layout";
 import { StageProductInput } from "@/components/pipeline/stage-product-input";
@@ -37,7 +36,6 @@ function formatCampaignDate(value: string) {
 }
 
 export default function CampaignsPage() {
-  const router = useRouter();
   // Pipeline State
   const [isCreatingCampaign, setIsCreatingCampaign] = React.useState(false);
   const [workflowMode, setWorkflowMode] = React.useState<"manual" | "autopilot">("manual");
@@ -222,18 +220,12 @@ export default function CampaignsPage() {
       void runResearch();
       return;
     }
-    // Content generation is a screen of its own — the Asset Studio — so leaving
-    // research hands the campaign over rather than advancing an inner step. The
-    // id rides in the URL so the studio opens on this campaign already selected
-    // and the user never re-picks the product they just briefed.
-    //
-    // Manual mode only. Autopilot drives the whole pipeline itself and owns its
-    // own transition out of research; navigating away from under it would strand
-    // a run that is still going.
-    if (currentStage === "research" && workflowMode === "manual") {
-      const handoffId = activeCampaignId ?? researchSubmission.input.campaign_id;
-      router.push(`/studio?campaign=${encodeURIComponent(handoffId)}`);
-      return;
+    // Leaving research means entering content generation, which is the Asset
+    // Studio mounted in stage 03. Nothing to navigate to: the campaign id is
+    // handed down as a prop, so the studio opens on the product the user has
+    // just briefed instead of asking them to pick it again.
+    if (currentStage === "research" && !activeCampaignId) {
+      setActiveCampaignId(researchSubmission.input.campaign_id);
     }
     if (currentStage === "final_output") {
       returnToCampaigns();
@@ -379,16 +371,16 @@ export default function CampaignsPage() {
                   ? "BẮT ĐẦU LUỒNG TỰ ĐỘNG"
                   : currentStage === "final_output"
                     ? "HOÀN THÀNH"
-                    : // Leaving research changes screen, not step. Naming the
-                      // destination stops the jump reading as a misclick.
-                      currentStage === "research" && workflowMode === "manual"
-                      ? "MỞ.XƯỞNG_ẢNH"
+                    : currentStage === "research"
+                      ? "SÁNG.TẠO_CHIẾN_DỊCH"
                       : "BƯỚC.TIẾP"
               }
               >
               {currentStage === "product_input" && <StageProductInput value={researchSubmission} onChange={setResearchSubmission} initialInputMode={workflowMode === "autopilot" ? "manual" : "link"} />}
               {currentStage === "research" && <StageResearch plan={researchPlan} isLoading={researchLoading} error={researchError} onRetry={() => void runResearch()} />}
-              {currentStage === "content_generation" && <StageContentGeneration />}
+              {currentStage === "content_generation" && (
+                <StageContentGeneration campaignId={activeCampaignId} />
+              )}
               {currentStage === "qa_gate" && <StageQAGate />}
               {currentStage === "final_output" && <StageFinalOutput plan={researchPlan} input={researchSubmission.input} />}
               {!["product_input", "research", "content_generation", "qa_gate", "final_output"].includes(currentStage) && (
