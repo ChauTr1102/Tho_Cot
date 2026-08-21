@@ -114,7 +114,15 @@ export const StageQAGate: React.FC<Props> = ({ campaignInput, campaignOutput, it
       .then((res) => {
         setResult(res.data);
         setState("done");
-        if (res.data) onResult?.(res.data);
+        // Only report a verdict that examined something. A response with no
+        // checked items and no issues is a run that had nothing to look at —
+        // usually the assets had not loaded yet — and passing it upwards stores
+        // it, after which the campaign opens forever on a green "AI không thấy
+        // điểm nào cần lưu ý" about a kit nobody ever examined.
+        const examined =
+          (res.data?.checked_items?.length ?? 0) > 0 ||
+          (res.data?.issues?.length ?? 0) > 0;
+        if (res.data && examined) onResult?.(res.data);
       })
       .catch((err: unknown) => {
         setError(err instanceof ApiError ? err.message : "Không thể kết nối QA checklist backend.");
@@ -208,7 +216,20 @@ export const StageQAGate: React.FC<Props> = ({ campaignInput, campaignOutput, it
 
         {state === "done" && result && (
           <>
-            {result.issues.length === 0 ? (
+            {result.issues.length === 0 && result.checked_items.length === 0 ? (
+              // Nothing checked is not the same as nothing wrong. A green tick
+              // here would be the most misleading state on the screen: a
+              // confident all-clear over a kit the gate never looked at.
+              <div className="border-l-2 border-foreground/30 bg-foreground/[0.03] p-4 flex items-start gap-4">
+                <ShieldAlert className="h-6 w-6 text-foreground/40 shrink-0" />
+                <div>
+                  <h3 className="text-[15px] font-mono font-bold text-foreground/70">CHƯA KIỂM ĐƯỢC GÌ</h3>
+                  <p className="text-sm font-mono text-foreground/60">
+                    Lượt kiểm tra không soi được mục nào — thường là do tài sản của chiến dịch chưa nạp xong. Hãy dựng kit ở bước Sáng tạo chiến dịch rồi kiểm tra lại.
+                  </p>
+                </div>
+              </div>
+            ) : result.issues.length === 0 ? (
               <div className="border-l-2 border-[#35ea52] bg-[#35ea52]/[0.05] p-4 flex items-start gap-4">
                 <CheckCircle2 className="h-6 w-6 text-[#35ea52] shrink-0" />
                 <div>

@@ -620,7 +620,12 @@ def put_qa(campaign_id: str, result: dict[str, Any]):
     slightly, which reads as the system being unsure instead of the model being
     sampled. A campaign that has been judged should open with its judgement.
     """
-    saved.save_qa(campaign_id, result)
+    try:
+        saved.save_qa(campaign_id, result)
+    except ValueError as exc:
+        # Not an error the caller did anything wrong to cause, and not something
+        # to hide: an empty verdict means the run had nothing to look at.
+        return StandardResponse(success=False, message=str(exc), data=result)
     return StandardResponse(success=True, message="Đã lưu kết quả QA", data=result)
 
 

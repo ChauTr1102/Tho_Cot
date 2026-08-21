@@ -452,6 +452,22 @@ def qa_path(campaign_id: str) -> Path:
     return Path(studio_settings.DATA_DIR) / campaign_id / _QA_FILE
 
 
+def is_meaningful_qa(result: dict[str, Any] | None) -> bool:
+    """Did this verdict actually check anything?
+
+    A report with no checked items and no issues is not a pass — it is a run
+    that had nothing to look at, which happens when the assets had not loaded
+    yet. Stored and replayed, it becomes a permanent green tick reading "AI
+    không thấy điểm nào cần lưu ý" over a kit nobody ever examined. That is the
+    worst possible verdict: wrong, confident, and durable.
+    """
+    if not result:
+        return False
+    checked = result.get("checked_items") or []
+    issues = result.get("issues") or []
+    return bool(checked or issues)
+
+
 def save_qa(campaign_id: str, result: dict[str, Any]) -> str:
     """Persist a QA verdict so re-opening the campaign does not re-run it.
 
@@ -461,6 +477,12 @@ def save_qa(campaign_id: str, result: dict[str, Any]) -> str:
     A campaign that has been judged should open with its judgement.
     """
     import json
+
+    if not is_meaningful_qa(result):
+        raise ValueError(
+            "Kết quả QA rỗng (không kiểm mục nào) — không lưu, "
+            "vì nó sẽ hiện thành 'mọi thứ đều ổn' cho một bộ kit chưa ai soi."
+        )
 
     target = qa_path(campaign_id)
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -479,7 +501,10 @@ def load_qa(campaign_id: str) -> dict[str, Any] | None:
     if not path.is_file():
         return None
     try:
-        return json.loads(path.read_text(encoding="utf-8"))
+        stored = json.loads(path.read_text(encoding="utf-8"))
+        # An empty verdict written by an older build is treated as absent, so
+        # the campaign is judged properly the next time it is opened.
+        return stored if is_meaningful_qa(stored) else None
     except (OSError, json.JSONDecodeError):
         # A half-written verdict is worse than none: it would be shown as fact.
         return None
