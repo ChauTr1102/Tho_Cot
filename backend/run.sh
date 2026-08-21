@@ -12,7 +12,7 @@ if [ ! -x "$BACKEND_ENV/bin/python" ]; then
 fi
 
 # Repair incomplete environments before starting the application.
-if ! "$BACKEND_ENV/bin/python" -c "import pydantic_settings, uvicorn" >/dev/null 2>&1; then
+if ! "$BACKEND_ENV/bin/python" -c "import pydantic_settings, uvicorn, PIL, agno, google.genai" >/dev/null 2>&1; then
     echo "Installing backend dependencies..."
     "$BACKEND_ENV/bin/python" -m pip install -r "$BACKEND_DIR/requirements.txt"
 fi

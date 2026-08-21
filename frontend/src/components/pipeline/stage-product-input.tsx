@@ -294,7 +294,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
             onClick={() => setInputMode("manual")}
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-mono tracking-wider transition-all ${
               inputMode === "manual"
-                ? "bg-foreground text-white font-bold shadow-md"
+                ? "bg-foreground text-black font-bold shadow-md"
                 : "text-foreground/50 hover:text-foreground hover:bg-foreground/[0.05]"
             }`}
           >

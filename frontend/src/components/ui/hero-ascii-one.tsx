@@ -178,12 +178,12 @@ export default function HeroAsciiOne() {
 
             {/* Buttons */}
             <div className="flex flex-col lg:flex-row gap-3 lg:gap-4">
-              <button className="relative px-5 lg:px-6 py-2 lg:py-2.5 bg-transparent text-foreground font-mono text-xs lg:text-sm border border-foreground hover:bg-foreground hover:text-white transition-all duration-200 group">
+              <button className="relative px-5 lg:px-6 py-2 lg:py-2.5 bg-transparent text-foreground font-mono text-xs lg:text-sm border border-foreground hover:bg-foreground hover:text-black transition-all duration-200 group">
                 <span className="hidden lg:block absolute -top-1 -left-1 w-2 h-2 border-t border-l border-foreground opacity-0 group-hover:opacity-100 transition-opacity"></span>
                 <span className="hidden lg:block absolute -bottom-1 -right-1 w-2 h-2 border-b border-r border-foreground opacity-0 group-hover:opacity-100 transition-opacity"></span>
                 BEGIN THE CLIMB
               </button>
-              <button className="relative px-5 lg:px-6 py-2 lg:py-2.5 bg-transparent border border-foreground text-foreground font-mono text-xs lg:text-sm hover:bg-foreground hover:text-white transition-all duration-200">
+              <button className="relative px-5 lg:px-6 py-2 lg:py-2.5 bg-transparent border border-foreground text-foreground font-mono text-xs lg:text-sm hover:bg-foreground hover:text-black transition-all duration-200">
                 EMBRACE THE JOURNEY
               </button>
             </div>
