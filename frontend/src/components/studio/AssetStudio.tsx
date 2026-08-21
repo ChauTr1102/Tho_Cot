@@ -44,17 +44,20 @@ import { BriefPanel } from "@/components/studio/BriefPanel";
 import { DraftPanel } from "@/components/studio/DraftPanel";
 import { GraphCanvas } from "@/components/studio/GraphCanvas";
 import { RunStage } from "@/components/studio/RunStage";
+import { SavedKit } from "@/components/studio/SavedKit";
 import { ThinkingPanel } from "@/components/studio/ThinkingPanel";
 import { StudioHeader } from "@/components/studio/StudioHeader";
 import { estimateKit } from "@/lib/studio-catalog";
 import { useRunClock, useStudioStream } from "@/lib/studio-events";
 import {
   approveDraft,
+  fetchSavedResult,
   listResearchCampaigns,
   requestDraft,
   type Draft,
   type GraphNodeSpecLite,
   type ResearchCampaign,
+  type SavedResult,
 } from "@/lib/studio-draft";
 import type { NodeKind, StudioNode } from "@/types/studio";
 import type { Platform } from "@/types/studio";
@@ -100,6 +103,12 @@ export function AssetStudio({
   const [draftGraph, setDraftGraph] = useState<GraphNodeSpecLite[]>([]);
   const [approving, setApproving] = useState(false);
 
+  // What this campaign already has on disk, and whether to show it. A judge
+  // opening a finished campaign should see the kit, not a form; `showSaved`
+  // goes false only when someone deliberately asks to rebuild.
+  const [savedResult, setSavedResult] = useState<SavedResult | null>(null);
+  const [showSaved, setShowSaved] = useState(true);
+
   const [campaignId, setCampaignId] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
   const [startedAt, setStartedAt] = useState<number | null>(null);
@@ -140,6 +149,25 @@ export function AssetStudio({
       cancelled = true;
     };
   }, [requestedCampaign]);
+
+  // Re-asked whenever the selection changes, and again after a run finishes, so
+  // the kit that just rendered becomes the kit that opens next time.
+  useEffect(() => {
+    if (!selectedCampaign) {
+      setSavedResult(null);
+      return;
+    }
+    let cancelled = false;
+    setShowSaved(true);
+    fetchSavedResult(selectedCampaign)
+      .then((result) => {
+        if (!cancelled) setSavedResult(result?.built ? result : null);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedCampaign]);
 
   const stream = useStudioStream(campaignId);
   const elapsedSec = useRunClock(startedAt, stoppedAt);
@@ -313,7 +341,13 @@ export function AssetStudio({
           {/* While the director is writing there is no graph to draw and no run
               to report, so the stage gives its whole area to saying what is
               being decided. Ninety seconds of empty canvas reads as broken. */}
-          {starting ? (
+          {savedResult && showSaved && !campaignId && !draft && !starting ? (
+            <SavedKit
+              result={savedResult}
+              campaignName={campaign?.name ?? null}
+              onRebuild={() => setShowSaved(false)}
+            />
+          ) : starting ? (
             <ThinkingPanel
               direction={direction}
               campaignName={campaign?.name ?? null}

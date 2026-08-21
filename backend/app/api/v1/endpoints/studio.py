@@ -44,7 +44,7 @@ from app.schemas.campaign_dto import (
 from app.schemas.common import StandardResponse
 from app.services.studio import (
     demo_briefs, directed, director, dto_bridge, from_research, pack, pipeline,
-    upstream,
+    saved, upstream,
 )
 from app.services.studio.config import studio_settings
 from app.services.studio.graph import GraphEvent
@@ -364,15 +364,15 @@ async def generate_assets(
     # disk before the graph starts — the studio reads them as files, not bytes.
     photo_dir = Path(studio_settings.DATA_DIR) / campaign_id / "source"
     photo_dir.mkdir(parents=True, exist_ok=True)
-    saved: list[str] = []
+    stored: list[str] = []
     for index, upload in enumerate(product_photos):
         name = Path(upload.filename or f"product_{index}").name
         target = photo_dir / f"{index:02d}_{name}"
         target.write_bytes(await upload.read())
-        saved.append(str(target))
+        stored.append(str(target))
 
     try:
-        studio_input = dto_bridge.to_campaign_input(input_dto, campaign_id, saved or None)
+        studio_input = dto_bridge.to_campaign_input(input_dto, campaign_id, stored or None)
         studio_plan = dto_bridge.plan_from_positioning(plan_raw, campaign_id, studio_input)
     except (ValueError, KeyError) as exc:
         raise BadRequestException(f"Không dựng được brief cho studio: {exc}")
@@ -536,6 +536,29 @@ def propose(req: DraftRequest):
         data=DraftResponse(campaign_id=campaign_id,
                            draft=payload,
                            graph=director.to_dict(spec)),
+    )
+
+
+@router.get("/{campaign_id}/saved", response_model=StandardResponse[dict])
+def saved_result(campaign_id: str, include_intermediate: bool = False):
+    """The kit this campaign already has on disk, if it has one.
+
+    A run takes six to twelve minutes; a judge has about that long for the whole
+    submission. So a campaign that was already built opens as a result rather
+    than as a form, and only a campaign nobody has built yet offers to build.
+    `built: false` is the signal for the second case — it is an answer, not an
+    error, so this returns 200 either way.
+    """
+    data = saved.summary(campaign_id)
+    if include_intermediate:
+        data["assets"] = saved.list_assets(campaign_id, include_intermediate=True)
+    return StandardResponse(
+        success=True,
+        message=(
+            f"Đã có {data['images']} ảnh · {data['videos']} video"
+            if data["built"] else "Chưa dựng lần nào"
+        ),
+        data=data,
     )
 
 

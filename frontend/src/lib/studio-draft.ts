@@ -166,3 +166,47 @@ export const DIRECTION_PRESETS: { label: string; value: string }[] = [
   { label: "Dân văn phòng", value: "điềm đạm, sạch sẽ, nói với dân văn phòng bận rộn" },
   { label: "Quà tặng", value: "sang trọng, thủ công, dùng làm quà biếu" },
 ];
+
+/** One file a finished run left on disk. */
+export interface SavedAsset {
+  name: string;
+  url: string;
+  kind: "image" | "video" | "audio" | "file";
+  platform: string | null;
+  bytes: number;
+}
+
+export interface SavedResult {
+  campaign_id: string;
+  built: boolean;
+  images: number;
+  videos: number;
+  total_files: number;
+  bytes: number;
+  assets: SavedAsset[];
+}
+
+/**
+ * The kit a campaign already has, if it has one.
+ *
+ * A run takes six to twelve minutes and a judge has about that long for the
+ * whole submission, so a campaign that was already built opens as a result
+ * rather than as a form. `built: false` is an answer, not an error — a campaign
+ * nobody has rendered yet simply offers to render.
+ */
+export async function fetchSavedResult(
+  campaignId: string
+): Promise<SavedResult | null> {
+  const res = await fetch(
+    `${API_BASE_URL}/studio/${encodeURIComponent(campaignId)}/saved`
+  );
+  if (!res.ok) return null;
+  const body = await res.json().catch(() => null);
+  return (body?.data ?? null) as SavedResult | null;
+}
+
+/** Absolute URL for a file the backend serves from its /media mount. */
+export function mediaUrl(path: string): string {
+  if (/^https?:/i.test(path)) return path;
+  return `${API_BASE_URL.replace(/\/api\/?$/, "")}${path}`;
+}
