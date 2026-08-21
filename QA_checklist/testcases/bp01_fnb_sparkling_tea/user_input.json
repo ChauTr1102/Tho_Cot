@@ -1,64 +1,84 @@
 {
-  "$note": "Mock user input for BP-01 Commerce Campaign Launch Copilot. Mirrors the 'Input' section of BP01-prob.txt (product brief, brand kit, audience brief, market signal, optional past campaign data). Scenario: F&B sparkling tea launch on TikTok Shop / Shopee.",
-  "campaign_id": "camp-bp01-fnb-001",
-  "product_brief": {
-    "product_name": "Fizzy Roots Sparkling Tea - Hibiscus Ginger",
+  "$note": "Mock user input for BP-01 Commerce Campaign Launch Copilot. Mirrors frontend/src/types/campaign_dto.ts's CampaignInputDTO exactly (camelCase). campaignId is NOT part of this DTO - QA_checklist.py assigns one internally (defaults to the testcase folder name) purely for output-file naming. Scenario: F&B sparkling tea launch on TikTok Shop / Shopee.",
+  "productBrief": {
+    "productName": "Fizzy Roots Sparkling Tea - Hibiscus Ginger",
     "category": "F&B / Functional Beverage",
-    "key_selling_points": [
+    "keySellingPoints": [
       "Zero added sugar, sweetened with monk fruit",
       "Brewed with real hibiscus and cold-pressed ginger",
       "Only 15 kcal per 330ml can",
       "Made in Vietnam with locally sourced hibiscus"
     ],
-    "price_or_promotion": "25,000 VND/can - Buy 4 Get 1 Free launch week bundle on Shopee",
-    "target_market": "Vietnam",
-    "required_claims": [
+    "priceOrPromotion": {
+      "price": 25000,
+      "currency": "VND",
+      "promotion": "Buy 4 Get 1 Free launch week bundle on Shopee"
+    },
+    "targetMarket": "Vietnam",
+    "requiredClaims": [
       "zero added sugar",
       "made in Vietnam"
     ],
-    "forbidden_claims": [
+    "restrictedOrForbiddenClaims": [
       "cures bloating",
       "medically proven weight loss"
     ]
   },
-  "brand_kit": {
-    "logo_url": "./brand_assets/brand_logo.jpg",
-    "brand_colors": ["#0E7C61", "#F4D35E", "#FFFFFF"],
-    "tone_of_voice": "playful, energetic, health-forward, Gen Z friendly",
-    "product_photo_urls": [
+  "brandKit": {
+    "logo": {
+      "path": "./brand_assets/brand_logo.jpg"
+    },
+    "brandColors": {
+      "primary": "#0E7C61",
+      "secondary": "#F4D35E",
+      "accent": ["#FFFFFF"],
+      "palette": ["#0E7C61", "#F4D35E", "#FFFFFF"]
+    },
+    "toneOfVoice": {
+      "description": "playful, energetic, health-forward, Gen Z friendly",
+      "attributes": ["playful", "energetic", "health-forward", "Gen Z friendly"],
+      "do": ["use casual, upbeat language", "lead with the functional ingredient story"],
+      "dont": ["use clinical/medical language", "sound like a diet-culture ad"]
+    },
+    "productPhotos": [
       "./brand_assets/product_photo_studio.jpg",
       "./brand_assets/product_photo_lifestyle.jpg"
-    ]
+    ],
+    "existingProductVisuals": []
   },
-  "audience_brief": {
-    "target_customer": "Urban Gen Z and young professionals (18-30) in Vietnam who want a low-sugar, functional alternative to soft drinks",
+  "audienceBrief": {
+    "targetCustomer": "Urban Gen Z and young professionals (18-30) in Vietnam who want a low-sugar, functional alternative to soft drinks",
     "language": "vi",
-    "platform": ["TikTok Shop", "Shopee"],
+    "platform": "TikTok Shop",
     "market": "VN"
   },
-  "market_signal": {
+  "marketSignal": {
     "trend": "Functional 'better-for-you' sparkling beverages replacing soft drinks among Gen Z",
-    "seasonal_moment": "Summer heat season (Apr-Jun) driving cold beverage demand",
-    "consumer_pain_point": "Wants the fizzy soft-drink experience without the sugar guilt",
-    "search_keyword": "tra hoa qua khong duong co ga",
-    "competitor_angle": "Competitors lead with 'diet' framing; whitespace exists for a 'functional ingredient' framing (hibiscus + ginger) instead",
-    "campaign_objective": "Drive trial purchases and TikTok Shop/Shopee add-to-cart during launch week",
-    "sources": [
-      "ref://trend-report-2026/sea-functional-beverages",
-      "ref://social-listening/tiktok-vn-zero-sugar-drinks-q2-2026"
-    ]
+    "seasonalMoment": "Summer heat season (Apr-Jun) driving cold beverage demand",
+    "consumerPainPoint": "Wants the fizzy soft-drink experience without the sugar guilt",
+    "searchKeyword": ["tra hoa qua khong duong co ga", "nuoc giai khat it duong"],
+    "competitorAngle": "Competitors lead with 'diet' framing; whitespace exists for a 'functional ingredient' framing (hibiscus + ginger) instead",
+    "campaignObjective": "Drive trial purchases and TikTok Shop/Shopee add-to-cart during launch week"
   },
-  "past_campaign_data": {
+  "pastCampaignData": {
+    "enabled": true,
     "ctr": 1.8,
     "cvr": 3.2,
     "roas": 2.1,
-    "watch_time_sec": 9.5,
-    "add_to_cart_rate": 4.7,
+    "watchTime": {
+      "value": 9.5,
+      "unit": "sec"
+    },
+    "addToCartRate": 4.7,
     "comments": [
       "Vi ngon hon minh nghi, uong nhu nuoc ngot binh thuong",
       "Bao bi dep, muon xem review vi hibiscus + gung ket hop the nao",
       "Gia hoi cao so voi tra sua nhung ok cho san pham healthy"
     ],
-    "sales_results": "Previous SKU (Lemon Basil) sold 4,200 units in launch week, 62% via TikTok Shop, 38% via Shopee. CTR underperformed benchmark; add-to-cart rate was strong once viewers watched past 3s."
+    "salesResults": {
+      "unitsSold": 4200,
+      "revenue": 105000000,
+      "currency": "VND"
+    }
   }
 }
