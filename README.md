@@ -1,7 +1,9 @@
-# 🚀 BP-01 — Commerce Campaign Launch Copilot (CAIBS)
+# 🚀 BP-01 — Commerce Campaign Launch Copilot — Thợ Cốt
 
+> **Đội thi:** **Thợ Cốt**  
 > **One-liner:** Product brief + market signal in → launch-ready e-commerce campaign pack out, including ad concepts, product visuals, marketplace assets, copy, and A/B testing plan.
 
+[![Team](https://img.shields.io/badge/Team-Th%E1%BB%A3_C%E1%BB%91t-28C840.svg)](#-repository--đội-ngũ-thợ-cốt)
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI_Python_3.12-009688.svg?logo=fastapi)](https://fastapi.tiangolo.com/)
 [![Next.js](https://img.shields.io/badge/Frontend-Next.js_16_App_Router-black.svg?logo=next.js)](https://nextjs.org/)
 [![AI Models](https://img.shields.io/badge/AI_Models-Seedance_|_Seedream_|_Seed_|_Audio_1.0-FF6B6B.svg)](https://byteplus.com)
@@ -17,7 +19,7 @@ Các nhà bán hàng E-commerce và đội ngũ thương hiệu hiện nay khôn
 
 Một đợt ra mắt sản phẩm thông thường đòi hỏi nhiều luồng công việc rời rạc: nghiên cứu insight, chiến lược ads, chụp ảnh sản phẩm, thiết kế thumbnail sàn, kịch bản video ngắn, banner, viết copy, lồng tiếng và đo lường. Sự phân mảnh này làm chậm tiến độ ra mắt và gây thiếu nhất quán giữa các kênh (TikTok Shop, Shopee, Facebook Ads). Thách thức lớn nhất không chỉ là *"tạo ra video"* mà là **"nói điều gì, nói với ai, tạo tài nguyên nào và kiểm thử A/B ra sao?"**
 
-### Sứ mệnh của CAIBS
+### Sứ mệnh của dự án
 Xây dựng một **AI Commerce Campaign Launch Copilot** đóng vai trò như một **AI Campaign Operator** toàn năng: tiếp nhận thông tin sản phẩm và tín hiệu thị trường để tự động hoạch định góc tiếp cận, sản xuất trọn bộ tài nguyên quảng cáo/sàn thương mại, sinh video ngắn và lập kế hoạch thử nghiệm A/B phục vụ tăng trưởng doanh số.
 
 ---
@@ -241,10 +243,11 @@ npm run build
 
 ---
 
-## 👥 Repository & Tác Giả
+## 👥 Repository & Đội Ngũ Thợ Cốt
 
+- **Tên đội:** **Thợ Cốt**
 - **Repository:** [ChauTr1102/Tho_Cot](https://github.com/ChauTr1102/Tho_Cot)
-- **Contributors:**
+- **Thành viên đội thi (Contributors):**
   - **Phan Đức Duy** ([@DuykoNgu](https://github.com/DuykoNgu))
   - **Trần Minh Châu** ([@ChauTr1102](https://github.com/ChauTr1102))
   - **Hải Nam** ([@hainam-a](https://github.com/hainam-a))
