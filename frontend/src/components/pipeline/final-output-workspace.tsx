@@ -124,7 +124,11 @@ export function FinalOutputWorkspace({ plan, input, campaignOutput, qaResult }: 
   const angle = selectedRoute?.message_angle || positioning?.main_campaign_angle.decision || unavailable;
   const audience = positioning?.target_audience.decision || input?.audience_brief.target_customer.join(" · ") || unavailable;
   const message = positioning?.key_selling_message.decision || briefPoints.join(" · ") || unavailable;
-  const inputImages = [...(input?.brand_kit.product_photos ?? []), ...(input?.brand_kit.existing_product_visuals ?? [])].map((image) => image.includes("/") || image.startsWith("data:") || image.startsWith("blob:") ? image : `/sample-data/05-trung-nguyen-g7/${image}`);
+  const inputImages = [...(input?.brand_kit.product_photos ?? []), ...(input?.brand_kit.existing_product_visuals ?? [])].map((image) => // A bare filename used to be resolved against the G7 sample folder, so any
+      // campaign whose photos were named `product_01.jpg` previewed G7's coffee
+      // regardless of what it was selling. A name with no path is not a URL and
+      // is dropped instead of being pointed at a stranger's product.
+      image.includes("/") || image.startsWith("data:") || image.startsWith("blob:") ? image : "").filter(Boolean);
   const generatedImages = savedAssets.filter((asset) => asset.kind === "image");
   const tiktokImages = generatedImages.filter((asset) => asset.platform === "tiktok_shop").map((asset) => mediaUrl(asset.url));
   const shopeeImages = generatedImages.filter((asset) => asset.platform === "shopee").map((asset) => mediaUrl(asset.url));

@@ -18,40 +18,7 @@
 import type { ResearchCampaignPlan, ResearchInput } from "./research";
 
 // Same hardcoded commerce copy shown in stage-content-generation.tsx's JSX.
-const MOCK_COMMERCE_COPY = {
-  product_title: "✨ Cà phê hòa tan 3in1 Trung Nguyên G7 (Hộp 50 gói) - Đậm vị Robusta Việt Nam ✨",
-  product_description:
-    "Trải nghiệm năng lượng bứt phá mỗi sáng với Cà phê G7 3in1. Sự kết hợp hoàn hảo giữa cà phê đậm đặc, vị béo của kem và ngọt của đường, mang lại một tách cà phê thơm lừng, chuẩn vị Việt ngay tại văn phòng hay ở nhà.",
-  listing_bullet_points: [
-    "Chiết xuất từ 100% hạt Robusta Buôn Ma Thuột.",
-    "Tiện lợi pha chế chỉ với 1 phút.",
-    "Hộp lớn 50 gói siêu tiết kiệm.",
-    "Thương hiệu quốc gia, xuất khẩu hơn 100 nước.",
-  ],
-  ad_caption:
-    "Mệt mỏi buổi sáng? 😪 Nạp ngay 1 ly G7 vị đậm Việt Nam để bứt tốc! Chạm góc trái mua ngay combo hời 9.9 nhé! 🛒 #CaPheG7 #TrungNguyen #China99",
-  promotion_copy: "🔥 SALE CHINA 9.9: MUA 3 TẶNG 1 FREESHIP! 🔥",
-  short_hook_lines: ["Chỉ 1 phút cho vị đậm đà!", "Năng lượng G7, bứt phá ngày dài.", "Đặc sản Việt Nam."],
-};
 
-// Same hardcoded Route A / Route B copy shown in stage-content-generation.tsx's JSX.
-const MOCK_CREATIVE_ROUTES = [
-  {
-    name: "Route A",
-    hook_idea: "Cảnh báo thức dậy muộn mệt mỏi, ngay lập tức xé gói G7 pha nước nóng khói bốc lên.",
-    visual_direction: "Nhịp độ nhanh, màu sắc rực rỡ buổi sáng, ASMR tiếng rót nước, cận cảnh bọt cà phê.",
-    message_angle: "Đừng để sự uể oải cản bước bạn. Nạp năng lượng với G7 vị đậm Việt Nam!",
-    suggested_platform_usage: ["Douyin", "TikTok"],
-  },
-  {
-    name: "Route B",
-    hook_idea: "Đóng gói combo 50 gói siêu lớn, thích hợp làm quà tặng đặc sản Việt Nam cho đối tác, gia đình.",
-    visual_direction:
-      "Sang trọng, ánh sáng ấm, tone màu đỏ đen chủ đạo, Typography nhấn mạnh thương hiệu xuất khẩu toàn cầu.",
-    message_angle: "Mang hương vị cà phê Robusta chuẩn Việt đến mọi nhà. Sang trọng, tiện lợi.",
-    suggested_platform_usage: ["Taobao", "Tmall"],
-  },
-];
 
 /**
  * Builds a CampaignOutputDTO-shaped JSON object (snake_case), matching
@@ -96,7 +63,10 @@ export function buildMockCampaignOutput(
           message_angle: route.message_angle,
           suggested_platform_usage: route.suggested_platform_usage,
         }))
-      : MOCK_CREATIVE_ROUTES;
+      : // No plan yet means no creative routes yet. Showing G7's two here made
+        // every campaign look like it had a strategy, and the strategy was
+        // somebody else's.
+        [];
 
   // Video, images and A/B testing specifics have no real generation backend
   // yet — reuse the same hardcoded mock content shown in
@@ -115,12 +85,25 @@ export function buildMockCampaignOutput(
     marketplace_thumbnail: "https://example.com/mock/marketplace_thumbnail.jpg",
   };
 
-  const commerce_copy = { ...MOCK_COMMERCE_COPY };
+  // Derived from this campaign, never borrowed from another one. These fields
+  // used to be `{ ...MOCK_COMMERCE_COPY }` unconditionally — the G7 sample —
+  // so a campaign for children's shoes showed "Cà phê hòa tan 3in1 Trung Nguyên
+  // G7" as its product title and "xé gói G7 pha nước nóng" as its A/B hooks.
+  // The mock exists to keep the screen from breaking before the real copy
+  // arrives, and a different product's copy breaks it worse than a blank does.
+  const commerce_copy = {
+    product_title: productName,
+    product_description: input.product_brief.key_selling_points.join(". "),
+    listing_bullet_points: input.product_brief.key_selling_points,
+    ad_caption: "",
+    promotion_copy: input.product_brief.promotion ?? "",
+    short_hook_lines: creative_routes.map((route) => route.hook_idea).filter(Boolean),
+  };
 
   const ab_testing_plan = {
-    what_to_test: "Hiệu quả của hook mở đầu (nỗi đau khách hàng so với uy tín văn hóa)",
-    route_a_description: MOCK_CREATIVE_ROUTES[0].hook_idea,
-    route_b_description: MOCK_CREATIVE_ROUTES[1].hook_idea,
+    what_to_test: "Hiệu quả của hook mở đầu giữa hai hướng sáng tạo",
+    route_a_description: creative_routes[0]?.hook_idea ?? "",
+    route_b_description: creative_routes[1]?.hook_idea ?? "",
     suggested_success_metrics: ["CTR", "CVR", "Add-to-cart rate", "Watch time"],
     expected_learning: "Xác định động lực mua hàng mạnh nhất theo từng kênh và thị trường.",
   };
