@@ -149,6 +149,58 @@ def _parse_result(content) -> TikTokShopExtraction:
     raise TypeError(f"Could not parse model result; unexpected content type: {type(content)}")
 
 
+
+#: A page summary shorter than this never carried a product. Real notes for a
+#: listing run to hundreds of characters — a name, a price, bullet points.
+MIN_PAGE_NOTES_CHARS = 120
+
+#: Fragments that mean the reader returned an API failure as *content* rather
+#: than raising it. Gemini's 503 arrives this way through Agno, which is why it
+#: was invisible.
+_READER_FAILURE_MARKERS: tuple[str, ...] = (
+    "high demand",
+    "unavailable",
+    "rate limit",
+    "quota",
+    "api_key_invalid",
+    "permission denied",
+    "i cannot access",
+    "i'm unable to access",
+    "unable to access",
+    "could not access",
+    "không truy cập được",
+)
+
+
+class PageUnreadable(RuntimeError):
+    """Step 1 produced no usable notes, so there is nothing to structure."""
+
+
+def _require_page_notes(notes: str, url: str) -> None:
+    """Stop when the reader failed, instead of structuring its failure.
+
+    Agno returns an upstream error as the agent's *content*, not as an
+    exception. So a Gemini 503 left `page_notes` holding an error message, the
+    retry loop never saw a failure, and step 2 dutifully converted nothing into
+    a schema-valid brief with every field blank. The endpoint then answered 200.
+
+    A person pasting a link waited sixty-seven seconds for an empty form and no
+    explanation — the failure mode that looks exactly like "this feature does
+    not work". Raising here puts the 503 back on the retry path it was written
+    for, and a genuine exhaustion reaches the caller as an error it can show.
+    """
+    text = (notes or "").strip()
+    if len(text) < MIN_PAGE_NOTES_CHARS:
+        raise PageUnreadable(
+            f"Không đọc được nội dung từ {url} (model trả về {len(text)} ký tự). "
+            "Trang có thể chặn bot hoặc cần bật render."
+        )
+    lowered = text.casefold()
+    if any(marker in lowered for marker in _READER_FAILURE_MARKERS):
+        raise PageUnreadable(
+            f"Model không đọc được {url}: {text[:160]}"
+        )
+
 def run_with_url_context(url: str, model_id: str) -> TikTokShopExtraction:
     """Option 1: read the page, then convert the notes into schema-compliant JSON."""
     api_key = _get_api_key()
@@ -178,6 +230,7 @@ def run_with_url_context(url: str, model_id: str) -> TikTokShopExtraction:
                 page_notes = read_response.content
                 if not isinstance(page_notes, str):
                     page_notes = str(page_notes)
+                _require_page_notes(page_notes, url)
 
                 # --- Step 2: convert the notes to schema-compliant JSON ---
                 structurer_model = Gemini(
@@ -202,7 +255,12 @@ def run_with_url_context(url: str, model_id: str) -> TikTokShopExtraction:
                 err_str = str(e)
                 last_error = e
                 print(f"⚠️ Model {cur_model} (attempt {attempt + 1}) failed: {err_str}", file=sys.stderr)
-                if any(k in err_str.lower() for k in ["503", "unavailable", "high demand", "429", "rate limit", "busy"]):
+                # An unreadable page is usually the upstream 503 arriving as
+                # content, so it belongs on the retry path with the rest.
+                if isinstance(e, PageUnreadable) or any(
+                    k in err_str.lower()
+                    for k in ["503", "unavailable", "high demand", "429", "rate limit", "busy"]
+                ):
                     time.sleep(2)
                     continue
                 if any(k in err_str.lower() for k in ["404", "not found", "no longer available", "validation error"]):
@@ -260,7 +318,12 @@ def run_with_rendered_content(url: str, model_id: str) -> TikTokShopExtraction:
                 err_str = str(e)
                 last_error = e
                 print(f"⚠️ Model {cur_model} (attempt {attempt + 1}) failed: {err_str}", file=sys.stderr)
-                if any(k in err_str.lower() for k in ["503", "unavailable", "high demand", "429", "rate limit", "busy"]):
+                # An unreadable page is usually the upstream 503 arriving as
+                # content, so it belongs on the retry path with the rest.
+                if isinstance(e, PageUnreadable) or any(
+                    k in err_str.lower()
+                    for k in ["503", "unavailable", "high demand", "429", "rate limit", "busy"]
+                ):
                     time.sleep(2)
                     continue
                 if any(k in err_str.lower() for k in ["404", "not found", "no longer available", "validation error"]):
