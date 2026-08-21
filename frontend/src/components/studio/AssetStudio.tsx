@@ -22,6 +22,21 @@
  * place and ink-on-ivory in the other with no second stylesheet.
  */
 
+// The stylesheets travel with the component, not with the route.
+//
+// Both used to be imported by `app/studio/layout.tsx`, which loads them for
+// `/studio` and for nothing else. The moment this component was also mounted
+// inside the campaign pipeline, that route got the markup and none of the CSS:
+// React Flow lost its absolute positioning, so the minimap rendered inline as a
+// black slab in the top-left corner and the nodes scattered unstyled, and every
+// `.studio-*` rule — including the backdrop this component asks for — simply
+// did not exist. Whatever mounts `AssetStudio` now gets its styling with it.
+//
+// Order is load-bearing: React Flow's own theme first, `studio.css` second,
+// because the latter re-skins the former.
+import "@xyflow/react/dist/style.css";
+import "@/app/studio/studio.css";
+
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
