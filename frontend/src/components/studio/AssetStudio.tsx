@@ -341,6 +341,7 @@ export function AssetStudio({
             <SavedKit
               result={savedResult}
               campaignName={campaign?.name ?? null}
+              platforms={platforms}
               onRebuild={() => setShowSaved(false)}
             />
           ) : starting ? (

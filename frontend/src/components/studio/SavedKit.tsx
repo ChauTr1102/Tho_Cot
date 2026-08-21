@@ -14,33 +14,48 @@
  * rather than implying a refresh.
  */
 
-import { useState } from "react";
-import { Download, Play, RefreshCw } from "lucide-react";
+import { useMemo } from "react";
+import { Download, RefreshCw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { GraphCanvas } from "@/components/studio/GraphCanvas";
 import { mediaUrl, type SavedResult } from "@/lib/studio-draft";
-
-const PLATFORM_LABELS: Record<string, string> = {
-  tiktok_shop: "TikTok Shop",
-  shopee: "Shopee",
-};
+import type { NodeKind, NodeState, Platform, StudioNode } from "@/types/studio";
 
 interface SavedKitProps {
   result: SavedResult;
   campaignName: string | null;
+  platforms: Platform[];
   /** Hands the screen back to the brief so a fresh run can be proposed. */
   onRebuild: () => void;
 }
 
-export function SavedKit({ result, campaignName, onRebuild }: SavedKitProps) {
-  const [playing, setPlaying] = useState<string | null>(null);
-
-  const videos = result.assets.filter((a) => a.kind === "video");
-  const images = result.assets.filter((a) => a.kind === "image");
+export function SavedKit({
+  result,
+  campaignName,
+  platforms,
+  onRebuild,
+}: SavedKitProps) {
+  // The backend hands back file paths; the canvas wants absolute URLs and the
+  // enums the live stream uses, so the translation happens once here.
+  const nodes = useMemo<StudioNode[]>(
+    () =>
+      result.nodes.map((node) => ({
+        id: node.id,
+        kind: node.kind as NodeKind,
+        deps: node.deps,
+        state: node.state as NodeState,
+        elapsed_sec: node.elapsed_sec,
+        payload: node.payload.url
+          ? { ...node.payload, url: mediaUrl(node.payload.url) }
+          : node.payload,
+        updated_at: node.updated_at,
+      })),
+    [result.nodes]
+  );
 
   return (
-    <div className="studio-panel flex flex-col overflow-hidden">
+    <div className="studio-panel flex h-[clamp(520px,72vh,1180px)] flex-col overflow-hidden">
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-3.5">
         <div className="min-w-0">
           <h2 className="font-display truncate text-[15px] font-semibold tracking-tight">
@@ -73,87 +88,16 @@ export function SavedKit({ result, campaignName, onRebuild }: SavedKitProps) {
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
-        {videos.length > 0 ? (
-          <section className="mb-6">
-            <h3 className="mb-2.5 text-[12px] font-semibold text-foreground/80">
-              Video
-            </h3>
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-              {videos.map((asset) => (
-                <figure
-                  key={asset.name}
-                  className="studio-option overflow-hidden rounded-lg"
-                >
-                  {playing === asset.name ? (
-                    // Mounted only on demand: three autoplaying 1080p files
-                    // would fetch a hundred megabytes before anyone pressed
-                    // anything.
-                    <video
-                      src={mediaUrl(asset.url)}
-                      controls
-                      autoPlay
-                      className="aspect-[9/16] w-full bg-black object-contain"
-                    />
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => setPlaying(asset.name)}
-                      className="group relative flex aspect-[9/16] w-full items-center justify-center bg-black/40"
-                    >
-                      <span className="bg-primary text-primary-foreground grid size-11 place-items-center rounded-full transition-transform group-hover:scale-110">
-                        <Play aria-hidden className="size-4 translate-x-[1px]" fill="currentColor" />
-                      </span>
-                    </button>
-                  )}
-                  <figcaption className="truncate px-2.5 py-1.5 font-mono text-[11px] text-muted-foreground">
-                    {asset.name}
-                  </figcaption>
-                </figure>
-              ))}
-            </div>
-          </section>
-        ) : null}
-
-        <section>
-          <h3 className="mb-2.5 text-[12px] font-semibold text-foreground/80">
-            Ảnh
-          </h3>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
-            {images.map((asset) => (
-              <a
-                key={asset.name}
-                href={mediaUrl(asset.url)}
-                target="_blank"
-                rel="noreferrer"
-                className={cn(
-                  "studio-option group block overflow-hidden rounded-lg",
-                  "focus-visible:outline-primary focus-visible:outline-2"
-                )}
-              >
-                {/* Plain <img>: these are files on a local mount, not remote
-                    assets Next can optimise, and the grid is scrolled once. */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={mediaUrl(asset.url)}
-                  alt={asset.name}
-                  loading="lazy"
-                  className="aspect-square w-full bg-black/20 object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                />
-                <span className="flex items-baseline justify-between gap-2 px-2.5 py-1.5">
-                  <span className="truncate font-mono text-[11px] text-muted-foreground">
-                    {asset.name}
-                  </span>
-                  {asset.platform ? (
-                    <span className="text-primary/80 shrink-0 text-[10px]">
-                      {PLATFORM_LABELS[asset.platform] ?? asset.platform}
-                    </span>
-                  ) : null}
-                </span>
-              </a>
-            ))}
-          </div>
-        </section>
+      {/* The graph, not a contact sheet. Every picture here came from a named
+          step with named inputs, and that structure is the product's argument —
+          a grid of thumbnails is what any folder viewer would show. */}
+      <div className="min-h-0 flex-1">
+        <GraphCanvas
+          nodes={nodes}
+          platforms={platforms}
+          campaignId={result.campaign_id}
+          awaiting={false}
+        />
       </div>
     </div>
   );

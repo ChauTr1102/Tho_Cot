@@ -47,7 +47,7 @@ _PLATFORMS: tuple[tuple[str, str], ...] = (
 #: scrolls, so they are returned flagged rather than hidden — a caller that
 #: wants everything can still have it.
 _INTERMEDIATE_MARKERS: tuple[str, ...] = (
-    "hero", "keyframe", "_last", "_raw", "shot_",
+    "hero", "keyframe", "_last", "_raw", "shot_", "sub_",
 )
 
 #: Ordering for the gallery: what the campaign is *for* first, working material
@@ -94,6 +94,81 @@ def list_assets(campaign_id: str, include_intermediate: bool = False) -> list[di
     return sorted(items, key=lambda item: (_RANK.get(item["kind"], 9), item["name"]))
 
 
+def build_nodes(campaign_id: str) -> list[dict[str, Any]]:
+    """The finished kit as graph nodes, so it opens on the canvas it was built on.
+
+    A gallery of thumbnails throws away the thing this studio is: every picture
+    came from a named step with named inputs, and seeing a reuse node settle
+    beside a nine-minute video node is the argument the product is making.
+
+    **This is reconstruction, not a replay.** The run does not persist its DAG,
+    only its files, so the edges below are re-derived from the naming convention
+    `render.py` writes — `keyframe_N` feeds `shot_N`, shots feed the master, the
+    hero anchors every generated still. That convention is the same code that
+    built the graph in the first place, so the shape is right; what is not
+    recoverable is per-node timing, which is why every node reports `0s` rather
+    than a number nobody measured.
+    """
+    files = {path.stem: path for path in _existing(campaign_id)}
+    nodes: list[dict[str, Any]] = []
+
+    def add(node_id: str, kind: str, deps: list[str], stem: str) -> None:
+        path = files.get(stem)
+        if path is None:
+            return
+        nodes.append({
+            "id": node_id,
+            "kind": kind,
+            "deps": [d for d in deps if any(n["id"] == d for n in nodes)],
+            "state": "done",
+            # Not measured. A run reports real durations live; a kit read off
+            # disk has none, and inventing one would be the only dishonest
+            # number on the screen.
+            "elapsed_sec": 0,
+            "payload": {
+                "url": f"/media/{campaign_id}/media/{path.name}",
+                "slot": stem,
+            },
+            "updated_at": 0,
+        })
+
+    add("hero", "image", [], "hero")
+
+    keyframes = sorted(s for s in files if s.startswith("keyframe_"))
+    for stem in keyframes:
+        add(stem, "keyframe", ["hero"], stem)
+
+    shots = sorted(s for s in files if s.startswith("shot_") and not s.endswith("_last"))
+    for stem in shots:
+        index = stem.removeprefix("shot_")
+        add(stem, "video", [f"keyframe_{int(index)}"] if index.isdigit() else [], stem)
+
+    for stem in sorted(s for s in files if s.startswith("vo_") and not s.endswith("_raw")):
+        add(stem, "compose", [], stem)
+    add("voiceover", "compose", sorted(n["id"] for n in nodes if n["id"].startswith("vo_")), "voiceover")
+
+    for stem in sorted(s for s in files if s.startswith("master_")):
+        add(stem, "compose", [*shots, "voiceover"], stem)
+
+    # Stills last so the video spine reads as one column and the marketplace
+    # kits hang off the hero beside it.
+    for stem in sorted(s for s in files
+                       if not s.startswith(("hero", "keyframe_", "shot_", "vo_", "master_", "sub_"))
+                       and files[s].suffix.casefold() in _KINDS
+                       and _KINDS[files[s].suffix.casefold()] == "image"):
+        add(stem, "image", ["hero"], stem)
+
+    return nodes
+
+
+def _existing(campaign_id: str) -> list[Path]:
+    directory = media_dir(campaign_id)
+    if not directory.is_dir():
+        return []
+    return [p for p in sorted(directory.iterdir())
+            if p.is_file() and p.suffix.casefold() in _KINDS]
+
+
 def summary(campaign_id: str) -> dict[str, Any]:
     """A one-line answer to "has this been built, and what is in it?"."""
     everything = list_assets(campaign_id, include_intermediate=True)
@@ -106,4 +181,6 @@ def summary(campaign_id: str) -> dict[str, Any]:
         "total_files": len(everything),
         "bytes": sum(item["bytes"] for item in everything),
         "assets": deliverables,
+        # The same kit as a graph, because that is the screen it was built on.
+        "nodes": build_nodes(campaign_id),
     }

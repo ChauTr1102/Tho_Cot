@@ -167,6 +167,17 @@ export const DIRECTION_PRESETS: { label: string; value: string }[] = [
   { label: "Quà tặng", value: "sang trọng, thủ công, dùng làm quà biếu" },
 ];
 
+/** A finished node, in the shape `GraphCanvas` consumes. */
+export interface StudioNodeLite {
+  id: string;
+  kind: string;
+  deps: string[];
+  state: string;
+  elapsed_sec: number;
+  payload: { url?: string; slot?: string };
+  updated_at: number;
+}
+
 /** One file a finished run left on disk. */
 export interface SavedAsset {
   name: string;
@@ -178,6 +189,8 @@ export interface SavedAsset {
 
 export interface SavedResult {
   campaign_id: string;
+  /** The same kit as graph nodes, ready for the canvas. */
+  nodes: StudioNodeLite[];
   built: boolean;
   images: number;
   videos: number;
