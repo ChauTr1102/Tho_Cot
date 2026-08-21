@@ -5,11 +5,13 @@ pydantic-settings>=2.6.0
 sqlalchemy>=2.0.36
 httpx>=0.28.0
 pytest>=8.3.0
-openai>=1.0.0
-requests>=2.32.0
 jsonschema>=4.23.0
+openai>=1.0.0
+pillow>=11.0.0
+python-dotenv>=1.0.0
 python-multipart>=0.0.20
 agno>=2.9.0
 google-genai
-python-dotenv
 playwright
+python-dotenv
+requests>=2.32.0

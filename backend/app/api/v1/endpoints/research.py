@@ -18,6 +18,7 @@ from app.services.research import ResearchOutputError
 from app.services.research.input import encode_uploaded_visual_assets
 from app.services.research_service import research_service
 from app.services.campaign_service import campaign_service
+from app.services.studio import from_research
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -92,6 +93,26 @@ async def run_research(
             len(uploaded),
             sum(len(content) for _, _, _, content in uploaded),
         )
+        # Keep the bytes. Research only needs to look at the pictures once, but
+        # the studio downstream needs the actual files: without them a campaign
+        # for a product with no sample folder resolves to no photographs, every
+        # slot falls to GENERATE, and the model invents the packaging. Writing
+        # them here is what makes "fill in your own product" work end to end.
+        #
+        # Never fatal: research is the expensive half of this request, and
+        # losing a finished plan to a disk error would be the worse outcome.
+        try:
+            stored = from_research.save_uploads(campaign_id, uploaded)
+            logger.info(
+                "research_api.assets_stored campaign_id=%s files=%d dir=%s",
+                campaign_id, len(stored), f"data/{campaign_id}/source",
+            )
+        except OSError as exc:
+            logger.warning(
+                "research_api.assets_not_stored campaign_id=%s error=%s "
+                "-- studio se phai dung moi tung o thay vi dung anh that",
+                campaign_id, exc,
+            )
         brand = _json_object(brand_kit, "brand_kit")
         brand.update(asset_paths)
         payload = ResearchInput.model_validate({

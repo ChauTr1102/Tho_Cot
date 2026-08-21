@@ -55,6 +55,8 @@ export interface ResearchCampaignPlan {
     hook_idea: string;
     visual_direction: string;
     message_angle: string;
+    test_objective?: string;
+    testing_plan?: string;
     suggested_platform_usage: string[];
     rationale: string;
     evidence: ResearchEvidence[];

@@ -70,11 +70,12 @@ CAMPAIGN_PLAN_SCHEMA = {
                 "properties": {
                     "route_name": {"type": "string"}, "hook_idea": {"type": "string"},
                     "visual_direction": {"type": "string"}, "message_angle": {"type": "string"},
+                    "test_objective": {"type": "string"}, "testing_plan": {"type": "string"},
                     "suggested_platform_usage": {"type": "array", "items": {"type": "string"}, "minItems": 1},
                     "rationale": {"type": "string"},
                     "evidence": {"type": "array", "items": EVIDENCE_SCHEMA, "minItems": 1},
                 },
-                "required": ["route_name", "hook_idea", "visual_direction", "message_angle", "suggested_platform_usage", "rationale", "evidence"],
+                "required": ["route_name", "hook_idea", "visual_direction", "message_angle", "test_objective", "testing_plan", "suggested_platform_usage", "rationale", "evidence"],
                 "additionalProperties": False,
             },
         },
@@ -125,7 +126,7 @@ def validate_campaign_plan(plan: Any) -> None:
     routes = plan.get("creative_routes")
     if not isinstance(routes, list) or len(routes) != 2:
         raise ResearchOutputError("creative_routes phải có đúng hai hướng")
-    required = {"route_name", "hook_idea", "visual_direction", "message_angle", "suggested_platform_usage", "rationale", "evidence"}
+    required = {"route_name", "hook_idea", "visual_direction", "message_angle", "test_objective", "testing_plan", "suggested_platform_usage", "rationale", "evidence"}
     if any(not isinstance(route, dict) or not required <= route.keys() for route in routes):
         raise ResearchOutputError("creative route không hợp lệ")
     summary = plan.get("source_summary")

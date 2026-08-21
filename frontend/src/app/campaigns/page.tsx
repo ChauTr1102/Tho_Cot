@@ -54,6 +54,9 @@ export default function CampaignsPage() {
   const [campaignsLoading, setCampaignsLoading] = React.useState(true);
   const [campaignsError, setCampaignsError] = React.useState<string | null>(null);
   const [openingCampaignId, setOpeningCampaignId] = React.useState<string | null>(null);
+  // Which campaign the pipeline is currently walking through. Set when one is
+  // opened from the list; the handoff to the studio needs it by id.
+  const [activeCampaignId, setActiveCampaignId] = React.useState<string | null>(null);
   const readyCampaigns = campaigns.filter((campaign) => campaign.has_research_result).length;
   const activeCampaigns = campaigns.filter((campaign) => campaign.status === "researching").length;
 
@@ -104,6 +107,11 @@ export default function CampaignsPage() {
       .then(setResearchSubmission)
       .catch(() => toast.error("Không thể tải sẵn ảnh sản phẩm mẫu G7."));
     setResearchPlan(null);
+    // Forget the campaign that was open before. Leaving it set would let the
+    // handoff to the studio carry the previous campaign's id if the user walked
+    // forward without running research — the studio would open, find a valid
+    // researched campaign under that id, and build the wrong product.
+    setActiveCampaignId(null);
     setResearchError(null);
     setCampaignOutput(null);
     setQaResult(null);
@@ -150,8 +158,6 @@ export default function CampaignsPage() {
         throw new Error("Chiến dịch chưa có kết quả nghiên cứu hợp lệ.");
       }
       setResearchPlan(parseResearchCampaignPlan(savedResult.plan));
-      setCampaignOutput(null);
-      setQaResult(null);
       if (campaignData?.research_input) {
         setResearchSubmission((current) => ({
           ...current,
@@ -196,6 +202,7 @@ export default function CampaignsPage() {
     if (navigateToResearch) setCurrentStage("research");
     try {
       setResearchPlan(await api.runResearch(researchSubmission));
+      setActiveCampaignId(researchSubmission.input.campaign_id);
       await loadCampaigns();
       return true;
     } catch (error) {
@@ -227,6 +234,13 @@ export default function CampaignsPage() {
       }
       void runResearch();
       return;
+    }
+    // Leaving research means entering content generation, which is the Asset
+    // Studio mounted in stage 03. Nothing to navigate to: the campaign id is
+    // handed down as a prop, so the studio opens on the product the user has
+    // just briefed instead of asking them to pick it again.
+    if (currentStage === "research" && !activeCampaignId) {
+      setActiveCampaignId(researchSubmission.input.campaign_id);
     }
     if (currentStage === "final_output") {
       returnToCampaigns();
@@ -377,11 +391,19 @@ export default function CampaignsPage() {
               onNext={handleNextStage}
               onBack={handlePrevStage}
               isNextDisabled={currentStage === "research" && (researchLoading || !researchPlan)}
-              nextLabel={currentStage === "product_input" && workflowMode === "autopilot" ? "BẮT ĐẦU LUỒNG TỰ ĐỘNG" : currentStage === "final_output" ? "HOÀN THÀNH" : "BƯỚC.TIẾP"}
+              nextLabel={
+                currentStage === "product_input" && workflowMode === "autopilot"
+                  ? "BẮT ĐẦU LUỒNG TỰ ĐỘNG"
+                  : currentStage === "final_output"
+                    ? "HOÀN THÀNH"
+                    : currentStage === "research"
+                      ? "SÁNG.TẠO_CHIẾN_DỊCH"
+                      : "BƯỚC.TIẾP"
+              }
               >
               {currentStage === "product_input" && <StageProductInput value={researchSubmission} onChange={setResearchSubmission} initialInputMode={workflowMode === "autopilot" ? "manual" : "link"} />}
               {currentStage === "research" && <StageResearch plan={researchPlan} isLoading={researchLoading} error={researchError} onRetry={() => void runResearch()} />}
-              {currentStage === "content_generation" && <StageContentGeneration plan={researchPlan} input={researchSubmission.input} onGenerated={setCampaignOutput} />}
+              {currentStage === "content_generation" && <StageContentGeneration campaignId={activeCampaignId} />}
               {currentStage === "qa_gate" && <StageQAGate campaignInput={campaignInputForQa} campaignOutput={campaignOutput ?? buildMockCampaignOutput(researchPlan, researchSubmission.input)} onResult={setQaResult} />}
               {currentStage === "final_output" && <StageFinalOutput plan={researchPlan} input={researchSubmission.input} campaignOutput={campaignOutput ?? buildMockCampaignOutput(researchPlan, researchSubmission.input)} qaResult={qaResult} />}
               {!["product_input", "research", "content_generation", "qa_gate", "final_output"].includes(currentStage) && (

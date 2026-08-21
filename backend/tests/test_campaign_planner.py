@@ -12,7 +12,8 @@ def sample_plan():
     evidence = [{"basis": "product_brief", "detail": "brief fact", "source_url": None}]
     decision = {"decision": "decision", "rationale": "why", "evidence": evidence}
     route = {"route_name": "Route", "hook_idea": "Hook", "visual_direction": "Visual",
-             "message_angle": "Message", "suggested_platform_usage": ["TikTok"],
+             "message_angle": "Message", "test_objective": "Measure response",
+             "testing_plan": "Run A/B and compare CTR", "suggested_platform_usage": ["TikTok"],
              "rationale": "Why", "evidence": evidence}
     return {"schema_version": "1.0", "product_positioning": {
         "main_campaign_angle": decision, "target_audience": decision,
