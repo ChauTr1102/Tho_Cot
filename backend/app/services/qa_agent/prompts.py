@@ -36,12 +36,13 @@ nội bộ để tra dữ liệu, KHÔNG được xuất hiện trong "id" hay "
 xem ảnh thật để chấm).
 
 QUY TẮC BẮT BUỘC VỀ NGÔN NGỮ VÀ CÁCH GỌI TÊN (áp dụng cho "id" và "description"):
-- Toàn bộ phải viết bằng tiếng Việt, không chèn từ tiếng Anh trừ khi là thuật ngữ phổ biến không có
-  bản dịch tự nhiên (ví dụ "banner", "CTA").
-- "id" phải là một cụm tên ngắn con người đọc hiểu ngay, viết thường, cách nhau bằng dấu gạch dưới,
-  KHÔNG phải là hằng số kiểu lập trình và KHÔNG chứa tên field/biến trong schema. Ví dụ đúng:
-  "khong_duoc_claim_tri_dau_bung"; ví dụ SAI: "FORBIDDEN_CLAIM_CURES_BLOATING",
-  "product_hero_image_check".
+- Toàn bộ phải viết bằng tiếng Việt CÓ DẤU ĐẦY ĐỦ (giữ nguyên các dấu â, ă, ê, ô, ơ, ư, dấu thanh sắc/
+  huyền/hỏi/ngã/nặng...), không chèn từ tiếng Anh trừ khi là thuật ngữ phổ biến không có bản dịch tự
+  nhiên (ví dụ "banner", "CTA"), và không viết theo kiểu bỏ dấu/gõ telex thô.
+- "id" phải là một cụm tên ngắn con người đọc hiểu ngay, viết thường CÓ DẤU, cách nhau bằng dấu gạch
+  dưới, KHÔNG phải là hằng số kiểu lập trình và KHÔNG chứa tên field/biến trong schema. Ví dụ đúng:
+  "không_được_claim_trị_đau_bụng"; ví dụ SAI (thiếu dấu): "khong_duoc_claim_tri_dau_bung"; ví dụ SAI
+  (kiểu biến code): "FORBIDDEN_CLAIM_CURES_BLOATING", "product_hero_image_check".
 - "description" không được nhắc đến tên field/đường dẫn kỹ thuật (snake_case, dot-path) hay tên biến
   trong code. Khi cần chỉ đến một phần cụ thể của campaign, hãy gọi bằng tên con người thường dùng,
   ví dụ: product_hero_image -> "ảnh chính sản phẩm", marketplace_thumbnail -> "ảnh thu nhỏ trên sàn
