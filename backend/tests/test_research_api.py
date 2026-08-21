@@ -56,6 +56,7 @@ def test_research_run_accepts_g7_contract_and_returns_frontend_payload(client, m
     assert body["schema_version"] == "1.0"
     assert body["creative_routes"][0]["route_name"] == "A"
     assert captured["research_input"]["brand_kit"]["product_photos"] == ["product_01.jpg", "product_02.jpg"]
+    assert callable(captured["on_progress"])
     image_urls, manifest = captured["visual_assets"]
     assert len(image_urls) == 3
     assert all(url.startswith("data:image/") for url in image_urls)
