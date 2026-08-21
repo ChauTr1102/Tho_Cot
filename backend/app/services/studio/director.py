@@ -31,6 +31,7 @@ KeyError in front of judges is not.
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -682,8 +683,36 @@ def _badge(campaign_input: CampaignInput | None) -> str:
     return _trim(first.upper(), _MAX_BADGE)
 
 
+# Planning output writes its own field names into its values — "Thông điệp bán
+# hàng cốt lõi: Cà phê đậm…", "Góc chiến dịch chính: …". Taken whole, the label
+# is what lands on the poster: a real render came back reading "Thông điệp bán
+# hàng cốt lõi: Cà phê đậm" in display type.
+_LABEL_RE = re.compile(r"^([^:：]{4,48})[:：]\s+(?=\S)")
+
+
+def _strip_label(text: str) -> str:
+    """Drop a leading `Field name:` prefix, but only when it reads as one.
+
+    Two things must not be stripped. A hook can open with a question —
+    "Mệt buổi sáng? Pha nhanh…" — and an offer can open with a date —
+    "11.11: giảm 25%", where the prefix carries the whole point. So a prefix is
+    only a label when it is several words, has no digits, and ends no sentence.
+    """
+    match = _LABEL_RE.match(text.strip())
+    if not match:
+        return text.strip()
+    prefix = match.group(1).strip()
+    if any(ch.isdigit() for ch in prefix):
+        return text.strip()
+    if any(ch in prefix for ch in ".?!"):
+        return text.strip()
+    if len(prefix.split()) < 2:
+        return text.strip()
+    return text.strip()[match.end():].strip()
+
+
 def _trim(text: str, limit: int) -> str:
-    text = " ".join((text or "").split())
+    text = " ".join(_strip_label(text or "").split())
     if len(text) <= limit:
         return text
     cut = text[:limit].rsplit(" ", 1)[0]

@@ -43,7 +43,8 @@ from app.schemas.campaign_dto import (
 )
 from app.schemas.common import StandardResponse
 from app.services.studio import (
-    demo_briefs, directed, director, dto_bridge, pack, pipeline, upstream,
+    demo_briefs, directed, director, dto_bridge, from_research, pack, pipeline,
+    upstream,
 )
 from app.services.studio.config import studio_settings
 from app.services.studio.graph import GraphEvent
@@ -76,11 +77,17 @@ class StudioRunResponse(BaseModel):
 class DraftRequest(BaseModel):
     """Everything needed to propose a campaign.
 
+    The normal path is `campaign_id`: the research stage has already stored the
+    brief and the plan on that row, so the studio reads them rather than asking
+    for the same facts twice.
+
     `plan` is the planning agent's output in either the nested research format
     or the flat DTO; `campaign_input` is the team's CampaignInputDTO. Both are
     optional so the demo shortcut can pass `brand_dir` instead, but a real
     caller sends the artefacts it already has.
     """
+    campaign_id: str | None = Field(
+        None, description="Id của campaign đã research xong — đường đi chính")
     brand_dir: str | None = None
     plan: dict[str, Any] | None = None
     campaign_input: dict[str, Any] | None = None
@@ -424,9 +431,31 @@ def get_assets(campaign_id: str):
 # any work does, and a user may sit on the approve screen for a while.
 _DRAFTS: dict[str, dict[str, Any]] = {}
 
+# What the caller should be told about a research handoff: photographs that
+# could not be found on disk, marketplaces with no kit. Both are survivable and
+# both are worth surfacing rather than discovering in the output.
+_NOTES: dict[str, dict[str, Any]] = {}
+
 
 def _resolve_brief(req: DraftRequest, campaign_id: str):
-    """Assemble (plan, campaign_input) from whatever the caller sent."""
+    """Assemble (plan, campaign_input) from whatever the caller sent.
+
+    Four ways in, in order of how real they are: a finished research campaign,
+    an explicit DTO, a plan plus a demo brand, or a demo brand alone.
+    """
+    if req.campaign_id:
+        try:
+            plan, studio_input, notes = from_research.load_pair(req.campaign_id)
+        except FileNotFoundError as exc:
+            raise BadRequestException(str(exc))
+        except KeyError:
+            raise NotFoundException(
+                message=f"Không có campaign '{req.campaign_id}' trong database.")
+        except from_research.ResearchNotReady as exc:
+            raise BadRequestException(str(exc))
+        _NOTES[campaign_id] = notes
+        return plan, studio_input
+
     if req.campaign_input:
         try:
             dto = CampaignInputDTO.model_validate(req.campaign_input)
@@ -468,11 +497,45 @@ def propose(req: DraftRequest):
         "plan": plan, "input": campaign_input, "draft": d,
         "direction": req.direction, "with_video": req.with_video,
     }
+    payload = director.draft_to_dict(d)
+    handoff = _NOTES.get(campaign_id)
+    if handoff:
+        # Fold the handoff warnings into the notes the approval screen shows, so
+        # a missing photograph is read before approving rather than noticed in
+        # the kit afterwards.
+        extra = []
+        if handoff.get("photos_missing"):
+            extra.append("Không tìm thấy ảnh: "
+                         + ", ".join(handoff["photos_missing"])
+                         + " — những ô cần ảnh thật sẽ phải dựng mới.")
+        if handoff.get("platforms_unsupported"):
+            extra.append("Chưa có kit cho: "
+                         + ", ".join(handoff["platforms_unsupported"]))
+        payload["notes"] = extra + list(payload.get("notes", []))
+        payload["source_campaign"] = handoff.get("name")
+
     return StandardResponse(
         success=True, message="Đề xuất đã sẵn sàng — xem lại rồi duyệt",
         data=DraftResponse(campaign_id=campaign_id,
-                           draft=director.draft_to_dict(d),
+                           draft=payload,
                            graph=director.to_dict(spec)),
+    )
+
+
+@router.get("/campaigns", response_model=StandardResponse[list[dict]])
+def list_research_campaigns():
+    """Campaigns the research stage has finished — the studio's inbox.
+
+    Read straight from the campaigns table rather than through the ORM: the
+    studio owns no tables and should not take a session dependency to read
+    three columns.
+    """
+    rows = from_research.list_campaigns()
+    ready = [r for r in rows if r.get("status") == "researched"]
+    return StandardResponse(
+        success=True,
+        message=f"{len(ready)}/{len(rows)} campaign đã research xong",
+        data=rows,
     )
 
 
