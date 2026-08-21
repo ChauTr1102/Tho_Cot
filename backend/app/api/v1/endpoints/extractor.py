@@ -4,6 +4,7 @@ from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from pydantic import BaseModel, Field
 
 from app.services.extractor.agent import (
+    PageUnreadable,
     extract_text_from_file_bytes,
     run_with_document_text,
     run_with_rendered_content,
@@ -41,6 +42,11 @@ def extract_endpoint(req: ExtractRequest) -> ExtractResponse:
             result = run_with_rendered_content(req.url, req.model)
         else:
             result = run_with_url_context(req.url, req.model)
+    except PageUnreadable as e:
+        # Not a server fault and not a bad request from the caller: the page
+        # could not be read, usually because Gemini is over capacity. Say which,
+        # because "empty form, no reason" is the failure this replaced.
+        raise HTTPException(status_code=502, detail=str(e))
     except ValueError as e:
         traceback.print_exc(file=sys.stderr)
         raise HTTPException(status_code=400, detail=str(e))

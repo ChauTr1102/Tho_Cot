@@ -206,6 +206,82 @@ def save_uploads(campaign_id: str,
     return saved
 
 
+#: Guards on anything fetched from a URL a user pasted. A product photo is a
+#: few hundred kilobytes; anything past this is not one, and downloading it
+#: would be someone else's bandwidth bill and our disk.
+REMOTE_PHOTO_MAX_BYTES = 12 * 1024 * 1024
+REMOTE_PHOTO_MAX_COUNT = 8
+REMOTE_PHOTO_TIMEOUT_SEC = 20
+
+
+def fetch_remote_photos(urls: list[str], campaign_id: str) -> tuple[list[str], list[str]]:
+    """Download product photographs the extractor found on a page.
+
+    Returns `(local_paths, failed_urls)`.
+
+    The link flow ends here or it does not end at all. An extractor reads a
+    product page and reports image URLs; `pipeline._photo_paths` then drops
+    anything starting with `http`, correctly — a URL is not a Brand Lock
+    reference — with a comment saying they are unusable "until downloaded".
+    Nothing downloaded them. So pasting a link produced a campaign with no
+    photographs, every slot fell to GENERATE, and the model invented the
+    packaging: the exact failure the Brand Lock exists to prevent, reached by
+    the one path a new user is most likely to take.
+
+    Files land beside uploaded ones, in the campaign's own `source/`, so the
+    rest of the studio cannot tell how a photograph arrived.
+    """
+    import urllib.request
+
+    root = Path(studio_settings.DATA_DIR) / campaign_id / "source"
+    saved_paths: list[str] = []
+    failed: list[str] = []
+
+    for index, url in enumerate(urls[:REMOTE_PHOTO_MAX_COUNT]):
+        if not isinstance(url, str) or not url.lower().startswith(("http://", "https://")):
+            continue
+        try:
+            request = urllib.request.Request(
+                url, headers={"User-Agent": "Mozilla/5.0 (compatible; ThoCotStudio/1.0)"}
+            )
+            with urllib.request.urlopen(request, timeout=REMOTE_PHOTO_TIMEOUT_SEC) as response:
+                kind = (response.headers.get("Content-Type") or "").split(";")[0].strip()
+                if not kind.startswith("image/"):
+                    failed.append(url)
+                    continue
+                # Read in a loop. `HTTPResponse.read(n)` returns *up to* n
+                # bytes, not n — with chunked transfer encoding a single call
+                # routinely returns less, and the shortfall is a truncated JPEG
+                # that decodes to a half-drawn picture rather than an error.
+                chunks: list[bytes] = []
+                total = 0
+                while total <= REMOTE_PHOTO_MAX_BYTES:
+                    chunk = response.read(64 * 1024)
+                    if not chunk:
+                        break
+                    chunks.append(chunk)
+                    total += len(chunk)
+                body = b"".join(chunks)
+            if not body or len(body) > REMOTE_PHOTO_MAX_BYTES:
+                failed.append(url)
+                continue
+
+            # Name by position, not by the remote filename: a URL's last segment
+            # is attacker-controlled and frequently not a filename at all.
+            suffix = {"image/jpeg": ".jpg", "image/png": ".png",
+                      "image/webp": ".webp"}.get(kind, ".jpg")
+            root.mkdir(parents=True, exist_ok=True)
+            target = root / f"web_{index:02d}{suffix}"
+            target.write_bytes(body)
+            saved_paths.append(str(target))
+        except Exception:
+            # A page that will not give up its pictures is survivable: the kit
+            # is duller, not absent. It is reported, never raised.
+            failed.append(url)
+
+    return saved_paths, failed
+
+
 def build_input(research_input: dict[str, Any], campaign_id: str,
                 photos: list[str] | None = None) -> CampaignInput:
     """The research form's brief, in the studio's own shape."""
@@ -332,9 +408,22 @@ def load_pair(campaign_id: str, db_path: str | Path | None = None
         )
 
     names = (research_input.get("brand_kit", {}) or {}).get("product_photos", []) or []
+
+    # The extractor reports what it found on the page, which for a pasted link
+    # is a list of URLs rather than filenames. Fetch those before resolving, so
+    # a link-started campaign reaches the renderer with the same thing an
+    # uploaded one does: files in its own source directory.
+    remote = [n for n in names if isinstance(n, str) and n.lower().startswith(("http://", "https://"))]
+    fetched: list[str] = []
+    unreachable: list[str] = []
+    if remote:
+        fetched, unreachable = fetch_remote_photos(remote, campaign_id)
+
+    local_names = [n for n in names if n not in remote]
     photos, missing = resolve_photos(
-        names, campaign_id,
+        local_names, campaign_id,
         str((research_input.get("product_brief", {}) or {}).get("product_name", "")))
+    photos = fetched + photos
     _, unknown_platforms = map_platforms(
         (research_input.get("audience_brief", {}) or {}).get("platforms", []))
 
@@ -362,6 +451,8 @@ def load_pair(campaign_id: str, db_path: str | Path | None = None
         "status": record.get("status"),
         "photos_found": photos,
         "photos_missing": missing,
+        "photos_from_web": fetched,
+        "photos_unreachable": unreachable,
         "platforms_unsupported": unsupported,
         "sources": (research_result.get("sources") or [])[:8],
         # From the plan itself, per route.

@@ -54,15 +54,15 @@ const toArr = (val: unknown): string[] => {
 const split = (text: string) => [...new Set(text.split(/\r?\n/).map((item) => item.trim()).filter(Boolean))];
 const join = (items: unknown) =>
   Array.isArray(items) ? items.join("\n") : typeof items === "string" ? items : "";
-const inputClass = "h-9 bg-foreground/[0.02] border-foreground/10 text-xs font-mono";
-const areaClass = "bg-foreground/[0.02] border-foreground/10 text-xs font-mono min-h-[88px]";
+const inputClass = "h-9 bg-background/90 border-foreground/25 text-xs font-mono text-foreground font-medium placeholder:text-foreground/40 focus:border-[#35ea52] focus:ring-1 focus:ring-[#35ea52] shadow-sm";
+const areaClass = "bg-background/90 border-foreground/25 text-xs font-mono text-foreground font-medium min-h-[88px] placeholder:text-foreground/40 focus:border-[#35ea52] focus:ring-1 focus:ring-[#35ea52] shadow-sm";
 
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
     <label className="space-y-1.5">
-      <span className="text-[10px] font-mono text-foreground/50 uppercase tracking-wider">{label}</span>
+      <span className="text-[11px] font-mono font-bold text-foreground/85 uppercase tracking-wider">{label}</span>
       {children}
-      {hint && <span className="block text-[10px] font-mono text-foreground/30">{hint}</span>}
+      {hint && <span className="block text-[10.5px] font-mono text-foreground/60 font-medium">{hint}</span>}
     </label>
   );
 }
@@ -95,10 +95,10 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="p-5 border border-foreground/10 bg-background/50 space-y-4">
-      <div className="flex items-center gap-2 border-b border-foreground/10 pb-2">
+    <section className="p-5 border border-foreground/15 bg-background/80 space-y-4 shadow-sm">
+      <div className="flex items-center gap-2 border-b border-foreground/15 pb-2.5">
         <Icon className="h-4 w-4 text-[#35ea52]" />
-        <h3 className="text-xs font-mono font-bold text-[#35ea52] tracking-widest uppercase">{title}</h3>
+        <h3 className="text-xs font-mono font-bold text-[#16A34A] dark:text-[#35ea52] tracking-widest uppercase">{title}</h3>
       </div>
       {children}
     </section>
@@ -290,41 +290,41 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
   return (
     <div className="space-y-6 h-full flex flex-col">
       {/* Header */}
-      <div className="space-y-2 border-b border-foreground/10 pb-4">
+      <div className="space-y-2 border-b border-foreground/15 pb-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold font-mono tracking-wider text-foreground">
             THÔNG TIN SẢN PHẨM & MỤC TIÊU BÁN HÀNG
           </h2>
-          <span className="text-[10px] font-mono text-[#35ea52] border border-[#35ea52]/30 px-2 py-0.5 tracking-widest uppercase">
+          <span className="text-[10px] font-mono font-bold text-[#16A34A] dark:text-[#35ea52] border border-[#35ea52]/40 bg-[#35ea52]/10 px-2 py-0.5 tracking-widest uppercase">
             2 CHẾ ĐỘ NHẬP LIỆU
           </span>
         </div>
-        <p className="text-sm font-mono text-foreground/40">
+        <p className="text-sm font-mono text-foreground/80 font-medium">
           Cung cấp đủ thông tin để nhận chiến lược, nội dung và tài sản bán hàng phù hợp với từng kênh.
         </p>
 
         {/* 2 OPTIONS TAB SWITCHER */}
-        <div className="flex mt-3 border border-foreground/20 bg-foreground/[0.02]">
+        <div className="flex mt-3 border border-foreground/25 bg-foreground/[0.03]">
           <button
             type="button"
             onClick={() => setInputMode("link")}
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-mono tracking-wider transition-all ${
               inputMode === "link"
                 ? "bg-[#28C840] text-white font-bold shadow-md"
-                : "text-foreground/60 hover:text-foreground hover:bg-foreground/[0.05]"
+                : "text-foreground/80 font-bold hover:text-foreground hover:bg-foreground/[0.08]"
             }`}
           >
             <Link2 className="h-3.5 w-3.5" />
-            DÁN LINK SẢN PHẨM (TIKTOK / SHOPEE / LAZADA / WEB)
+            DÁN LINK SẢN PHẨM
           </button>
-          <div className="w-px bg-foreground/20" />
+          <div className="w-px bg-foreground/25" />
           <button
             type="button"
             onClick={() => setInputMode("manual")}
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-mono tracking-wider transition-all ${
               inputMode === "manual"
                 ? "bg-[#28C840] text-white font-bold shadow-md"
-                : "text-foreground/60 hover:text-foreground hover:bg-foreground/[0.05]"
+                : "text-foreground/80 font-bold hover:text-foreground hover:bg-foreground/[0.08]"
             }`}
           >
             <PenLine className="h-3.5 w-3.5" />
@@ -335,26 +335,26 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
 
       {/* OPTION 1: LINK IMPORT VIEW */}
       {inputMode === "link" && (
-        <div className="p-4 border border-[#35ea52]/30 bg-[#35ea52]/[0.03] space-y-3 animate-in fade-in duration-200">
+        <div className="p-4 border border-[#35ea52]/40 bg-[#35ea52]/[0.04] space-y-3 animate-in fade-in duration-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-[#35ea52]" />
+              <Sparkles className="h-4 w-4 text-[#16A34A] dark:text-[#35ea52]" />
               <span className="text-xs font-mono font-bold tracking-wider text-foreground uppercase">
                 LẤY THÔNG TIN TỪ LINK SẢN PHẨM
               </span>
             </div>
-            <span className="text-[10px] font-mono text-foreground/40">TỰ ĐỘNG ĐỌC & ĐIỀN FORM</span>
+            <span className="text-[10px] font-mono font-bold text-foreground/70">TỰ ĐỘNG ĐỌC & ĐIỀN FORM</span>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-2">
             <div className="relative flex-1">
-              <Link2 className="absolute left-3 top-2.5 h-4 w-4 text-foreground/30" />
+              <Link2 className="absolute left-3 top-2.5 h-4 w-4 text-foreground/50" />
               <Input
-                placeholder="https://... (TikTok Shop, Shopee, Lazada, Website sản phẩm)"
+                placeholder="https://... (Dán link sản phẩm tại đây)"
                 value={tiktokUrl}
                 onChange={(e) => setTiktokUrl(e.target.value)}
                 disabled={isExtracting}
-                className="h-9 pl-9 text-xs font-mono bg-background/80 border-foreground/20 text-foreground placeholder:text-foreground/25 focus:border-[#35ea52]"
+                className="h-9 pl-9 text-xs font-mono font-medium bg-background border-foreground/30 text-foreground placeholder:text-foreground/45 focus:border-[#35ea52]"
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleExtractFromUrl();
                 }}
@@ -364,7 +364,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
               type="button"
               onClick={handleExtractFromUrl}
               disabled={isExtracting || !tiktokUrl.trim()}
-              className="h-9 px-4 bg-[#35ea52] text-black text-xs font-mono font-bold tracking-wider hover:bg-[#35ea52]/90 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 shrink-0"
+              className="h-9 px-4 bg-[#35ea52] text-black text-xs font-mono font-bold tracking-wider hover:bg-[#35ea52]/90 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 shrink-0 shadow-sm"
             >
               {isExtracting ? (
                 <>
@@ -380,7 +380,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
             </button>
           </div>
 
-          <div className="flex items-center justify-between text-[10px] font-mono text-foreground/40 pt-1">
+          <div className="flex items-center justify-between text-[11px] font-mono font-medium text-foreground/75 pt-1">
             <span>
               {extractedSuccess
                 ? "✓ Đã tự động điền form bên dưới. Bạn có thể kiểm tra và chỉnh sửa nếu cần."
@@ -393,10 +393,10 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
       {/* OPTION 2: MANUAL CONTROLS & DOC/PDF UPLOADER */}
       {inputMode === "manual" && (
         <div className="space-y-3 animate-in fade-in duration-200">
-          <div className="p-3 border border-foreground/15 bg-foreground/[0.02] flex flex-wrap items-center justify-between gap-3">
+          <div className="p-3 border border-foreground/20 bg-foreground/[0.03] flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <PenLine className="h-4 w-4 text-foreground/50" />
-              <span className="text-xs font-mono text-foreground/70">
+              <PenLine className="h-4 w-4 text-foreground/70" />
+              <span className="text-xs font-mono font-semibold text-foreground/85">
                 CHẾ ĐỘ TỰ ĐIỀN THỦ CÔNG: Nhập thông tin chi tiết hoặc tải file tài liệu để AI tự điền.
               </span>
             </div>
@@ -416,7 +416,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
                 type="button"
                 disabled={isExtractingFile}
                 onClick={() => fileInputRef.current?.click()}
-                className="h-7 px-3 bg-[#35ea52] text-black text-[11px] font-mono font-bold tracking-wider hover:bg-[#35ea52]/90 transition-all flex items-center gap-1.5 disabled:opacity-50"
+                className="h-7 px-3 bg-[#35ea52] text-black text-[11px] font-mono font-bold tracking-wider hover:bg-[#35ea52]/90 transition-all flex items-center gap-1.5 disabled:opacity-50 shadow-sm"
               >
                 {isExtractingFile ? (
                   <>
@@ -433,7 +433,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
               <button
                 type="button"
                 onClick={handleResetEmpty}
-                className="h-7 px-3 border border-foreground/20 text-[11px] font-mono text-foreground/60 hover:text-foreground hover:border-foreground/40 transition-all flex items-center gap-1.5"
+                className="h-7 px-3 border border-foreground/30 text-[11px] font-mono font-semibold text-foreground/80 hover:text-foreground hover:border-foreground/60 transition-all flex items-center gap-1.5"
               >
                 <RotateCcw className="h-3 w-3" />
                 XÓA TRẮNG FORM
@@ -441,7 +441,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
               <button
                 type="button"
                 onClick={handleLoadSample}
-                className="h-7 px-3 border border-[#35ea52]/30 text-[#35ea52] text-[11px] font-mono hover:bg-[#35ea52]/10 transition-all flex items-center gap-1.5"
+                className="h-7 px-3 border border-[#35ea52]/50 text-[#16A34A] dark:text-[#35ea52] text-[11px] font-mono font-bold hover:bg-[#35ea52]/10 transition-all flex items-center gap-1.5"
               >
                 <FileText className="h-3 w-3" />
                 TẢI DỮ LIỆU MẪU
@@ -464,28 +464,28 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
             }}
             onClick={() => fileInputRef.current?.click()}
             className={cn(
-              "p-3.5 border border-dashed text-center cursor-pointer transition-all bg-background/40 flex flex-col sm:flex-row items-center justify-between gap-3",
+              "p-3.5 border border-dashed text-center cursor-pointer transition-all bg-background/60 flex flex-col sm:flex-row items-center justify-between gap-3",
               isDragging
                 ? "border-[#35ea52] bg-[#35ea52]/10 shadow-sm"
-                : "border-foreground/20 hover:border-[#35ea52]/60 hover:bg-foreground/[0.02]"
+                : "border-foreground/30 hover:border-[#35ea52] hover:bg-foreground/[0.03]"
             )}
           >
             <div className="flex items-center gap-3 text-left">
-              <div className="size-8 rounded-none border border-[#35ea52]/40 bg-[#35ea52]/10 grid place-items-center text-[#35ea52] shrink-0">
+              <div className="size-8 rounded-none border border-[#35ea52]/50 bg-[#35ea52]/15 grid place-items-center text-[#16A34A] dark:text-[#35ea52] shrink-0 font-bold">
                 {isExtractingFile ? <Loader2 className="size-4 animate-spin" /> : <FileText className="size-4" />}
               </div>
               <div>
                 <p className="text-xs font-mono font-bold text-foreground flex items-center gap-2">
                   <span>KÉO THẢ HOẶC CHỌN FILE BRIEF / SPEC SHEET (PDF, DOCX, TXT)</span>
                   {extractedFileName && (
-                    <span className="text-[10px] text-[#35ea52] font-normal border border-[#35ea52]/30 px-1.5 py-0.2">
+                    <span className="text-[10px] text-[#16A34A] dark:text-[#35ea52] font-semibold border border-[#35ea52]/40 bg-[#35ea52]/10 px-1.5 py-0.2">
                       Đã đọc: {extractedFileName}
                     </span>
                   )}
                 </p>
               </div>
             </div>
-            <span className="inline-flex items-center gap-1.5 text-[11px] font-mono font-bold text-[#35ea52] border border-[#35ea52]/40 px-2.5 py-1 shrink-0 hover:bg-[#35ea52]/10">
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-mono font-bold text-[#16A34A] dark:text-[#35ea52] border border-[#35ea52]/50 bg-[#35ea52]/5 px-2.5 py-1 shrink-0 hover:bg-[#35ea52]/15">
               <Upload className="size-3" />
               CHỌN TÀI LIỆU
             </span>
@@ -493,85 +493,54 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
         </div>
       )}
 
-      {/* WAITING / LOADING STATES IN LINK MODE BEFORE EXTRACTION */}
-      {inputMode === "link" && !extractedSuccess && (
-        <div className="flex-1 flex flex-col justify-center py-4">
-          {isExtracting ? (
-            <div className="p-8 border border-[#35ea52]/40 bg-[#35ea52]/[0.02] flex flex-col items-center justify-center text-center space-y-4 animate-in fade-in duration-300">
-              <div className="w-14 h-14 rounded-full border border-[#35ea52] bg-[#35ea52]/10 flex items-center justify-center text-[#35ea52] shadow-[0_0_20px_rgba(53,234,82,0.2)]">
-                <Loader2 className="h-7 w-7 animate-spin" />
-              </div>
-              <div className="space-y-1.5 max-w-md">
-                <h4 className="text-sm font-mono font-bold tracking-wider text-[#35ea52] uppercase">
-                  HỆ THỐNG ĐANG PHÂN TÍCH DỮ LIỆU SẢN PHẨM...
-                </h4>
-                <p className="text-xs font-mono text-foreground/50">
-                  Hệ thống đang đọc thông số, hình ảnh, phân khúc khách hàng từ link sản phẩm. Dữ liệu sẽ tự động điền vào form ngay sau khi hoàn tất.
-                </p>
-              </div>
+      {/* DETAILED FORM SECTIONS: ALWAYS VISIBLE */}
+      <div className="flex-1 space-y-6 overflow-y-auto pr-2 pb-8">
+        {/* Loading Banner when extracting */}
+        {isExtracting && (
+          <div className="p-3.5 border border-[#35ea52]/50 bg-[#35ea52]/10 flex items-center gap-3 animate-in fade-in duration-200">
+            <Loader2 className="h-4 w-4 text-[#35ea52] animate-spin shrink-0" />
+            <div>
+              <h4 className="text-xs font-mono font-bold text-foreground">
+                HỆ THỐNG ĐANG PHÂN TÍCH LINK SẢN PHẨM & TỰ ĐỘNG ĐIỀN FORM...
+              </h4>
+              <p className="text-[11px] font-mono text-foreground/70">
+                Thông số, hình ảnh và phân khúc khách hàng sẽ xuất hiện trực tiếp trong các ô bên dưới.
+              </p>
             </div>
-          ) : (
-            <div className="p-8 border border-dashed border-foreground/20 bg-foreground/[0.01] flex flex-col items-center justify-center text-center space-y-4 my-auto animate-in fade-in duration-300">
-              <div className="w-14 h-14 rounded-full border border-[#35ea52]/30 bg-[#35ea52]/5 flex items-center justify-center text-[#35ea52]">
-                <Bot className="h-7 w-7" />
-              </div>
-              <div className="space-y-1.5 max-w-md">
-                <h4 className="text-sm font-mono font-bold tracking-wider text-foreground uppercase">
-                  SẴN SÀNG TIẾP NHẬN LINK SẢN PHẨM
-                </h4>
-                <p className="text-xs font-mono text-foreground/45">
-                  Dán URL sản phẩm (TikTok Shop, Shopee, Lazada hoặc Website) vào thanh tìm kiếm phía trên và bấm{" "}
-                  <span className="text-[#35ea52] font-bold">TRÍCH XUẤT & ĐIỀN FORM</span>. Toàn bộ hồ sơ nghiên cứu sản phẩm sẽ được tự động phân tích và điền vào form chi tiết.
-                </p>
-              </div>
-              <div className="flex items-center gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setInputMode("manual")}
-                  className="px-3.5 py-1.5 border border-foreground/20 text-xs font-mono text-foreground/60 hover:text-foreground hover:border-foreground/40 transition-all flex items-center gap-1.5"
-                >
-                  <PenLine className="h-3.5 w-3.5" />
-                  Hoặc chuyển sang chế độ tự điền thủ công
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+          </div>
+        )}
 
-      {/* DETAILED FORM SECTIONS: RENDERED ONLY WHEN MANUAL OR AFTER EXTRACTION */}
-      {(inputMode === "manual" || extractedSuccess) && (
-        <div className="flex-1 space-y-6 overflow-y-auto pr-2 pb-8 animate-in fade-in slide-in-from-top-3 duration-300">
-          {inputMode === "link" && extractedSuccess && (
-            <div className="p-3 border border-[#35ea52]/40 bg-[#35ea52]/[0.05] flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-[#35ea52]" />
-                <span className="text-xs font-mono font-bold text-foreground">
-                  ĐÃ NẠP DỮ LIỆU TỪ LINK:{" "}
-                  <span className="text-[#35ea52]">{data.product_brief.product_name || "Sản phẩm"}</span>
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setExtractedSuccess(false);
-                  setTiktokUrl("");
-                }}
-                className="h-7 px-3 border border-foreground/20 text-[11px] font-mono text-foreground/60 hover:text-foreground transition-all"
-              >
-                Trích xuất link khác
-              </button>
+        {/* Success Banner when link extracted */}
+        {inputMode === "link" && extractedSuccess && (
+          <div className="p-3 border border-[#35ea52]/40 bg-[#35ea52]/[0.05] flex flex-wrap items-center justify-between gap-3 animate-in fade-in duration-200">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-[#35ea52]" />
+              <span className="text-xs font-mono font-bold text-foreground">
+                ĐÃ NẠP DỮ LIỆU TỪ LINK:{" "}
+                <span className="text-[#16A34A] dark:text-[#35ea52]">{data.product_brief.product_name || "Sản phẩm"}</span>
+              </span>
             </div>
-          )}
+            <button
+              type="button"
+              onClick={() => {
+                setExtractedSuccess(false);
+                setTiktokUrl("");
+              }}
+              className="h-7 px-3 border border-foreground/30 text-[11px] font-mono font-bold text-foreground/80 hover:text-foreground transition-all"
+            >
+              Trích xuất link khác
+            </button>
+          </div>
+        )}
 
-          <Section icon={Briefcase} title="1. Thông tin sản phẩm">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Mã chiến dịch *">
-                <Input
-                  className={inputClass}
-                  value={data.campaign_id}
-                  onChange={(e) => setInput({ ...data, campaign_id: e.target.value })}
-                />
+        <Section icon={Briefcase} title="1. Thông tin sản phẩm">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Field label="Mã chiến dịch *">
+              <Input
+                className={inputClass}
+                value={data.campaign_id}
+                onChange={(e) => setInput({ ...data, campaign_id: e.target.value })}
+              />
             </Field>
             <Field label="Tên sản phẩm *">
               <Input
@@ -678,7 +647,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
         {/* Color & Tone Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <label className="text-[10px] font-mono text-foreground/50 uppercase tracking-wider">
+            <label className="text-[11px] font-mono font-bold text-foreground/85 uppercase tracking-wider">
               Tên màu thương hiệu *
             </label>
             <div className="flex gap-2">
@@ -701,12 +670,12 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[10px] font-mono text-foreground/50 uppercase tracking-wider">
+            <label className="text-[11px] font-mono font-bold text-foreground/85 uppercase tracking-wider">
               Mã màu thương hiệu
             </label>
             <div className="flex items-center gap-2">
               <div
-                className="w-9 h-9 border border-foreground/20 shrink-0 shadow-inner"
+                className="w-9 h-9 border border-foreground/30 shrink-0 shadow-inner"
                 style={{
                   backgroundColor: data.brand_kit.brand_colors[0]?.hex || "#10b981",
                 }}
@@ -746,7 +715,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
         </div>
 
         {/* PRODUCT PHOTOS PREVIEW & MANAGEMENT */}
-        <div className="space-y-3 pt-3 border-t border-foreground/10">
+        <div className="space-y-3 pt-3 border-t border-foreground/15">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <ImageIcon className="h-4 w-4 text-[#35ea52]" />
@@ -755,7 +724,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
               </span>
             </div>
             {data.brand_kit.product_photos.length > 0 && (
-              <span className="text-[10px] font-mono text-[#35ea52] bg-[#35ea52]/10 px-2 py-0.5 border border-[#35ea52]/30">
+              <span className="text-[10px] font-mono font-bold text-[#16A34A] dark:text-[#35ea52] bg-[#35ea52]/10 px-2 py-0.5 border border-[#35ea52]/40">
                 ✓ {data.brand_kit.product_photos.length} ảnh đã nạp
               </span>
             )}
@@ -763,12 +732,12 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
 
           {/* Photo Grid Preview */}
           {data.brand_kit.product_photos.length > 0 && (
-            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2.5 p-3 border border-foreground/15 bg-black/40">
+            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2.5 p-3 border border-foreground/20 bg-black/40">
               {data.brand_kit.product_photos.map((photoUrl, idx) => (
                 <div
                   key={idx}
                   className={`relative aspect-square border group overflow-hidden bg-foreground/[0.03] transition-all ${
-                    idx === 0 ? "border-[#35ea52]/60 ring-1 ring-[#35ea52]/30" : "border-foreground/20"
+                    idx === 0 ? "border-[#35ea52]/70 ring-1 ring-[#35ea52]/40" : "border-foreground/25"
                   }`}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -781,9 +750,9 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
                       (e.target as HTMLElement).style.opacity = "0.3";
                     }}
                   />
-                  <div className="absolute top-1 left-1 bg-black/85 px-1.5 py-0.5 text-[8px] font-mono text-white/90 border border-white/10 flex items-center gap-1">
+                  <div className="absolute top-1 left-1 bg-black/85 px-1.5 py-0.5 text-[9px] font-mono font-bold text-white border border-white/20 flex items-center gap-1">
                     <span>#{idx + 1}</span>
-                    {idx === 0 && <span className="text-[#35ea52] font-bold">ẢNH BÌA</span>}
+                    {idx === 0 && <span className="text-[#35ea52]">ẢNH BÌA</span>}
                   </div>
                   <div className="absolute inset-0 bg-black/75 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 p-1">
                     {idx !== 0 && (
@@ -796,7 +765,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
                           brand({ product_photos: updated });
                           toast.success("Đã đặt làm ảnh bìa chính!");
                         }}
-                        className="p-1.5 bg-white/20 hover:bg-[#35ea52] hover:text-black text-white rounded text-[10px] font-mono transition-colors"
+                        className="p-1.5 bg-white/25 hover:bg-[#35ea52] hover:text-black text-white rounded text-[10px] font-mono font-bold transition-colors"
                         title="Đặt làm ảnh bìa"
                       >
                         Bìa
@@ -806,7 +775,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
                       href={photoUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="p-1.5 bg-white/20 hover:bg-white/30 text-white rounded transition-colors"
+                      className="p-1.5 bg-white/25 hover:bg-white/40 text-white rounded transition-colors"
                       title="Xem ảnh gốc"
                     >
                       <ExternalLink className="h-3 w-3" />
@@ -837,7 +806,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
                 placeholder="Dán trực tiếp URL ảnh (https://...)..."
                 value={newImageUrl}
                 onChange={(e) => setNewImageUrl(e.target.value)}
-                className="h-9 text-xs font-mono bg-background/80 border-foreground/20 text-foreground placeholder:text-foreground/30 focus:border-[#35ea52]"
+                className="h-9 text-xs font-mono font-medium bg-background border-foreground/30 text-foreground placeholder:text-foreground/45 focus:border-[#35ea52]"
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleAddImageUrl();
                 }}
@@ -846,7 +815,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
                 type="button"
                 onClick={handleAddImageUrl}
                 disabled={!newImageUrl.trim()}
-                className="h-9 px-4 border border-[#35ea52] bg-[#35ea52]/10 text-[#35ea52] text-xs font-mono font-bold hover:bg-[#35ea52] hover:text-black transition-all disabled:opacity-30 disabled:cursor-not-allowed shrink-0 flex items-center gap-1"
+                className="h-9 px-4 border border-[#35ea52] bg-[#35ea52]/10 text-[#16A34A] dark:text-[#35ea52] text-xs font-mono font-bold hover:bg-[#35ea52] hover:text-black transition-all disabled:opacity-30 disabled:cursor-not-allowed shrink-0 flex items-center gap-1 shadow-sm"
               >
                 <Plus className="h-3.5 w-3.5" /> THÊM URL
               </button>
@@ -854,7 +823,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
 
             {/* Custom Styled File Upload Button */}
             <div className="md:col-span-4">
-              <label className="h-9 px-3 border border-dashed border-foreground/30 hover:border-[#35ea52] bg-foreground/[0.02] hover:bg-foreground/[0.05] cursor-pointer flex items-center justify-center gap-2 text-xs font-mono text-foreground/70 hover:text-foreground transition-all">
+              <label className="h-9 px-3 border border-dashed border-foreground/30 hover:border-[#35ea52] bg-background/80 hover:bg-foreground/[0.04] cursor-pointer flex items-center justify-center gap-2 text-xs font-mono font-bold text-foreground/80 hover:text-foreground transition-all shadow-sm">
                 <Upload className="h-3.5 w-3.5 text-[#35ea52]" />
                 <span>TẢI TỆP TỪ MÁY</span>
                 <input
@@ -887,21 +856,21 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
         </div>
 
         {/* LOGO & EXISTING VISUALS TILES */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-foreground/10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-foreground/15">
           {/* Logo Card */}
           <div className="space-y-1.5">
-            <label className="text-[10px] font-mono text-foreground/50 uppercase tracking-wider flex items-center justify-between">
+            <label className="text-[11px] font-mono font-bold text-foreground/85 uppercase tracking-wider flex items-center justify-between">
               <span>Logo thương hiệu (không bắt buộc)</span>
               {value.files.logo && (
-                <span className="text-[#35ea52] font-mono text-[10px]">✓ {value.files.logo.name}</span>
+                <span className="text-[#16A34A] dark:text-[#35ea52] font-mono font-bold text-[10.5px]">✓ {value.files.logo.name}</span>
               )}
             </label>
-            <label className="flex flex-col items-center justify-center p-4 border border-dashed border-foreground/20 hover:border-[#35ea52]/60 bg-foreground/[0.01] hover:bg-foreground/[0.03] cursor-pointer transition-all min-h-[90px] group">
-              <Upload className="h-4 w-4 text-foreground/30 group-hover:text-[#35ea52] transition-colors mb-1" />
-              <span className="text-xs font-mono text-foreground/60 group-hover:text-foreground tracking-wider">
+            <label className="flex flex-col items-center justify-center p-4 border border-dashed border-foreground/25 hover:border-[#35ea52] bg-background/60 hover:bg-foreground/[0.03] cursor-pointer transition-all min-h-[90px] group shadow-sm">
+              <Upload className="h-4 w-4 text-foreground/50 group-hover:text-[#35ea52] transition-colors mb-1" />
+              <span className="text-xs font-mono font-bold text-foreground/80 group-hover:text-foreground tracking-wider">
                 {value.files.logo ? "BẤM ĐỂ ĐỔI LOGO" : "CHỌN TỆP LOGO (PNG, SVG, JPG)"}
               </span>
-              <span className="text-[10px] font-mono text-foreground/30">Kích thước tối đa 10 MB</span>
+              <span className="text-[10.5px] font-mono font-medium text-foreground/55 mt-0.5">Kích thước tối đa 10 MB</span>
               <input
                 type="file"
                 accept="image/jpeg,image/png,image/webp,image/gif,image/bmp,image/tiff,image/svg+xml"
@@ -924,20 +893,20 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
 
           {/* Existing Visuals Card */}
           <div className="space-y-1.5">
-            <label className="text-[10px] font-mono text-foreground/50 uppercase tracking-wider flex items-center justify-between">
+            <label className="text-[11px] font-mono font-bold text-foreground/85 uppercase tracking-wider flex items-center justify-between">
               <span>Hình ảnh banner / tư liệu hiện có</span>
               {data.brand_kit.existing_product_visuals.length > 0 && (
-                <span className="text-[#35ea52] font-mono text-[10px]">
+                <span className="text-[#16A34A] dark:text-[#35ea52] font-mono font-bold text-[10.5px]">
                   ✓ {data.brand_kit.existing_product_visuals.length} tư liệu
                 </span>
               )}
             </label>
-            <label className="flex flex-col items-center justify-center p-4 border border-dashed border-foreground/20 hover:border-[#35ea52]/60 bg-foreground/[0.01] hover:bg-foreground/[0.03] cursor-pointer transition-all min-h-[90px] group">
-              <Upload className="h-4 w-4 text-foreground/30 group-hover:text-[#35ea52] transition-colors mb-1" />
-              <span className="text-xs font-mono text-foreground/60 group-hover:text-foreground tracking-wider">
+            <label className="flex flex-col items-center justify-center p-4 border border-dashed border-foreground/25 hover:border-[#35ea52] bg-background/60 hover:bg-foreground/[0.03] cursor-pointer transition-all min-h-[90px] group shadow-sm">
+              <Upload className="h-4 w-4 text-foreground/50 group-hover:text-[#35ea52] transition-colors mb-1" />
+              <span className="text-xs font-mono font-bold text-foreground/80 group-hover:text-foreground tracking-wider">
                 TẢI LÊN BANNER / TƯ LIỆU QUẢNG CÁO
               </span>
-              <span className="text-[10px] font-mono text-foreground/30">Chọn nhiều tệp ảnh cùng lúc</span>
+              <span className="text-[10.5px] font-mono font-medium text-foreground/55 mt-0.5">Chọn nhiều tệp ảnh cùng lúc</span>
               <input
                 type="file"
                 multiple
@@ -972,12 +941,12 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
         {/* Existing Visuals Gallery Preview if any */}
         {data.brand_kit.existing_product_visuals.length > 0 && (
           <div className="space-y-1.5 pt-2">
-            <span className="text-[10px] font-mono text-foreground/40 uppercase tracking-wider">
+            <span className="text-[10.5px] font-mono font-bold text-foreground/70 uppercase tracking-wider">
               Tư liệu banner đã nạp:
             </span>
-            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 p-2 border border-foreground/10 bg-black/20">
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 p-2 border border-foreground/15 bg-black/20">
               {data.brand_kit.existing_product_visuals.map((visualUrl, vIdx) => (
-                <div key={vIdx} className="relative aspect-video border border-foreground/15 overflow-hidden group">
+                <div key={vIdx} className="relative aspect-video border border-foreground/20 overflow-hidden group">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={visualUrl}
@@ -1015,10 +984,9 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
           <ListField label="Từ khóa khách hàng tìm kiếm" value={data.market_signal.search_keywords} onChange={(search_keywords) => market({ search_keywords })} />
           <ListField label="Góc truyền thông của đối thủ" value={data.market_signal.competitor_angles} onChange={(competitor_angles) => market({ competitor_angles })} />
         </div>
-        <fieldset className="space-y-2"><legend className="text-[10px] font-mono text-foreground/50 uppercase tracking-wider">Mục tiêu chiến dịch *</legend><div className="flex flex-wrap gap-4">{CAMPAIGN_OBJECTIVES.map((objective) => <label key={objective} className="flex items-center gap-2 text-xs font-mono text-foreground/60"><input type="checkbox" className="accent-[#35ea52]" checked={data.market_signal.campaign_objectives.includes(objective)} onChange={(e) => market({ campaign_objectives: e.target.checked ? [...data.market_signal.campaign_objectives, objective] : data.market_signal.campaign_objectives.filter((item: CampaignObjective) => item !== objective) })} />{OBJECTIVE_LABELS[objective]}</label>)}</div></fieldset>
+        <fieldset className="space-y-2"><legend className="text-[11px] font-mono font-bold text-foreground/85 uppercase tracking-wider">Mục tiêu chiến dịch *</legend><div className="flex flex-wrap gap-4">{CAMPAIGN_OBJECTIVES.map((objective) => <label key={objective} className="flex items-center gap-2 text-xs font-mono font-semibold text-foreground/85 hover:text-foreground cursor-pointer"><input type="checkbox" className="accent-[#35ea52] h-4 w-4" checked={data.market_signal.campaign_objectives.includes(objective)} onChange={(e) => market({ campaign_objectives: e.target.checked ? [...data.market_signal.campaign_objectives, objective] : data.market_signal.campaign_objectives.filter((item: CampaignObjective) => item !== objective) })} />{OBJECTIVE_LABELS[objective]}</label>)}</div></fieldset>
       </Section>
     </div>
-    )}
   </div>
   );
 };
