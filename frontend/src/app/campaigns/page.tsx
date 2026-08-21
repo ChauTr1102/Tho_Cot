@@ -469,19 +469,15 @@ export default function CampaignsPage() {
                           <span className="inline-flex items-center gap-1.5 text-[10px] font-mono text-foreground/30">
                             <CalendarDays className="h-3 w-3" /> {formatCampaignDate(campaign.updated_at)}
                           </span>
-<<<<<<< HEAD
-                          <span className={`inline-flex items-center gap-1.5 text-[10px] font-mono font-bold tracking-wider ${campaign.has_research_result ? "text-[#35ea52]" : "text-foreground/20"}`}>
-                            {isOpening ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" /> : <Search className="h-3.5 w-3.5" />}
-                            {campaign.has_research_result ? "MỞ GÓI CHIẾN DỊCH" : "CHƯA CÓ ĐỀ XUẤT"}
-                          </span>
-=======
-                          <div
-                            className="inline-flex items-center gap-1.5 text-[10px] font-mono font-bold tracking-wider text-[#35ea52] group-hover:underline"
+                          <span
+                            className={cn(
+                              "inline-flex items-center gap-1.5 text-[10px] font-mono font-bold tracking-wider group-hover:underline",
+                              campaign.has_research_result ? "text-[#35ea52]" : "text-foreground/20"
+                            )}
                           >
                             {isOpening ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" /> : <Search className="h-3.5 w-3.5" />}
                             {campaign.has_research_result ? "MỞ GÓI CHIẾN DỊCH" : "CHƯA CÓ ĐỀ XUẤT"}
-                          </div>
->>>>>>> 80fe040 (feat: add file-based product information extraction and enhance campaign dashboard UI interactions)
+                          </span>
                         </div>
                       </article>
                     );
