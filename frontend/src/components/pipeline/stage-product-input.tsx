@@ -238,13 +238,13 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
 
   const handleExtractFromUrl = async () => {
     if (!tiktokUrl.trim()) {
-      toast.error("Hãy nhập URL TikTok Shop hợp lệ.");
+      toast.error("Hãy nhập URL sản phẩm hợp lệ.");
       return;
     }
     setIsExtracting(true);
     try {
       const res = await api.extractProduct({ url: tiktokUrl.trim(), render: true });
-      applyExtractionPayload(res.data, "TikTok Shop URL");
+      applyExtractionPayload(res.data, "URL sản phẩm");
     } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : "Không thể trích xuất dữ liệu từ URL.");
     } finally {
@@ -315,7 +315,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
             }`}
           >
             <Link2 className="h-3.5 w-3.5" />
-            DÁN LINK TIKTOK SHOP
+            DÁN LINK SẢN PHẨM (TIKTOK / SHOPEE / LAZADA / WEB)
           </button>
           <div className="w-px bg-foreground/20" />
           <button
@@ -340,17 +340,17 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-[#35ea52]" />
               <span className="text-xs font-mono font-bold tracking-wider text-foreground uppercase">
-                LẤY THÔNG TIN TỪ TIKTOK SHOP
+                LẤY THÔNG TIN TỪ LINK SẢN PHẨM
               </span>
             </div>
-            <span className="text-[10px] font-mono text-foreground/40">TỰ ĐỘNG ĐIỀN THÔNG TIN SẢN PHẨM</span>
+            <span className="text-[10px] font-mono text-foreground/40">TỰ ĐỘNG ĐỌC & ĐIỀN FORM</span>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-2">
             <div className="relative flex-1">
               <Link2 className="absolute left-3 top-2.5 h-4 w-4 text-foreground/30" />
               <Input
-                placeholder="https://shop.tiktok.com/vn/pdp/..."
+                placeholder="https://... (TikTok Shop, Shopee, Lazada, Website sản phẩm)"
                 value={tiktokUrl}
                 onChange={(e) => setTiktokUrl(e.target.value)}
                 disabled={isExtracting}
@@ -384,7 +384,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
             <span>
               {extractedSuccess
                 ? "✓ Đã tự động điền form bên dưới. Bạn có thể kiểm tra và chỉnh sửa nếu cần."
-                : "Hệ thống AI sẽ tự động đọc sản phẩm, thương hiệu, giá, USPs, tệp khách hàng và tín hiệu thị trường."}
+                : "Hệ thống sẽ tự động phân tích sản phẩm, thương hiệu, giá, USPs, tệp khách hàng và tín hiệu thị trường."}
             </span>
           </div>
         </div>
@@ -483,9 +483,6 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
                     </span>
                   )}
                 </p>
-                <p className="text-[11px] font-mono text-foreground/45 mt-0.5">
-                  Gemini AI sẽ tự động đọc nội dung tài liệu và phân loại điền vào từng ô bên dưới.
-                </p>
               </div>
             </div>
             <span className="inline-flex items-center gap-1.5 text-[11px] font-mono font-bold text-[#35ea52] border border-[#35ea52]/40 px-2.5 py-1 shrink-0 hover:bg-[#35ea52]/10">
@@ -506,10 +503,10 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
               </div>
               <div className="space-y-1.5 max-w-md">
                 <h4 className="text-sm font-mono font-bold tracking-wider text-[#35ea52] uppercase">
-                  AI ĐANG CÀO & PHÂN TÍCH DỮ LIỆU SẢN PHẨM...
+                  HỆ THỐNG ĐANG PHÂN TÍCH DỮ LIỆU SẢN PHẨM...
                 </h4>
                 <p className="text-xs font-mono text-foreground/50">
-                  Playwright đang tải trang & Gemini AI đang đọc thông số, hình ảnh, phân khúc khách hàng. Dữ liệu sẽ tự động bắn xuống form ngay sau khi hoàn tất.
+                  Hệ thống đang đọc thông số, hình ảnh, phân khúc khách hàng từ link sản phẩm. Dữ liệu sẽ tự động điền vào form ngay sau khi hoàn tất.
                 </p>
               </div>
             </div>
@@ -520,11 +517,11 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
               </div>
               <div className="space-y-1.5 max-w-md">
                 <h4 className="text-sm font-mono font-bold tracking-wider text-foreground uppercase">
-                  SẴN SÀNG TIẾP NHẬN LINK TIKTOK SHOP
+                  SẴN SÀNG TIẾP NHẬN LINK SẢN PHẨM
                 </h4>
                 <p className="text-xs font-mono text-foreground/45">
-                  Dán URL sản phẩm vào thanh tìm kiếm phía trên và bấm{" "}
-                  <span className="text-[#35ea52] font-bold">TRÍCH XUẤT & ĐIỀN FORM</span>. Toàn bộ hồ sơ nghiên cứu sản phẩm sẽ được AI tự động phân tích và bắn xuống form chi tiết.
+                  Dán URL sản phẩm (TikTok Shop, Shopee, Lazada hoặc Website) vào thanh tìm kiếm phía trên và bấm{" "}
+                  <span className="text-[#35ea52] font-bold">TRÍCH XUẤT & ĐIỀN FORM</span>. Toàn bộ hồ sơ nghiên cứu sản phẩm sẽ được tự động phân tích và điền vào form chi tiết.
                 </p>
               </div>
               <div className="flex items-center gap-2 pt-2">
