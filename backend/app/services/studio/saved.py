@@ -190,3 +190,91 @@ def summary(campaign_id: str) -> dict[str, Any]:
         # The same kit as a graph, because that is the screen it was built on.
         "nodes": build_nodes(campaign_id),
     }
+
+
+# ---------------------------------------------------------------------------
+# The DTO the pipeline's final report and QA gate consume
+# ---------------------------------------------------------------------------
+
+#: Which rendered slot fills each required field of `ProductCollectionImageSet`,
+#: best candidate first. Matched as a substring of the filename stem, so a slot
+#: named `shopee_main_image` satisfies "main" and `tiktok_shop_video_cover`
+#: satisfies "cover". The fallbacks matter: a campaign for one marketplace still
+#: has to fill all four fields or the whole object is withheld.
+_IMAGE_SLOTS: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("product_hero_image", ("main_image", "main", "hero", "cover")),
+    ("sku_detail_image", ("detail", "sku", "product_card", "carousel")),
+    ("campaign_collection_image", ("collection", "gallery", "lifestyle", "detail")),
+    ("marketplace_thumbnail", ("thumbnail", "cover", "main", "poster")),
+)
+
+_OPTIONAL_IMAGE_SLOTS: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("promotion_banner", ("sale_poster", "promo", "banner", "sale")),
+    ("bundle_image", ("bundle", "gift")),
+    ("seasonal_sale_image", ("seasonal", "sale_sticker", "sale")),
+)
+
+
+def _pick(assets: list[dict[str, Any]], needles: tuple[str, ...], used: set[str]) -> str | None:
+    """First unused image whose name contains one of `needles`, needles in order.
+
+    Distinct files are preferred but not required: a four-field DTO built from a
+    three-image campaign is still more useful than no DTO, so the last resort
+    reuses a file rather than withholding the object.
+    """
+    for needle in needles:
+        for asset in assets:
+            if needle in asset["name"].casefold() and asset["name"] not in used:
+                used.add(asset["name"])
+                return asset["url"]
+    for needle in needles:
+        for asset in assets:
+            if needle in asset["name"].casefold():
+                return asset["url"]
+    return None
+
+
+def to_dto(campaign_id: str) -> dict[str, Any]:
+    """A finished kit in the DTO shapes `CampaignOutputDTO` is assembled from.
+
+    This is the disk-backed twin of the in-memory path in `endpoints/studio.py`.
+    That one reads `_RUNS`, a process-local dict, so it answers only while the
+    process that did the rendering is still alive: restart the backend, or open
+    a campaign built yesterday, and the final report fell back to mock URLs
+    pointing at `example.com`. The files never went anywhere; only the dict did.
+
+    Both halves stay null unless genuinely complete, exactly as the in-memory
+    path does — a half-filled object would satisfy the type and fail the brief.
+    """
+    assets = list_assets(campaign_id)
+    images = [a for a in assets if a["kind"] == "image"]
+    videos = [a for a in assets if a["kind"] == "video"]
+
+    image_set: dict[str, Any] | None = None
+    if len(images) >= 4:
+        used: set[str] = set()
+        picked = {field: _pick(images, needles, used) for field, needles in _IMAGE_SLOTS}
+        if all(picked.values()):
+            for field, needles in _OPTIONAL_IMAGE_SLOTS:
+                found = _pick(images, needles, used)
+                if found:
+                    picked[field] = found
+            image_set = picked
+
+    video_asset: dict[str, Any] | None = None
+    if videos:
+        # The longest master is the campaign video; the rest are cutdowns.
+        ordered = sorted(videos, key=lambda a: a["bytes"], reverse=True)
+        video_asset = {
+            "generated_video_urls": [ordered[0]["url"]],
+            "format": "9:16",
+            "duration": "15-30s",
+            "additional_cuts": [a["url"] for a in ordered[1:]],
+        }
+
+    return {
+        "campaign_id": campaign_id,
+        "status": "done" if assets else "empty",
+        "product_collection_image_set": image_set,
+        "short_form_video_asset": video_asset,
+    }

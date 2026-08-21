@@ -235,10 +235,15 @@ export function AssetStudio({
   // `finished` also covers "disconnected", so a page that was left open
   // through a completed run still picks the result up once reconnected.
   useEffect(() => {
-    if (!finished || !campaignId || !onAssetsReady) return;
+    // Either a run that just finished, or a campaign that was already built —
+    // opening a finished campaign starts no run, so `finished` never becomes
+    // true and the report downstream kept its mock URLs. The kit exists either
+    // way; where it came from is not the report's business.
+    const source = finished && campaignId ? campaignId : savedResult?.campaign_id;
+    if (!source || !onAssetsReady) return;
     let cancelled = false;
     api
-      .getStudioAssets(campaignId)
+      .getStudioAssets(source)
       .then((res) => {
         if (!cancelled && res.data) onAssetsReady(res.data);
       })
@@ -253,7 +258,7 @@ export function AssetStudio({
     return () => {
       cancelled = true;
     };
-  }, [finished, campaignId, onAssetsReady]);
+  }, [finished, campaignId, savedResult, onAssetsReady]);
 
   // Propose, then approve. The director reads the brief and writes a register
   // for whatever the user asked for; nothing renders until a person says yes.
