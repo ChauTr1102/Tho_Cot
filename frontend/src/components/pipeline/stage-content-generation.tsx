@@ -30,7 +30,7 @@ export const StageContentGeneration: React.FC = () => {
   return (
     <div className="space-y-6 h-full flex flex-col animate-in fade-in duration-500">
       <div className="space-y-2 border-b border-foreground/10 pb-4 shrink-0">
-        <h2 className="text-lg font-bold font-mono tracking-wider text-foreground">SÁNG TẠO NỘI DUNG (OUTPUT DTO)</h2>
+        <h2 className="text-lg font-bold font-mono tracking-wider text-foreground">SÁNG TẠO NỘI DUNG</h2>
         <p className="text-sm font-mono text-foreground/40">
           Hiển thị dữ liệu Creative Routes và Commerce Copy.
         </p>

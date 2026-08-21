@@ -5,7 +5,6 @@ import { CampaignStage, StageStatus, CAMPAIGN_STAGES, type CampaignListItem } fr
 import { PipelineLayout } from "@/components/pipeline/pipeline-layout";
 import { StageProductInput } from "@/components/pipeline/stage-product-input";
 import { StageResearch } from "@/components/pipeline/stage-research";
-import { StagePositioning } from "@/components/pipeline/stage-positioning";
 import { StageContentGeneration } from "@/components/pipeline/stage-content-generation";
 import { StageQAGate } from "@/components/pipeline/stage-qa-gate";
 import { StageFinalOutput } from "@/components/pipeline/stage-final-output";
@@ -312,14 +311,13 @@ export default function CampaignsPage() {
               >
               {currentStage === "product_input" && <StageProductInput value={researchSubmission} onChange={setResearchSubmission} />}
               {currentStage === "research" && <StageResearch plan={researchPlan} isLoading={researchLoading} error={researchError} onRetry={() => void runResearch()} />}
-              {currentStage === "positioning" && <StagePositioning />}
               {currentStage === "content_generation" && <StageContentGeneration />}
               {currentStage === "qa_gate" && <StageQAGate />}
               {currentStage === "final_output" && <StageFinalOutput />}
               {currentStage === "user_review" && <StageUserReview />}
               {currentStage === "package" && <StagePackage />}
               {currentStage === "deploy" && <StageDeploy />}
-              {!["product_input", "research", "positioning", "content_generation", "qa_gate", "final_output", "user_review", "package", "deploy"].includes(currentStage) && (
+              {!["product_input", "research", "content_generation", "qa_gate", "final_output", "user_review", "package", "deploy"].includes(currentStage) && (
                 <div className="flex items-center justify-center h-full min-h-[400px] border border-dashed border-foreground/10">
                   <p className="text-sm font-mono text-foreground/30 tracking-wider">
                     [{currentStage.toUpperCase()}_COMPONENT_PLACEHOLDER]
