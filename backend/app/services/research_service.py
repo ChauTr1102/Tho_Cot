@@ -55,6 +55,7 @@ class ResearchService:
         brief: str | None = None,
         *,
         research_input: dict | None = None,
+        visual_assets: tuple[list[str], list[dict]] | None = None,
         evidence: str | None = None,
         lang: str = "vi",
         timeout: float = 420,
@@ -70,9 +71,12 @@ class ResearchService:
         campaign_id: str | None = None
         if research_input is not None:
             structured = validate_research_input(research_input)
-            image_urls, asset_manifest = load_visual_assets(
-                structured, workspace_root or _WORKSPACE_ROOT,
-            )
+            if visual_assets is not None:
+                image_urls, asset_manifest = visual_assets
+            else:
+                image_urls, asset_manifest = load_visual_assets(
+                    structured, workspace_root or _WORKSPACE_ROOT,
+                )
             campaign_id = structured["campaign_id"]
             brief_text = (
                 "RESEARCH INPUT CÓ CẤU TRÚC (giữ nguyên null và mảng rỗng; không tự điền):\n"
