@@ -76,8 +76,9 @@ SLOT_SCENES: dict[str, str] = {
         "colour, generous empty space kept in its top third where only clean out-of-focus "
         "background shows and no object stands, so the headline sits directly over the "
         "photograph; below that a low hero angle looking up at the product standing tall, its own "
-        "material in motion and physically touching it - a pour, a splash, a drift of steam or a "
-        "scatter of its raw ingredient - frozen as it arcs through the key light on {surface}, "
+        "material in motion and physically touching it - a pour, a splash, a drift of steam, a "
+        "scatter of its raw ingredient, or, for a product with no material of its own, a sweep of "
+        "light and colour - frozen as it arcs through the key light on {surface}, "
         "{light}, one element far behind in deep bokeh, nothing important in the bottom fifth or "
         "along the right edge"
     ),
@@ -107,7 +108,7 @@ SLOT_SCENES: dict[str, str] = {
     # Do not add {surface} or {light} here, and do not make this cinematic.
     "shopee_main": (
         "the product centred on a pure white seamless background, square to the camera with "
-        "the whole label legible, evenly lit with no dramatic shadow, a soft contact shadow "
+        "the whole label legible, evenly lit with no strong shadow, a soft contact shadow "
         "under it, nothing else in the frame"
     ),
     # Label close-up. Square to the camera because a shopper is reading it, not
@@ -129,8 +130,9 @@ SLOT_SCENES: dict[str, str] = {
         "background shows, so the headline sits directly over the photograph; below that three of "
         "the product in a tight overlapping row, the nearest turned three-quarters and closest to "
         "the lens, the two behind stepped back and falling out of focus, the product's own "
-        "material in motion between them - a pour, a splash or a scatter of its raw ingredient - "
-        "catching the key light on {surface}, {light}"
+        "material in motion between them - a pour, a splash, a scatter of its raw ingredient, or, for "
+        "a product with no material of its own, a sweep of light and colour - catching the key "
+        "light on {surface}, {light}"
     ),
     # Wide banner. The product holds one side and cedes the other to the copy,
     # and the light does the handover: the shadow and the ingredient trail lead

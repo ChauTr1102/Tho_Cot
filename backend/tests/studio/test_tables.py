@@ -306,11 +306,17 @@ def test_scene_keys_and_slot_ids_are_the_same_set():
     assert set(SLOT_SCENES) == slot_ids
 
 
+# The three slots a shopper studies before paying. They are deliberately
+# propless and eventless: the buyer is checking the object matches the parcel,
+# and staging is exactly what makes a listing image untrustworthy.
+INSPECTION_SLOTS = {"shopee_main", "tiktok_product"}
+
+
 def test_every_staged_scene_names_a_composition_and_an_event():
     """A location is not a picture. "three products arranged on a board" says
     where they are; "three in a tight overlapping row, the nearest turned
     three-quarters, a ribbon of milk frozen mid-pour between them" says what the
-    photograph looks like. Every scene but the marketplace one must do both."""
+    photograph looks like. Every scene but the inspection ones must do both."""
     composition = (
         "angle", "row", "overlapping", "three-quarters", "foreground", "bokeh",
         "frame", "third", "half", "close", "macro", "behind", "lower", "left",
@@ -320,10 +326,10 @@ def test_every_staged_scene_names_a_composition_and_an_event():
         "arcs", "scatter", "running", "raking", "drift", "beading", "spill",
     )
     for slot_id, scene in SLOT_SCENES.items():
-        if slot_id == "shopee_main":
-            continue
         low = scene.casefold()
         assert any(word in low for word in composition), f"{slot_id} states no composition"
+        if slot_id in INSPECTION_SLOTS:
+            continue
         assert any(word in low for word in event), f"{slot_id} stages no event"
 
 

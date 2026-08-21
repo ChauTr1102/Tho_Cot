@@ -71,8 +71,9 @@ FORMAT: {ratio}, e-commerce ready{rule_clause}
 
 NEGATIVE: no invented brand name, no invented tagline, no text beyond the list above, \
 no watermark, no distorted or doubled lettering, no misspelling of any string listed above, \
-no softbox, scrim, reflector, bounce card, flag or light stand visible in the frame, \
-no flat colour band, border or panel across the photograph."""
+no softbox, scrim, reflector, bounce card, flag, lamp head, studio light or light stand \
+visible in the frame, no flat colour band, border or panel across the photograph, \
+nothing broken, cracked, dented or spilled in a way that reads as damage."""
 
 
 # A bullet in the TEXT block. The phrase "reading exactly" is load-bearing: it is

@@ -165,7 +165,8 @@ LOOKS: dict[str, Look] = {
         light=(
             "one bare-bulb hard key high camera-right cutting a crisp graphic shadow to the left, "
             "a gelled kicker opposite rimming the product in a saturated complementary colour, a "
-            "gridded background light out of frame burning a halo behind it, nothing soft anywhere"
+            "bright halo burnt onto the sweep behind it by a gridded light out of frame, nothing "
+            "soft anywhere"
         ),
         surface=(
             "a saturated seamless colour sweep, a stepped colour-block plinth at its centre, one "
@@ -194,8 +195,8 @@ LOOKS: dict[str, Look] = {
             "cold specular rim, black flags out of frame either side"
         ),
         surface=(
-            "a black acrylic tabletop returning one clean mirror reflection, in an unlit room with "
-            "a faint pool of light on the far wall and slow smoke drifting through the beam"
+            "a black acrylic tabletop returning one clean mirror reflection, an unlit room behind it, "
+            "a faint pool of light on the far wall, slow smoke drifting through the beam"
         ),
         grade=(
             "low-key chiaroscuro, crushed blacks, one warm specular highlight against cold "
