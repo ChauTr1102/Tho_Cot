@@ -68,8 +68,15 @@
    redefining the tokens on the route's own root cascades to every component
    underneath it and to nothing outside. The app theme and the studio theme can
    now move independently, which is what both of them want.
+   Applied by the standalone `/studio` route only. Embedded in the campaign
+   pipeline the studio inherits whatever theme that page uses — which works
+   because every rule in this file reads tokens rather than hex. An earlier
+   version of this note claimed ivory was unreadable; that was a misdiagnosis.
+   The nodes washed out and the minimap rendered as a black slab because this
+   stylesheet and React Flow's were not being loaded at all outside `/studio`,
+   not because of the palette.
    ──────────────────────────────────────────────────────────────────────────── */
-.studio-backdrop {
+.studio-theme-dark {
   --background: #001708;
   --foreground: #f4faf5;
   --card: #00220e;

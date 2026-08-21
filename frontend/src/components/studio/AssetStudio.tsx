@@ -271,17 +271,13 @@ export function AssetStudio({
     <div
       className={
         embedded
-          ? // Still the studio's own surface, just inset as a panel. Inheriting
-            // the pipeline's ivory looked reasonable in theory — no component
-            // hardcodes a colour — and was unreadable in practice: the graph's
-            // contrast, its edges and its minimap are all tuned in `studio.css`
-            // against a near-black ground, so on ivory the nodes washed out to
-            // pale grey on white and the minimap read as a black slab.
-            // Height comes from the content, not from the slot. `h-full` inside the
-            // pipeline stage stretched the panel to the full stage and left the
-            // run log floating above three hundred pixels of empty dark.
-            "studio-backdrop flex flex-col overflow-hidden rounded-xl border border-foreground/10"
-          : "studio-backdrop flex min-h-screen flex-col"
+          ? // Inherits the surrounding theme. Every rule in `studio.css` reads
+            // tokens rather than hex, so the same graph renders on ivory inside
+            // the pipeline and on near-black at /studio with no second
+            // stylesheet — provided the stylesheets load at all, which is the
+            // bug this was previously mistaken for.
+            "flex flex-col"
+          : "studio-backdrop studio-theme-dark flex min-h-screen flex-col"
       }
     >
       {embedded ? null : (
