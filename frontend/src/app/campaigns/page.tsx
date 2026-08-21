@@ -549,7 +549,7 @@ export default function CampaignsPage() {
                   onAssetsReady={handleStudioAssetsReady}
                 />
               )}
-              {currentStage === "qa_gate" && <StageQAGate campaignInput={campaignInputForQa} campaignOutput={campaignOutput ?? buildMockCampaignOutput(researchPlan, researchSubmission.input)} onResult={setQaResult} />}
+              {currentStage === "qa_gate" && <StageQAGate campaignInput={campaignInputForQa} campaignOutput={campaignOutput ?? buildMockCampaignOutput(researchPlan, researchSubmission.input)} initialResult={qaResult} onResult={setQaResult} />}
               {currentStage === "final_output" && <StageFinalOutput plan={researchPlan} input={researchSubmission.input} campaignOutput={campaignOutput ?? buildMockCampaignOutput(researchPlan, researchSubmission.input)} qaResult={qaResult} />}
               {!["product_input", "research", "content_generation", "qa_gate", "final_output"].includes(currentStage) && (
                 <div className="flex items-center justify-center h-full min-h-[400px] border border-dashed border-foreground/10">

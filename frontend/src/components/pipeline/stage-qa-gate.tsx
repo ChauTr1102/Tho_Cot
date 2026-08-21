@@ -7,98 +7,42 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { humanizeRuleId, type QAIssue, type VerifyChecklistResponseData } from "@/types/qa_checklist";
 
 interface Props {
-  /** CampaignInputDTO JSON (snake_case), matching backend/app/schemas/campaign_dto.py. */
-  campaignInput?: Record<string, unknown>;
-  /** CampaignOutputDTO JSON (snake_case), matching backend/app/schemas/campaign_dto.py. */
-  campaignOutput?: Record<string, unknown>;
+  /** CampaignInputDTO JSON (snake_case), matching backend/app/schemas/campaign_dto.py.
+      Required: this stage always verifies against the real campaign being
+      built, never a placeholder — see campaigns/page.tsx's campaignInputForQa. */
+  campaignInput: Record<string, unknown>;
+  /** CampaignOutputDTO JSON (snake_case), matching backend/app/schemas/campaign_dto.py.
+      Required for the same reason. Real generated assets once the content
+      stage's studio run reports them (see onAssetsReady in
+      campaigns/page.tsx); the plan-derived mock from
+      buildMockCampaignOutput only until then — but always a real object,
+      never undefined. */
+  campaignOutput: Record<string, unknown>;
   iteration?: number;
   /** Called with the verify-checklist response data right after a successful call resolves. */
   onResult?: (result: VerifyChecklistResponseData) => void;
+  /** A previously computed result (e.g. from the parent's qaResult state),
+      if this campaign already went through the QA gate once. When set, the
+      stage renders it immediately instead of showing the loading skeleton
+      and re-running verify-checklist on every visit — the check itself is
+      LLM-backed and not free, and the user has already seen this result. */
+  initialResult?: VerifyChecklistResponseData | null;
 }
-
-// Fallback sample data so this stage is runnable end-to-end before the
-// earlier pipeline stages (positioning / content generation) are wired up
-// to real generation state. Pass real campaignInput/campaignOutput props
-// once those stages produce actual data.
-const SAMPLE_CAMPAIGN_INPUT: Record<string, unknown> = {
-  product_brief: {
-    product_name: "Fizzy Roots Sparkling Tea",
-    category: "F&B",
-    key_selling_points: ["Zero added sugar", "Made in Vietnam"],
-    price_or_promotion: { price: 25000, currency: "VND", promotion: "Buy 4 Get 1 Free" },
-    target_market: "Vietnam",
-    required_claims: ["zero added sugar", "made in Vietnam"],
-    restricted_or_forbidden_claims: ["cures bloating"],
-  },
-  brand_kit: {
-    logo: { path: "./brand_assets/brand_logo.jpg" },
-    brand_colors: { primary: "#0E7C61", secondary: "#F4D35E", accent: ["#FFFFFF"], palette: ["#0E7C61"] },
-    tone_of_voice: { description: "playful", attributes: ["playful"], do: [], dont: [] },
-    product_photos: ["./brand_assets/product_photo_studio.jpg"],
-    existing_product_visuals: [],
-  },
-  audience_brief: { target_customer: "Gen Z", language: "vi", platform: "TikTok Shop", market: "VN" },
-  market_signal: {
-    trend: "functional beverages", seasonal_moment: null, consumer_pain_point: "sugar guilt",
-    search_keyword: ["tra hoa qua khong duong"], competitor_angle: null, campaign_objective: "Drive trial purchases",
-  },
-  past_campaign_data: {
-    enabled: false, ctr: null, cvr: null, roas: null,
-    watch_time: { value: null, unit: "seconds" }, add_to_cart_rate: null, comments: [],
-    sales_results: { units_sold: null, revenue: null, currency: "VND" },
-  },
-};
-
-const SAMPLE_CAMPAIGN_OUTPUT: Record<string, unknown> = {
-  product_positioning: {
-    main_campaign_angle: "Zero added sugar, without the trade-off.",
-    target_audience: "Gen Z",
-    key_selling_message: "Fizzy Roots solves sugar guilt with zero added sugar, made in Vietnam.",
-    product_benefit_hierarchy: ["Zero added sugar", "Made in Vietnam"],
-  },
-  creative_routes: [
-    { name: "Route A", hook_idea: "Problem-agitate-solve", visual_direction: "Close-up shot", message_angle: "Pain-point led", suggested_platform_usage: ["TikTok Shop"] },
-    { name: "Route B", hook_idea: "Testimonial", visual_direction: "Studio shot", message_angle: "Trust led", suggested_platform_usage: ["TikTok Shop"] },
-  ],
-  short_form_video_asset: { generated_video_urls: ["https://example.com/route_a.mp4"], format: "9:16", duration: "20s", additional_cuts: [] },
-  product_collection_image_set: {
-    product_hero_image: "https://example.com/hero.jpg",
-    sku_detail_image: "https://example.com/sku.jpg",
-    campaign_collection_image: "https://example.com/collection.jpg",
-    marketplace_thumbnail: "https://example.com/thumb.jpg",
-  },
-  commerce_copy: {
-    product_title: "Fizzy Roots Sparkling Tea",
-    product_description: "Made with zero added sugar. Made in Vietnam.",
-    listing_bullet_points: ["Zero added sugar", "Made in Vietnam"],
-    ad_caption: "Zero added sugar, made in Vietnam.",
-    promotion_copy: "Buy 4 Get 1 Free",
-    short_hook_lines: ["Meet Fizzy Roots."],
-  },
-  ab_testing_plan: {
-    what_to_test: "Hook style", route_a_description: "Pain-point led opener", route_b_description: "Testimonial led opener",
-    suggested_success_metrics: ["CTR", "Add-to-cart rate"], expected_learning: "Which hook drives more engagement.",
-  },
-  performance_learning: null,
-};
 
 const REGENERATE_LABEL: Record<string, string> = { plan: "PLAN", asset: "ASSET (ảnh / video / copy)" };
 
-export const StageQAGate: React.FC<Props> = ({ campaignInput, campaignOutput, iteration = 1, onResult }) => {
-  const [state, setState] = React.useState<"checking" | "done" | "error">("checking");
-  const [result, setResult] = React.useState<VerifyChecklistResponseData | null>(null);
+export const StageQAGate: React.FC<Props> = ({ campaignInput, campaignOutput, iteration = 1, onResult, initialResult = null }) => {
+  const [state, setState] = React.useState<"checking" | "done" | "error">(initialResult ? "done" : "checking");
+  const [result, setResult] = React.useState<VerifyChecklistResponseData | null>(initialResult);
   const [error, setError] = React.useState<string | null>(null);
 
   const runVerify = React.useCallback(() => {
     setState("checking");
     setError(null);
     api
-      // Falls back to the local SAMPLE_CAMPAIGN_INPUT/OUTPUT only when no
-      // props are supplied at all (e.g. standalone/dev preview usage). The
-      // real call site (campaigns/page.tsx) always passes real campaign data.
       .verifyChecklist({
-        campaign_input: campaignInput ?? SAMPLE_CAMPAIGN_INPUT,
-        campaign_output: campaignOutput ?? SAMPLE_CAMPAIGN_OUTPUT,
+        campaign_input: campaignInput,
+        campaign_output: campaignOutput,
         iteration,
       })
       .then((res) => {
@@ -112,7 +56,16 @@ export const StageQAGate: React.FC<Props> = ({ campaignInput, campaignOutput, it
       });
   }, [campaignInput, campaignOutput, iteration, onResult]);
 
+  // Only auto-run on mount when there is nothing to show yet. A campaign
+  // that already went through this gate (initialResult set from the
+  // parent's qaResult state) loads back its old result instead of
+  // re-running the LLM-backed check and flashing the loading skeleton
+  // every time the user navigates back to this stage. "KIỂM TRA LẠI" /
+  // "THỬ LẠI" still call runVerify explicitly when a fresh check is wanted.
+  const hasRunRef = React.useRef(Boolean(initialResult));
   React.useEffect(() => {
+    if (hasRunRef.current) return;
+    hasRunRef.current = true;
     runVerify();
   }, [runVerify]);
 

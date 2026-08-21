@@ -68,21 +68,29 @@ export function buildMockCampaignOutput(
         // somebody else's.
         [];
 
-  // Video, images and A/B testing specifics have no real generation backend
-  // yet — reuse the same hardcoded mock content shown in
-  // stage-content-generation.tsx's JSX / stage-final-output.tsx fallback.
+  // Video and images have no real generation backend result yet at this
+  // point in the pipeline (before content-generation's studio run reports
+  // real assets via onAssetsReady — see campaigns/page.tsx). Genuinely
+  // empty rather than a placeholder https://example.com/mock/*.jpg URL:
+  // the QA checklist's own rules (backend/app/services/qa_checklist_service.py
+  // and qa_agent/service.py) already check for a blank string/empty list
+  // and report a correct "not generated yet" issue for it. A fake URL that
+  // *looks* real instead made the QA agent try to load it as an actual
+  // image and fail with a confusing "no real image could be loaded" error —
+  // technically correct (the URL was never real) but reported as the wrong
+  // kind of failure for the wrong reason.
   const short_form_video_asset = {
-    generated_video_urls: ["https://example.com/mock/g7_morning_ritual_9x16.mp4"],
+    generated_video_urls: [] as string[],
     format: "9:16",
-    duration: "22s",
+    duration: "0s",
     additional_cuts: [],
   };
 
   const product_collection_image_set = {
-    product_hero_image: "https://example.com/mock/hero.jpg",
-    sku_detail_image: "https://example.com/mock/sku_detail.jpg",
-    campaign_collection_image: "https://example.com/mock/campaign_collection.jpg",
-    marketplace_thumbnail: "https://example.com/mock/marketplace_thumbnail.jpg",
+    product_hero_image: "",
+    sku_detail_image: "",
+    campaign_collection_image: "",
+    marketplace_thumbnail: "",
   };
 
   // Derived from this campaign, never borrowed from another one. These fields
