@@ -1,0 +1,10 @@
+Sản phẩm: Cocoon - Tẩy da chết cơ thể Cà phê Đắk Lắk (200ml)
+
+Trang sản phẩm chính thức (crawl để lấy brief):
+https://cocoonvietnam.com/vn/ca-phe-dak-lak-lam-sach-da-chet-co-the
+Trang chủ (nếu link trên đổi): https://cocoonvietnam.com
+
+Ghi chú: Đây là TOÀN BỘ input người bán đưa — chỉ 1 cái link.
+Hệ thống tự crawl trang này để lấy: tên sản phẩm, mô tả, thành phần,
+claim (100% thuần chay, cruelty-free/Leaping Bunny, nguyên liệu Việt),
+ảnh sản phẩm, màu thương hiệu. Ảnh đã crawl sẵn để trong assets/.
