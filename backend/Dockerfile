@@ -13,9 +13,15 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-# System deps needed to build some Python wheels (kept minimal)
+# System deps needed to build some Python wheels, plus ffmpeg/ffprobe —
+# app/services/studio/assemble.py shells out to both as bare PATH commands
+# (concat/re-encode the master video, mux the voiceover, render the subtitle
+# overlay) and neither was ever installed here, so every voiceover/video node
+# failed with FileNotFoundError: 'ffmpeg' the first time a full run reached
+# them. The standard Debian package includes libx264 + aac, which is all
+# this module's codecs need (see its module docstring) — no custom build.
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends build-essential curl \
+    && apt-get install -y --no-install-recommends build-essential curl ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies first for better layer caching

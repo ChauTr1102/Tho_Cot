@@ -129,7 +129,19 @@ def _ffprobe() -> str:
 
 def _run(args: Sequence[str], label: str) -> str:
     """Run an ffmpeg/ffprobe command, raising `AssembleError` with its stderr."""
-    proc = subprocess.run(list(args), capture_output=True, text=True)
+    try:
+        proc = subprocess.run(list(args), capture_output=True, text=True)
+    except OSError as exc:
+        # The binary itself is missing or not executable (e.g. ffmpeg was
+        # never installed in this environment) — subprocess.run raises
+        # before there is any returncode/stderr to report, so without this
+        # a caller three layers up sees a bare FileNotFoundError with no
+        # indication of which binary or command was involved.
+        raise AssembleError(
+            f"{label} failed: could not run {args[0]!r} "
+            f"(binary missing or not executable: {exc})\n"
+            f"  cmd: {' '.join(str(a) for a in args)}"
+        ) from exc
     if proc.returncode != 0:
         raise AssembleError(
             f"{label} failed (exit {proc.returncode})\n"
