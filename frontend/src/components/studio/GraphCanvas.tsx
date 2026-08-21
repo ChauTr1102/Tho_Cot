@@ -41,12 +41,17 @@ import {
   type NodeTypes,
 } from "@xyflow/react";
 import {
+  Download,
   Fullscreen,
   LayoutGrid,
+  Map as MapIcon,
   Maximize,
   Minimize,
   Minus,
+  PanelLeft,
+  PanelLeftClose,
   Plus,
+  RefreshCw,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -94,12 +99,24 @@ const ORIGIN: Point = { x: 0, y: 0 };
  */
 const FIT_PADDING = 0.05;
 
+export interface SavedKitMeta {
+  campaignName: string | null;
+  images: number;
+  videos: number;
+  bytes: number;
+  zipUrl: string;
+  onRebuild: () => void;
+}
+
 interface GraphCanvasProps {
   nodes: StudioNode[];
   platforms: Platform[];
   campaignId: string | null;
   /** True once Run was pressed but no `graph` event has arrived yet. */
   awaiting: boolean;
+  savedMeta?: SavedKitMeta;
+  sidebarOpen?: boolean;
+  onToggleSidebar?: () => void;
 }
 
 export function GraphCanvas({
@@ -107,13 +124,22 @@ export function GraphCanvas({
   platforms,
   campaignId,
   awaiting,
+  savedMeta,
+  sidebarOpen,
+  onToggleSidebar,
 }: GraphCanvasProps) {
   if (nodes.length === 0) {
     return awaiting ? <AwaitingGraph /> : <KitManifest platforms={platforms} />;
   }
   return (
     <ReactFlowProvider>
-      <Board nodes={nodes} campaignId={campaignId} />
+      <Board
+        nodes={nodes}
+        campaignId={campaignId}
+        savedMeta={savedMeta}
+        sidebarOpen={sidebarOpen}
+        onToggleSidebar={onToggleSidebar}
+      />
     </ReactFlowProvider>
   );
 }
@@ -125,14 +151,21 @@ export function GraphCanvas({
 function Board({
   nodes,
   campaignId,
+  savedMeta,
+  sidebarOpen,
+  onToggleSidebar,
 }: {
   nodes: StudioNode[];
   campaignId: string | null;
+  savedMeta?: SavedKitMeta;
+  sidebarOpen?: boolean;
+  onToggleSidebar?: () => void;
 }) {
   const [rfNodes, setRfNodes, onNodesChange] = useNodesState<GraphFlowNode>([]);
   const [rfEdges, setRfEdges, onEdgesChange] = useEdgesState<GraphFlowEdge>([]);
   const [viewing, setViewing] = useState<StudioNode | null>(null);
   const [expanded, setExpanded] = useState(false);
+  const [showMiniMap, setShowMiniMap] = useState(true);
 
   const { fitView, zoomIn, zoomOut } = useReactFlow();
   /** The canvas shell, watched for resizes so the board can re-frame itself. */
@@ -385,6 +418,65 @@ function Board({
         expanded ? "fixed inset-3 z-50 h-auto" : ""
       )}
     >
+      {/* Workbench Header Bar (outside canvas) */}
+      <header className="flex shrink-0 items-center justify-between border-b border-border bg-background px-3.5 py-2">
+        <div className="flex items-center gap-2.5 min-w-0">
+          {onToggleSidebar && (
+            <button
+              type="button"
+              onClick={onToggleSidebar}
+              title={sidebarOpen ? "Thu gọn Inspector" : "Mở Inspector"}
+              className={cn(
+                "flex items-center gap-1.5 h-7 px-2 rounded-none border text-[11.5px] font-medium transition-colors shrink-0",
+                sidebarOpen
+                  ? "border-border bg-foreground/[0.03] text-muted-foreground hover:text-foreground"
+                  : "border-primary/50 bg-primary/10 text-primary hover:bg-primary/20"
+              )}
+            >
+              {sidebarOpen ? <PanelLeftClose className="size-3.5" /> : <PanelLeft className="size-3.5" />}
+              <span className="hidden sm:inline">Inspector</span>
+            </button>
+          )}
+
+          <div className="flex items-baseline gap-2 min-w-0">
+            <h2 className="font-display text-[13.5px] font-semibold tracking-tight text-foreground truncate">
+              {savedMeta ? savedMeta.campaignName : "Sơ đồ dựng kit"}
+            </h2>
+            <span className="studio-nums font-mono text-[11.5px] text-muted-foreground shrink-0">
+              {savedMeta
+                ? `${savedMeta.images} ảnh · ${savedMeta.videos} video · ${(savedMeta.bytes / 1e6).toFixed(0)} MB`
+                : `${counts.finished}/${counts.total} node`}
+              {counts.running > 0 ? (
+                <span className="text-primary ml-2 inline-flex items-center gap-1">
+                  <span className="size-1.5 rounded-full bg-primary animate-pulse" />
+                  {counts.running} đang chạy
+                </span>
+              ) : null}
+            </span>
+          </div>
+        </div>
+
+        {savedMeta ? (
+          <div className="flex items-center gap-2 shrink-0">
+            <a
+              href={savedMeta.zipUrl}
+              className="border-border/80 text-foreground hover:border-primary/50 hover:text-primary inline-flex h-7 items-center gap-1.5 rounded-none border px-2.5 text-[12px] font-medium transition-colors"
+            >
+              <Download aria-hidden className="size-3.5" />
+              Tải .zip
+            </a>
+            <button
+              type="button"
+              onClick={savedMeta.onRebuild}
+              className="border-border/80 text-muted-foreground hover:border-primary/50 hover:text-foreground inline-flex h-7 items-center gap-1.5 rounded-none border px-2.5 text-[12px] font-medium transition-colors"
+            >
+              <RefreshCw aria-hidden className="size-3.5" />
+              Dựng lại
+            </button>
+          </div>
+        ) : null}
+      </header>
+
       <div className="studio-flow relative min-h-0 flex-1 h-full w-full">
         <GraphCanvasProvider value={services}>
           <ReactFlow<GraphFlowNode, GraphFlowEdge>
@@ -412,49 +504,31 @@ function Board({
             fitViewOptions={{ padding: FIT_PADDING }}
           >
             <Background color="#E5E7EB" variant={BackgroundVariant.Lines} />
-            <MiniMap
-              className="studio-minimap"
-              zoomable
-              pannable
-              position="bottom-right"
-              style={{ width: 148, height: 104 }}
-              maskColor="color-mix(in srgb, var(--background) 78%, transparent)"
-              nodeColor={miniMapColor}
-              nodeStrokeWidth={0}
-            />
+            {showMiniMap && (
+              <MiniMap
+                className="studio-minimap"
+                zoomable
+                pannable
+                position="bottom-right"
+                style={{ width: 148, height: 104 }}
+                maskColor="color-mix(in srgb, var(--background) 78%, transparent)"
+                nodeColor={miniMapColor}
+                nodeStrokeWidth={0}
+              />
+            )}
 
-            <Panel position="top-left" className="m-3 flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-2 rounded-none border border-border bg-background/90 px-3 py-1.5 backdrop-blur-sm">
-                <span className="font-display text-[13px] font-semibold tracking-tight">Sơ đồ kit</span>
-                <span className="text-muted-foreground/40">|</span>
-                <span className="studio-nums font-mono text-[11px] text-muted-foreground">
-                  {counts.finished}/{counts.total}
-                </span>
-                {counts.running > 0 && (
-                  <>
-                    <span className="text-muted-foreground/40">|</span>
-                    <span className="studio-nums font-mono text-[11px] text-primary">{counts.running} đang chạy</span>
-                  </>
-                )}
-              </div>
-              <div className="hidden sm:block">
-                <div className="rounded-none border border-border bg-background/90 px-3 py-1.5 backdrop-blur-sm">
-                  <StateLegend />
-                </div>
-              </div>
-            </Panel>
-
+            {/* Top-Right: Vertical Floating Tool Dock */}
             <Panel position="top-right" className="m-3">
-              <div className="flex items-center rounded-none border border-border bg-background/90 p-1 gap-1 backdrop-blur-sm">
-                <ToolButton onClick={() => void zoomOut()} label="Thu nhỏ">
-                  <Minus aria-hidden className="size-[13px]" />
-                </ToolButton>
-                <ZoomReadout />
+              <div className="flex flex-col items-center rounded-none border border-border bg-background/90 p-1 gap-1 backdrop-blur-md shadow-md">
                 <ToolButton onClick={() => void zoomIn()} label="Phóng to">
                   <Plus aria-hidden className="size-[13px]" />
                 </ToolButton>
+                <ZoomReadout />
+                <ToolButton onClick={() => void zoomOut()} label="Thu nhỏ">
+                  <Minus aria-hidden className="size-[13px]" />
+                </ToolButton>
                 
-                <span aria-hidden className="mx-1 h-3 w-px bg-border" />
+                <span aria-hidden className="my-0.5 h-px w-4 bg-border" />
                 
                 <ToolButton
                   onClick={() => void fitView({ padding: FIT_PADDING, duration: 300 })}
@@ -465,8 +539,14 @@ function Board({
                 <ToolButton onClick={relayout} label="Sắp xếp lại">
                   <LayoutGrid aria-hidden className="size-[13px]" />
                 </ToolButton>
+                <ToolButton
+                  onClick={() => setShowMiniMap((v) => !v)}
+                  label={showMiniMap ? "Ẩn bản đồ thu nhỏ" : "Hiện bản đồ thu nhỏ"}
+                >
+                  <MapIcon aria-hidden className={cn("size-[13px]", showMiniMap && "text-primary")} />
+                </ToolButton>
                 
-                <span aria-hidden className="mx-1 h-3 w-px bg-border" />
+                <span aria-hidden className="my-0.5 h-px w-4 bg-border" />
                 
                 <ToolButton
                   onClick={() => setExpanded((value) => !value)}
@@ -478,6 +558,13 @@ function Board({
                     <Fullscreen aria-hidden className="size-[13px]" />
                   )}
                 </ToolButton>
+              </div>
+            </Panel>
+
+            {/* Bottom-Left: Subtle State Legend Chip */}
+            <Panel position="bottom-left" className="m-3 hidden md:block">
+              <div className="rounded-none border border-border bg-background/90 px-2.5 py-1 backdrop-blur-md shadow-sm">
+                <StateLegend />
               </div>
             </Panel>
           </ReactFlow>
@@ -543,7 +630,7 @@ const LEGEND: { label: string; className: string }[] = [
 
 function StateLegend() {
   return (
-    <div className="hidden items-center gap-x-3 xl:flex">
+    <div className="flex items-center gap-x-3">
       {LEGEND.map((entry) => (
         <span key={entry.label} className="flex items-center gap-1.5">
           <span

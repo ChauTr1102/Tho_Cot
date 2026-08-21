@@ -5,27 +5,29 @@
 
 :root {
   --studio-shadow-panel: none;
-  --studio-gradient-cta: linear-gradient(135deg, #fe6e00, #ff9a3d);
+  --studio-gradient-cta: none;
   --studio-shadow-cta: none;
 }
 
-/* The one coral call to action on the screen */
+/* Primary call to action on the screen */
 .btn-cta {
-  background-image: var(--studio-gradient-cta);
-  color: #ffffff;
-  font-weight: 700;
-  border-radius: 0px;
-  box-shadow: none;
+  background-color: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+  font-weight: 600;
+  border-radius: 0px !important;
+  box-shadow: none !important;
+  border: 1px solid var(--primary) !important;
   transition:
-    filter 0.15s ease,
-    transform 0.15s ease;
+    background-color 0.15s ease,
+    opacity 0.15s ease;
 }
 .btn-cta:hover:not(:disabled) {
-  filter: brightness(1.08);
+  opacity: 0.9;
+  filter: none;
 }
 .btn-cta:disabled {
   box-shadow: none;
-  opacity: 0.5;
+  opacity: 0.45;
 }
 
 /* ── The studio's own palette (when standalone) ─────────────────────────── */

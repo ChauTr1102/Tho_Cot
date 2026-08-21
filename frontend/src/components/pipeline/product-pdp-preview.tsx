@@ -2,13 +2,19 @@
 
 import * as React from "react";
 import Image from "next/image";
-import { Check, ChevronDown, Monitor, Smartphone } from "lucide-react";
+import { Check, ChevronDown, Film, Monitor, ShoppingBag, Smartphone } from "lucide-react";
+import { PlatformVideoPlayer } from "./platform-video-player";
+import { IphonePreviewFrame } from "./iphone-preview-frame";
 import { ShopeePdpPreview } from "./shopee-pdp-preview";
 import { TiktokPdpPreview } from "./tiktok-pdp-preview";
 
 interface ProductPdpPreviewProps {
   productName: string;
+  category?: string;
   images: string[];
+  tiktokImages?: string[];
+  shopeeImages?: string[];
+  videos?: string[];
   price?: { amount: number; currency: string; unit: string } | null;
   promotion?: string | null;
   description: string;
@@ -19,13 +25,15 @@ interface ProductPdpPreviewProps {
 export function ProductPdpPreview(props: ProductPdpPreviewProps) {
   const [platform, setPlatform] = React.useState<"tiktok" | "shopee">("tiktok");
   const [viewport, setViewport] = React.useState<"mobile" | "desktop">("desktop");
+  const [previewType, setPreviewType] = React.useState<"listing" | "video">("listing");
   const [isPlatformMenuOpen, setIsPlatformMenuOpen] = React.useState(false);
   const menuRef = React.useRef<HTMLDivElement>(null);
   const platforms = [
     { id: "tiktok" as const, label: "TikTok Shop", logo: "/platform-logos/tiktok-shop.svg", accent: "#FE2C55" },
-    { id: "shopee" as const, label: "Shopee Việt Nam", logo: "/platform-logos/shopee.svg", accent: "#ee4d2d" },
+    { id: "shopee" as const, label: "Shopee", logo: "/platform-logos/shopee.svg", accent: "#ee4d2d" },
   ];
   const selectedPlatform = platforms.find((item) => item.id === platform)!;
+  const platformImages = platform === "shopee" ? props.shopeeImages : props.tiktokImages;
 
   React.useEffect(() => {
     if (!isPlatformMenuOpen) return;
@@ -45,24 +53,31 @@ export function ProductPdpPreview(props: ProductPdpPreviewProps) {
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-col justify-between gap-3 rounded-sm border border-neutral-200 bg-neutral-50 p-2.5 sm:flex-row sm:items-center">
-        <div><p className="text-[9px] font-semibold uppercase tracking-wider text-neutral-400">Nền tảng xem trước</p><p className="mt-0.5 text-xs font-medium text-neutral-700">Trang chi tiết sản phẩm</p></div>
-        <div className="flex items-center gap-2 self-stretch sm:self-auto">
-          <div className="flex h-10 flex-1 border border-neutral-300 bg-white p-1 sm:flex-none" role="group" aria-label="Chọn kiểu thiết bị">
+      <div className="rounded-sm border border-neutral-200 bg-neutral-50 p-2">
+        <div className="flex w-full flex-wrap items-center justify-end gap-2 sm:flex-nowrap">
+          <div className="flex h-9 min-w-0 flex-1 border border-neutral-300 bg-white p-1 sm:flex-none" role="group" aria-label="Chọn nội dung xem trước">
+            {(["listing", "video"] as const).map((type) => {
+              const active = previewType === type;
+              const Icon = type === "listing" ? ShoppingBag : Film;
+              const disabled = type === "video" && !props.videos?.[0];
+              return <button key={type} type="button" disabled={disabled} onClick={() => setPreviewType(type)} aria-pressed={active} className={`flex min-w-max flex-1 items-center justify-center gap-1.5 whitespace-nowrap px-2 text-[10px] font-semibold transition-colors ${active ? "bg-neutral-900 text-white" : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"} disabled:cursor-not-allowed disabled:opacity-35`}><Icon className="h-3.5 w-3.5 shrink-0" />{type === "listing" ? "Sản phẩm" : "Video"}</button>;
+            })}
+          </div>
+          <div className="flex h-9 min-w-0 flex-1 border border-neutral-300 bg-white p-1 sm:flex-none" role="group" aria-label="Chọn kiểu thiết bị">
             {(["mobile", "desktop"] as const).map((mode) => {
               const active = viewport === mode;
               const Icon = mode === "mobile" ? Smartphone : Monitor;
-              return <button key={mode} type="button" onClick={() => setViewport(mode)} aria-pressed={active} aria-label={mode === "mobile" ? "Xem bản di động" : "Xem bản máy tính"} className={`flex flex-1 items-center justify-center gap-1.5 px-2.5 text-[10px] font-semibold transition-colors sm:flex-none ${active ? "bg-neutral-900 text-white" : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"}`}><Icon className="h-3.5 w-3.5" /><span className="hidden md:inline">{mode === "mobile" ? "Di động" : "Máy tính"}</span></button>;
+              return <button key={mode} type="button" onClick={() => setViewport(mode)} aria-pressed={active} aria-label={mode === "mobile" ? "Xem bản di động" : "Xem bản máy tính"} className={`flex min-w-max flex-1 items-center justify-center gap-1.5 whitespace-nowrap px-2 text-[10px] font-semibold transition-colors ${active ? "bg-neutral-900 text-white" : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"}`}><Icon className="h-3.5 w-3.5 shrink-0" /><span>{mode === "mobile" ? "Di động" : "Máy tính"}</span></button>;
             })}
           </div>
-        <div ref={menuRef} className="relative min-w-0 flex-1 shrink-0 sm:flex-none">
+        <div ref={menuRef} className="relative min-w-0 flex-[1_1_176px] sm:w-44 sm:flex-none">
           <button
             type="button"
             aria-label="Chọn nền tảng"
             aria-haspopup="listbox"
             aria-expanded={isPlatformMenuOpen}
             onClick={() => setIsPlatformMenuOpen((open) => !open)}
-            className="group flex h-10 w-full min-w-40 items-center gap-2 border border-neutral-300 bg-white px-3 text-left text-xs font-semibold text-neutral-800 shadow-sm outline-none transition-colors hover:border-neutral-400 focus-visible:ring-2 focus-visible:ring-neutral-900/15 sm:min-w-44"
+            className="group flex h-9 w-full min-w-0 items-center gap-2 border border-neutral-300 bg-white px-2.5 text-left text-[11px] font-semibold text-neutral-800 shadow-sm outline-none transition-colors hover:border-neutral-400 focus-visible:ring-2 focus-visible:ring-neutral-900/15"
           >
             <span className="flex h-6 w-6 items-center justify-center bg-neutral-50">
               <Image src={selectedPlatform.logo} alt="" width={18} height={18} className="h-[18px] w-[18px] object-contain" />
@@ -97,9 +112,9 @@ export function ProductPdpPreview(props: ProductPdpPreviewProps) {
         </div>
         </div>
       </div>
-      <div className={viewport === "mobile" ? "mx-auto w-full max-w-[420px]" : "w-full"}>
-        {platform === "shopee" ? <ShopeePdpPreview {...props} viewMode={viewport} /> : <TiktokPdpPreview {...props} viewMode={viewport} />}
-      </div>
+      {previewType === "video" && props.videos?.[0] ? viewport === "mobile" ? <div className="mx-auto w-full max-w-[420px]"><IphonePreviewFrame><div className="aspect-[9/16] w-full bg-black"><PlatformVideoPlayer src={props.videos[0]} poster={platformImages?.[0] ?? props.images[0]} title={props.productName} platform={platform} /></div></IphonePreviewFrame></div> : <div className="mx-auto w-full max-w-[360px] overflow-hidden rounded-xl bg-black shadow-xl"><div className="aspect-[9/16]"><PlatformVideoPlayer src={props.videos[0]} poster={platformImages?.[0] ?? props.images[0]} title={props.productName} platform={platform} /></div></div> : <div className={viewport === "mobile" ? "mx-auto w-full max-w-[420px]" : "w-full"}>
+        {platform === "shopee" ? <ShopeePdpPreview {...props} images={platformImages?.length ? platformImages : props.images} viewMode={viewport} /> : <TiktokPdpPreview {...props} images={platformImages?.length ? platformImages : props.images} viewMode={viewport} />}
+      </div>}
     </div>
   );
 }

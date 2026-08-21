@@ -208,10 +208,11 @@ export interface SavedResult {
  * nobody has rendered yet simply offers to render.
  */
 export async function fetchSavedResult(
-  campaignId: string
+  campaignId: string,
+  includeIntermediate = false,
 ): Promise<SavedResult | null> {
   const res = await fetch(
-    `${API_BASE_URL}/studio/${encodeURIComponent(campaignId)}/saved`
+    `${API_BASE_URL}/studio/${encodeURIComponent(campaignId)}/saved${includeIntermediate ? "?include_intermediate=true" : ""}`
   );
   if (!res.ok) return null;
   const body = await res.json().catch(() => null);

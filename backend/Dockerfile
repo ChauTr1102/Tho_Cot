@@ -22,13 +22,22 @@ RUN apt-get update \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Download the Playwright browser binaries + OS-level deps (chrome-headless-shell,
+# Chromium) the extractor's crawler needs. `pip install playwright` above only
+# installs the Python driver, not the actual browser executables.
+RUN playwright install --with-deps chromium
+
 # Copy application source
 COPY . .
 
-# Create a non-root user and hand over ownership of the app + data dir
+# Create a non-root user and hand over ownership of the app + data dir.
+# Playwright's browsers were downloaded to root's cache above; move that
+# cache under appuser's home so the non-root process can still launch them.
 RUN useradd --create-home --uid 1000 appuser \
     && mkdir -p /app/data \
-    && chown -R appuser:appuser /app
+    && mkdir -p /home/appuser/.cache \
+    && cp -r /root/.cache/ms-playwright /home/appuser/.cache/ms-playwright \
+    && chown -R appuser:appuser /app /home/appuser/.cache/ms-playwright
 USER appuser
 
 # Data volume mount point (used by the Items demo feature)

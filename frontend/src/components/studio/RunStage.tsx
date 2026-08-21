@@ -67,27 +67,24 @@ export function RunStage({
   const started = status !== "idle";
 
   return (
-    <section className="flex min-w-0 flex-col gap-0 h-full">
-      <RunStatusBar
-        status={status}
-        progress={progress}
-        elapsedSec={elapsedSec}
-        live={live}
-        started={started}
-      />
+    <section className="flex min-w-0 flex-col gap-0 h-full flex-1 w-full">
+      {started && (
+        <RunStatusBar
+          status={status}
+          progress={progress}
+          elapsedSec={elapsedSec}
+          live={live}
+          started={started}
+        />
+      )}
 
       {status === "disconnected" ? (
         <DisconnectedNotice message={error} onRetry={onRetry} />
       ) : null}
 
-      {/* The graph canvas. It manages its own height and its own full-screen
-          state, so this slot imposes nothing on it. */}
-      {/* Nothing below the canvas. The route ledger and the activity log both
-          restated what the board already shows — every node carries its origin
-          badge, its state and its elapsed time — and between them they cost the
-          graph a third of the fold. Two live counts of one thing is one too
-          many; the canvas is the one that can be read at a glance. */}
-      {children}
+      <div className="min-h-0 flex-1 flex flex-col h-full w-full">
+        {children}
+      </div>
     </section>
   );
 }

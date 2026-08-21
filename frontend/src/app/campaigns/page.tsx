@@ -409,7 +409,25 @@ export default function CampaignsPage() {
                   {campaigns.map((campaign) => {
                     const isOpening = openingCampaignId === campaign.id;
                     return (
-                      <article key={campaign.id} className="group min-h-44 p-5 border border-foreground/10 bg-foreground/[0.02] hover:border-foreground/30 transition-colors flex flex-col justify-between gap-6">
+                      <article
+                        key={campaign.id}
+                        role={campaign.has_research_result ? "button" : undefined}
+                        tabIndex={campaign.has_research_result ? 0 : undefined}
+                        aria-label={campaign.has_research_result ? `Mở gói chiến dịch ${campaign.name}` : undefined}
+                        aria-busy={isOpening || undefined}
+                        onClick={campaign.has_research_result && !isOpening ? () => void openCampaign(campaign) : undefined}
+                        onKeyDown={campaign.has_research_result && !isOpening ? (event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            void openCampaign(campaign);
+                          }
+                        } : undefined}
+                        className={`group min-h-44 p-5 border bg-foreground/[0.02] transition-colors flex flex-col justify-between gap-6 outline-none ${
+                          campaign.has_research_result
+                            ? "cursor-pointer border-foreground/10 hover:border-[#35ea52]/50 hover:bg-[#35ea52]/[0.025] focus-visible:border-[#35ea52] focus-visible:ring-2 focus-visible:ring-[#35ea52]/25"
+                            : "border-foreground/10"
+                        }`}
+                      >
                         <div className="space-y-3">
                           <div className="flex items-start justify-between gap-3">
                             <span className="flex flex-wrap items-center gap-2">
@@ -442,15 +460,10 @@ export default function CampaignsPage() {
                           <span className="inline-flex items-center gap-1.5 text-[10px] font-mono text-foreground/30">
                             <CalendarDays className="h-3 w-3" /> {formatCampaignDate(campaign.updated_at)}
                           </span>
-                          <button
-                            type="button"
-                            disabled={!campaign.has_research_result || isOpening}
-                            onClick={() => void openCampaign(campaign)}
-                            className="inline-flex items-center gap-1.5 text-[10px] font-mono font-bold tracking-wider text-[#35ea52] disabled:text-foreground/20 disabled:cursor-not-allowed"
-                          >
+                          <span className={`inline-flex items-center gap-1.5 text-[10px] font-mono font-bold tracking-wider ${campaign.has_research_result ? "text-[#35ea52]" : "text-foreground/20"}`}>
                             {isOpening ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" /> : <Search className="h-3.5 w-3.5" />}
                             {campaign.has_research_result ? "MỞ GÓI CHIẾN DỊCH" : "CHƯA CÓ ĐỀ XUẤT"}
-                          </button>
+                          </span>
                         </div>
                       </article>
                     );
