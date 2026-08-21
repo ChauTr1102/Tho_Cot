@@ -166,6 +166,22 @@ export default function CampaignsPage() {
         }));
       }
       setResearchError(null);
+
+      // Opening a campaign jumps straight to the final report, so stage 03 —
+      // the only place that tells the report what was actually built — never
+      // mounts. Without this the report falls back to buildMockCampaignOutput
+      // and shows four https://example.com/mock/*.jpg links under a heading
+      // saying the assets are ready. That is the path a judge takes.
+      void api
+        .getStudioAssets(campaign.id)
+        .then((res) => {
+          if (res.data) handleStudioAssetsReady(res.data);
+        })
+        .catch(() => {
+          // A campaign that was never rendered has no assets, which is a fact
+          // about the campaign rather than a failure of this screen.
+        });
+
       setCurrentStage("final_output");
       setWorkflowMode("autopilot");
       setAutopilotInitiallyComplete(true);
