@@ -28,9 +28,11 @@ import { DEMO_BRANDS, estimateKit } from "@/lib/studio-catalog";
 import { useRunClock, useStudioStream } from "@/lib/studio-events";
 import {
   approveDraft,
+  listResearchCampaigns,
   requestDraft,
   type Draft,
   type GraphNodeSpecLite,
+  type ResearchCampaign,
 } from "@/lib/studio-draft";
 import type { NodeKind, StudioNode } from "@/types/studio";
 import type { Platform } from "@/types/studio";
@@ -58,6 +60,8 @@ export default function StudioPage() {
     "shopee",
   ]);
 
+  const [campaigns, setCampaigns] = useState<ResearchCampaign[]>([]);
+  const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
   const [direction, setDirection] = useState("");
   const [draft, setDraft] = useState<Draft | null>(null);
   const [draftId, setDraftId] = useState<string | null>(null);
@@ -68,6 +72,23 @@ export default function StudioPage() {
   const [starting, setStarting] = useState(false);
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [stoppedAt, setStoppedAt] = useState<number | null>(null);
+
+  // The studio's inbox. Fetched once; a research run that finishes while this
+  // screen is open is rare enough that polling would cost more than it buys.
+  useEffect(() => {
+    let cancelled = false;
+    listResearchCampaigns()
+      .then((rows) => {
+        if (cancelled) return;
+        setCampaigns(rows);
+        const ready = rows.find((row) => row.status === "researched");
+        if (ready) setSelectedCampaign(ready.id);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const stream = useStudioStream(campaignId);
   const elapsedSec = useRunClock(startedAt, stoppedAt);
@@ -120,11 +141,13 @@ export default function StudioPage() {
     setDraft(null);
 
     try {
-      const result = await requestDraft({
-        brand_dir: brandDir,
-        direction,
-        with_video: true,
-      });
+      // A researched campaign carries its own brief and plan; a demo brand is
+      // only the way in when nothing has been researched yet.
+      const result = await requestDraft(
+        selectedCampaign
+          ? { campaign_id: selectedCampaign, direction, with_video: true }
+          : { brand_dir: brandDir, direction, with_video: true }
+      );
       setDraft(result.draft);
       setDraftId(result.campaignId);
       setDraftGraph(result.graph.nodes);
@@ -139,7 +162,7 @@ export default function StudioPage() {
     } finally {
       setStarting(false);
     }
-  }, [brandDir, direction, platforms]);
+  }, [brandDir, direction, platforms, selectedCampaign]);
 
   const handleApprove = useCallback(
     async (edited: Partial<Draft> | undefined) => {
@@ -222,6 +245,9 @@ export default function StudioPage() {
               platforms={platforms}
               onPlatformsChange={setPlatforms}
               onRun={handlePropose}
+              campaigns={campaigns}
+              selectedCampaign={selectedCampaign}
+              onCampaignChange={setSelectedCampaign}
               direction={direction}
               onDirectionChange={setDirection}
               running={running}

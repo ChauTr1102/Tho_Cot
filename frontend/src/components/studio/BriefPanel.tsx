@@ -24,7 +24,10 @@ import {
   KITS,
   estimateKit,
 } from "@/lib/studio-catalog";
-import { DIRECTION_PRESETS } from "@/lib/studio-draft";
+import {
+  DIRECTION_PRESETS,
+  type ResearchCampaign,
+} from "@/lib/studio-draft";
 import type { Platform } from "@/types/studio";
 
 const PLATFORM_ICONS: Record<Platform, LucideIcon> = {
@@ -38,6 +41,11 @@ interface BriefPanelProps {
   platforms: Platform[];
   onPlatformsChange: (platforms: Platform[]) => void;
   onRun: () => void;
+  /** Campaigns research has finished. Empty until the fetch lands. */
+  campaigns: ResearchCampaign[];
+  /** Which one is selected, or null to fall back to a demo brand. */
+  selectedCampaign: string | null;
+  onCampaignChange: (id: string | null) => void;
   /** Free text: what the user wants this campaign to feel like. */
   direction: string;
   onDirectionChange: (value: string) => void;
@@ -54,6 +62,9 @@ export function BriefPanel({
   platforms,
   onPlatformsChange,
   onRun,
+  campaigns,
+  selectedCampaign,
+  onCampaignChange,
   direction,
   onDirectionChange,
   running,
@@ -96,6 +107,54 @@ export function BriefPanel({
         className="min-h-0 flex-1 overflow-y-auto border-b border-border px-4 py-2.5 disabled:opacity-60"
       >
         <legend className="mb-2 text-[12px] font-semibold text-foreground/80">
+{/* The studio is downstream. What research has already worked on comes
+              first; the sample brands below are a fallback for when nothing has
+              been researched yet, not the main way in. */}
+          {campaigns.length > 0 ? (
+            <div className="mb-4">
+              <div className="mb-1.5 flex items-baseline justify-between gap-2">
+                <span className="text-[13px] font-medium">Từ nghiên cứu</span>
+                <span className="text-muted-foreground/60 text-[11px]">
+                  {campaigns.filter((c) => c.status === "researched").length} sẵn sàng
+                </span>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                {campaigns.map((campaign) => {
+                  const ready = campaign.status === "researched";
+                  const active = selectedCampaign === campaign.id;
+                  return (
+                    <button
+                      key={campaign.id}
+                      type="button"
+                      disabled={locked || !ready}
+                      onClick={() => onCampaignChange(active ? null : campaign.id)}
+                      className={`flex items-start gap-2.5 rounded-md border px-2.5 py-2 text-left transition-colors disabled:opacity-45 ${
+                        active
+                          ? "border-primary/60 bg-primary/10"
+                          : "border-border/60 hover:border-primary/40"
+                      }`}
+                    >
+                      <span
+                        aria-hidden
+                        className={`mt-[6px] size-1.5 shrink-0 rounded-full ${
+                          active ? "bg-primary" : "bg-muted-foreground/40"
+                        }`}
+                      />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-[13px] font-medium">
+                          {campaign.name}
+                        </span>
+                        <span className="text-muted-foreground/70 block text-[11px]">
+                          {ready ? "đã research" : campaign.status}
+                        </span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+
           Sản phẩm
         </legend>
 

@@ -64,6 +64,9 @@ export interface DraftResult {
 }
 
 export interface DraftRequest {
+  /** A campaign research has finished. The normal path. */
+  campaign_id?: string;
+  /** A demo brand under `sample_data/`. The fallback when nothing is researched. */
   brand_dir?: string;
   /** The planning agent's output, in either the nested or flat format. */
   plan?: Record<string, unknown>;
@@ -129,6 +132,30 @@ export async function approveDraft(
     { draft: opts.draft ?? null, with_video: opts.withVideo ?? true }
   );
   return data?.campaign_id ?? campaignId;
+}
+
+/** A campaign the research stage has already worked on. */
+export interface ResearchCampaign {
+  id: string;
+  name: string;
+  status: string;
+  updated_at?: string;
+}
+
+/**
+ * Campaigns the research stage has finished — the studio's inbox.
+ *
+ * The studio is downstream. Its input is whatever research already produced, so
+ * the screen lists those rather than asking a user to describe a product the
+ * system has on file. Campaigns that are not `researched` are returned too, so
+ * the picker can show them greyed rather than pretending they do not exist.
+ */
+export async function listResearchCampaigns(): Promise<ResearchCampaign[]> {
+  const res = await fetch(`${API_BASE_URL}/studio/campaigns`);
+  if (!res.ok) return [];
+  const body = await res.json().catch(() => null);
+  const rows = body?.data ?? body;
+  return Array.isArray(rows) ? (rows as ResearchCampaign[]) : [];
 }
 
 /** A few directions worth offering, so the field is not an empty box. */
