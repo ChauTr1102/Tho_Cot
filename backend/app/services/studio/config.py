@@ -121,6 +121,29 @@ class StudioSettings(BaseSettings):
     )
 
 
-# ARK_API_KEY is conventionally unprefixed in .env, so it is read explicitly
-# rather than as STUDIO_ARK_API_KEY.
-studio_settings = StudioSettings(ARK_API_KEY=os.environ.get("ARK_API_KEY", ""))
+def _ark_key() -> str:
+    """The BytePlus key, from the environment or from `.env`.
+
+    Every other field here is prefixed `STUDIO_`, but the key is conventionally
+    plain `ARK_API_KEY` — it is shared with scripts and with the deploy, and
+    prefixing it would mean two names for one secret. That exemption means it
+    cannot ride in on the prefix, and reading `os.environ` alone is not enough:
+    at import time nothing has loaded `.env` yet, so a key that is only in the
+    file reads as absent and every API call fails with an empty bearer token.
+    """
+    from_env = os.environ.get("ARK_API_KEY", "").strip()
+    if from_env:
+        return from_env
+
+    for candidate in (Path(".env"), Path(__file__).resolve().parents[3] / ".env"):
+        try:
+            for line in candidate.read_text(encoding="utf-8").splitlines():
+                name, _, value = line.partition("=")
+                if name.strip() == "ARK_API_KEY":
+                    return value.strip().strip('"').strip("'")
+        except OSError:
+            continue
+    return ""
+
+
+studio_settings = StudioSettings(ARK_API_KEY=_ark_key())
