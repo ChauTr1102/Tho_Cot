@@ -159,11 +159,49 @@ def shorten(text: str | None, limit: int, slack: int = DEFAULT_SLACK) -> str:
 
 
 def _hard_cut(text: str, limit: int) -> str:
-    """Last resort: cut at a word boundary and tidy the punctuation left behind."""
+    """Last resort: cut at a word boundary, and never inside a proper noun.
+
+    A word boundary is not enough. "9.9 sở hữu ngay cà phê Robusta Buôn Ma
+    Thuột gốc Việt" carries no comma, dash or middot, so clause-dropping cannot
+    reduce it and the cut lands between "Ma" and "Thuột" — leaving a headline
+    that names a city which does not exist. Buôn Ma Thuột, Trung Nguyên, Hòa
+    Tan: Vietnamese place and brand names run to several capitalised words, and
+    cutting through one is the single most visible way to get copy wrong.
+
+    So after cutting, keep dropping words while the last kept word and the first
+    dropped word are both capitalised — that pair is a run through the middle of
+    a name. A shorter true phrase beats a longer false one.
+    """
     if len(text) <= limit:
         return text
-    cut = text[:limit].rsplit(" ", 1)[0].rstrip(" ,;:.-·—–")
-    return cut or text[:limit]
+
+    words = text.split()
+    kept: list[str] = []
+    for word in words:
+        candidate = " ".join([*kept, word])
+        if len(candidate) > limit:
+            break
+        kept.append(word)
+    if not kept:
+        return text[:limit]
+
+    dropped = words[len(kept):]
+    while len(kept) > 1 and dropped and _capitalised(kept[-1]) and _capitalised(dropped[0]):
+        dropped.insert(0, kept.pop())
+
+    return " ".join(kept).rstrip(" ,;:.-·—–") or text[:limit]
+
+
+def _capitalised(word: str) -> str | bool:
+    """True when a word opens with an upper-case letter — the signal for a name.
+
+    Leading punctuation is skipped so `"Thuột` reads as capitalised, and a token
+    with no letters at all (`9.9`, `—`) is not a name.
+    """
+    for ch in word:
+        if ch.isalpha():
+            return ch.isupper()
+    return False
 
 
 def offer_badge(text: str | None, limit: int = 22) -> str:
