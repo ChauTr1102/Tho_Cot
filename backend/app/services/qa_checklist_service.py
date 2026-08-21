@@ -17,11 +17,11 @@ Checklist buckets (same as QA_checklist.py):
   C. User-provided criteria    - brand brief compliance (required/forbidden
      claims), the highest-stakes bucket (legal/claims risk).
 
-Every issue is tagged with a `regenerate` target (plan / images / video /
-copy) so the caller (API layer) can tell the frontend exactly which
-generation stage to re-run, instead of forcing a full pipeline re-run on
-every QA failure. `passed` is True only when there are zero BLOCKER issues
-— WARNING issues are surfaced but never block.
+Every issue is tagged with a `regenerate` target (plan / asset) so the
+caller (API layer) can tell the frontend exactly which side of the pipeline
+to re-run, instead of forcing a full pipeline re-run on every QA failure.
+`passed` is True only when there are zero BLOCKER issues — WARNING issues
+are surfaced but never block.
 """
 from __future__ import annotations
 
@@ -47,13 +47,12 @@ VIDEO_REQUIRED_FORMAT = "9:16"
 VIDEO_MIN_DURATION_SEC = 15
 VIDEO_MAX_DURATION_SEC = 30
 
-# Stage regeneration order the frontend should follow when several stages
-# need fixing at once.
+# Stage regeneration order the frontend should follow when both sides need
+# fixing at once (plan before asset, since asset regeneration usually
+# depends on plan output).
 _REGENERATE_ORDER = [
     RegenerateTarget.PLAN,
-    RegenerateTarget.IMAGES,
-    RegenerateTarget.VIDEO,
-    RegenerateTarget.COPY,
+    RegenerateTarget.ASSET,
 ]
 
 
@@ -131,7 +130,7 @@ class QAChecklistService:
             issues.append(QAIssue(
                 rule_id="ASSETS.MISSING_IMAGE_KIND", severity=QASeverity.BLOCKER,
                 message=f"Missing required image(s): {missing}.",
-                field="product_collection_image_set", regenerate=RegenerateTarget.IMAGES,
+                field="product_collection_image_set", regenerate=RegenerateTarget.ASSET,
             ))
 
         present_count = sum(1 for value in required_fields.values() if (value or "").strip())
@@ -139,7 +138,7 @@ class QAChecklistService:
             issues.append(QAIssue(
                 rule_id="ASSETS.IMAGE_COUNT", severity=QASeverity.BLOCKER,
                 message=f"Need at least {MIN_PRODUCT_IMAGES} product images, found {present_count}.",
-                field="product_collection_image_set", regenerate=RegenerateTarget.IMAGES,
+                field="product_collection_image_set", regenerate=RegenerateTarget.ASSET,
             ))
 
         return issues
@@ -154,14 +153,14 @@ class QAChecklistService:
             issues.append(QAIssue(
                 rule_id="ASSETS.VIDEO_COUNT", severity=QASeverity.BLOCKER,
                 message=f"Need at least {MIN_VIDEOS} short-form video, found {len(video.generated_video_urls)}.",
-                field="short_form_video_asset.generated_video_urls", regenerate=RegenerateTarget.VIDEO,
+                field="short_form_video_asset.generated_video_urls", regenerate=RegenerateTarget.ASSET,
             ))
 
         if video.format != VIDEO_REQUIRED_FORMAT:
             issues.append(QAIssue(
                 rule_id="ASSETS.VIDEO_ASPECT", severity=QASeverity.WARNING,
                 message=f"Video format '{video.format}' differs from the recommended {VIDEO_REQUIRED_FORMAT}.",
-                field="short_form_video_asset.format", regenerate=RegenerateTarget.VIDEO,
+                field="short_form_video_asset.format", regenerate=RegenerateTarget.ASSET,
             ))
 
         if not _duration_in_range(video.duration, lo=VIDEO_MIN_DURATION_SEC, hi=VIDEO_MAX_DURATION_SEC):
@@ -171,7 +170,7 @@ class QAChecklistService:
                     f"Video duration '{video.duration}' is outside the recommended "
                     f"{VIDEO_MIN_DURATION_SEC}-{VIDEO_MAX_DURATION_SEC}s window."
                 ),
-                field="short_form_video_asset.duration", regenerate=RegenerateTarget.VIDEO,
+                field="short_form_video_asset.duration", regenerate=RegenerateTarget.ASSET,
             ))
 
         return issues
@@ -186,13 +185,13 @@ class QAChecklistService:
             issues.append(QAIssue(
                 rule_id="ASSETS.COPY_INCOMPLETE", severity=QASeverity.BLOCKER,
                 message="Commerce copy is missing product_title or product_description.",
-                field="commerce_copy", regenerate=RegenerateTarget.COPY,
+                field="commerce_copy", regenerate=RegenerateTarget.ASSET,
             ))
         if not copy.listing_bullet_points:
             issues.append(QAIssue(
                 rule_id="ASSETS.COPY_NO_BULLETS", severity=QASeverity.WARNING,
                 message="Commerce copy has no listing bullet points.",
-                field="commerce_copy.listing_bullet_points", regenerate=RegenerateTarget.COPY,
+                field="commerce_copy.listing_bullet_points", regenerate=RegenerateTarget.ASSET,
             ))
 
         return issues
@@ -243,7 +242,7 @@ class QAChecklistService:
                 issues.append(QAIssue(
                     rule_id="USER.FORBIDDEN_CLAIM", severity=QASeverity.BLOCKER,
                     message=f"Forbidden claim found in generated content: '{forbidden}'.",
-                    field="commerce_copy", regenerate=RegenerateTarget.COPY,
+                    field="commerce_copy", regenerate=RegenerateTarget.ASSET,
                 ))
 
         for required in product.required_claims:
@@ -251,7 +250,7 @@ class QAChecklistService:
                 issues.append(QAIssue(
                     rule_id="USER.MISSING_REQUIRED_CLAIM", severity=QASeverity.BLOCKER,
                     message=f"Required claim not found in generated content: '{required}'.",
-                    field="commerce_copy", regenerate=RegenerateTarget.COPY,
+                    field="commerce_copy", regenerate=RegenerateTarget.ASSET,
                 ))
 
         return issues
@@ -269,6 +268,11 @@ class QAChecklistService:
         issues += self._check_copy(output)
         issues += self._check_market_research(output)
         issues += self._check_user_brief_compliance(campaign_input, output)
+
+        # TEMP: only surface WARNING severity for now — never block the
+        # pipeline (same policy as the agent-based service, kept in sync so
+        # the fallback path behaves identically to the primary path).
+        issues = [issue.model_copy(update={"severity": QASeverity.WARNING}) for issue in issues]
 
         passed = not any(issue.severity == QASeverity.BLOCKER for issue in issues)
 

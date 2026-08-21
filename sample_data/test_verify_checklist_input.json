@@ -1,0 +1,110 @@
+{
+  "_comment": "Test payload for POST /api/verify-checklist. This is a real application/json POST body (no multipart). All URL-typed fields below (logo, product_photos, images, video URLs) use local filesystem path strings instead of remote URLs, since QAChecklistService only checks that these fields are non-empty strings — it never fetches them.",
+
+  "campaign_input": {
+    "product_brief": {
+      "product_name": "Fizzy Roots Sparkling Tea",
+      "category": "F&B",
+      "key_selling_points": ["Zero added sugar", "Made in Vietnam"],
+      "price_or_promotion": { "price": 25000, "currency": "VND", "promotion": "Buy 4 Get 1 Free" },
+      "target_market": "Vietnam",
+      "required_claims": ["zero added sugar", "made in Vietnam"],
+      "restricted_or_forbidden_claims": ["cures bloating"]
+    },
+    "brand_kit": {
+      "logo": { "path": "C:\\Users\\ADMIN\\Desktop\\Hackathon\\Tho_Cot\\sample_data\\05_trung_nguyen_g7\\assets\\logo.png" },
+      "brand_colors": {
+        "primary": "#0E7C61",
+        "secondary": "#F4D35E",
+        "accent": ["#FFFFFF"],
+        "palette": ["#0E7C61"]
+      },
+      "tone_of_voice": { "description": "playful", "attributes": ["playful"], "do": [], "dont": [] },
+      "product_photos": [
+        "C:\\Users\\ADMIN\\Desktop\\Hackathon\\Tho_Cot\\sample_data\\05_trung_nguyen_g7\\assets\\product_01.jpg"
+      ],
+      "existing_product_visuals": []
+    },
+    "audience_brief": {
+      "target_customer": "Gen Z",
+      "language": "vi",
+      "platform": "TikTok Shop",
+      "market": "VN"
+    },
+    "market_signal": {
+      "trend": "functional beverages",
+      "seasonal_moment": null,
+      "consumer_pain_point": "sugar guilt",
+      "search_keyword": ["tra hoa qua khong duong"],
+      "competitor_angle": null,
+      "campaign_objective": "Drive trial purchases"
+    },
+    "past_campaign_data": {
+      "enabled": false,
+      "ctr": null,
+      "cvr": null,
+      "roas": null,
+      "watch_time": { "value": null, "unit": "seconds" },
+      "add_to_cart_rate": null,
+      "comments": [],
+      "sales_results": { "units_sold": null, "revenue": null, "currency": "VND" }
+    }
+  },
+
+  "campaign_output": {
+    "product_positioning": {
+      "main_campaign_angle": "Zero added sugar, without the trade-off.",
+      "target_audience": "Gen Z",
+      "key_selling_message": "Fizzy Roots solves sugar guilt with zero added sugar, made in Vietnam.",
+      "product_benefit_hierarchy": ["Zero added sugar", "Made in Vietnam"]
+    },
+    "creative_routes": [
+      {
+        "name": "Route A",
+        "hook_idea": "Problem-agitate-solve",
+        "visual_direction": "Close-up shot",
+        "message_angle": "Pain-point led",
+        "suggested_platform_usage": ["TikTok Shop"]
+      },
+      {
+        "name": "Route B",
+        "hook_idea": "Testimonial",
+        "visual_direction": "Studio shot",
+        "message_angle": "Trust led",
+        "suggested_platform_usage": ["TikTok Shop"]
+      }
+    ],
+    "short_form_video_asset": {
+      "generated_video_urls": [
+        "C:\\Users\\ADMIN\\Desktop\\Hackathon\\Tho_Cot\\backend\\ark_out\\route_a.mp4"
+      ],
+      "format": "9:16",
+      "duration": "20s",
+      "additional_cuts": []
+    },
+    "product_collection_image_set": {
+      "product_hero_image": "C:\\Users\\ADMIN\\Desktop\\Hackathon\\Tho_Cot\\sample_data\\05_trung_nguyen_g7\\assets\\product_01.jpg",
+      "sku_detail_image": "C:\\Users\\ADMIN\\Desktop\\Hackathon\\Tho_Cot\\sample_data\\05_trung_nguyen_g7\\assets\\product_02.jpg",
+      "campaign_collection_image": "C:\\Users\\ADMIN\\Desktop\\Hackathon\\Tho_Cot\\sample_data\\05_trung_nguyen_g7\\assets\\product_01.jpg",
+      "marketplace_thumbnail": "C:\\Users\\ADMIN\\Desktop\\Hackathon\\Tho_Cot\\sample_data\\05_trung_nguyen_g7\\assets\\logo.png"
+    },
+    "commerce_copy": {
+      "product_title": "Fizzy Roots Sparkling Tea",
+      "product_description": "Made with zero added sugar. Made in Vietnam.",
+      "listing_bullet_points": ["Zero added sugar", "Made in Vietnam"],
+      "ad_caption": "Zero added sugar, made in Vietnam.",
+      "promotion_copy": "Buy 4 Get 1 Free",
+      "short_hook_lines": ["Meet Fizzy Roots."]
+    },
+    "ab_testing_plan": {
+      "what_to_test": "Hook style",
+      "route_a_description": "Pain-point led opener",
+      "route_b_description": "Testimonial led opener",
+      "suggested_success_metrics": ["CTR", "Add-to-cart rate"],
+      "expected_learning": "Which hook drives more engagement."
+    },
+    "performance_learning": null
+  },
+
+  "iteration": 1
+}

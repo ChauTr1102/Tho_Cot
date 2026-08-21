@@ -1,4 +1,4 @@
-import { CreateItemInput, HealthStatus, Item, StandardResponse, UpdateItemInput, ExtractRequest, ExtractResponse } from "@/types";
+import { CreateItemInput, HealthStatus, Item, StandardResponse, UpdateItemInput, ExtractRequest, ExtractResponse, VerifyChecklistRequest, VerifyChecklistResponseData } from "@/types";
 import { parseResearchCampaignPlan, validateResearchSubmission, type ResearchCampaignPlan, type ResearchSubmission } from "@/types/research";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
@@ -127,5 +127,11 @@ export const api = {
       throw new ApiError(error instanceof Error ? error.message : "Không thể kết nối research backend.", 0);
     }
   },
+
+  verifyChecklist: (payload: VerifyChecklistRequest) =>
+    request<VerifyChecklistResponseData>("/verify-checklist", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
 };
 

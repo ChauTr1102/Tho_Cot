@@ -1,0 +1,75 @@
+{
+  "_comment": "Test payload for POST /api/research/run. This endpoint is multipart/form-data, not raw JSON: campaign_id/product_brief/brand_kit/audience_brief/market_signal/schema_version/evidence are Form fields (product_brief, brand_kit, audience_brief, market_signal must be sent as JSON-encoded strings), and logo/product_photos/existing_product_visuals are File uploads. The paths below are local filesystem paths to use as the actual uploaded files (e.g. with curl -F or Python requests 'files=').",
+
+  "form_fields": {
+    "schema_version": "1.0",
+    "campaign_id": "fizzy-roots-sparkling-tea-launch",
+    "evidence": ""
+  },
+
+  "product_brief": {
+    "product_name": "Fizzy Roots Sparkling Tea",
+    "category": "F&B",
+    "key_selling_points": [
+      "Zero added sugar",
+      "Made in Vietnam",
+      "Sparkling, refreshing finish"
+    ],
+    "price_or_promotion": {
+      "price": 25000,
+      "currency": "VND",
+      "promotion": "Buy 4 Get 1 Free"
+    },
+    "target_market": "Vietnam",
+    "required_claims": [
+      "zero added sugar",
+      "made in Vietnam"
+    ],
+    "restricted_or_forbidden_claims": [
+      "cures bloating",
+      "cures illness",
+      "guaranteed weight loss"
+    ]
+  },
+
+  "brand_kit": {
+    "logo": {
+      "path": "C:\\Users\\ADMIN\\Desktop\\Hackathon\\Tho_Cot\\sample_data\\05_trung_nguyen_g7\\assets\\logo.png"
+    },
+    "brand_colors": {
+      "primary": "#0E7C61",
+      "secondary": "#F4D35E",
+      "accent": ["#FFFFFF"],
+      "palette": ["#0E7C61", "#F4D35E", "#FFFFFF"]
+    },
+    "tone_of_voice": {
+      "description": "playful",
+      "attributes": ["playful", "energetic", "youthful"],
+      "do": ["Use short punchy sentences", "Highlight zero sugar benefit"],
+      "dont": ["Do not make medical claims", "Do not compare directly to named competitors"]
+    },
+    "product_photos": [
+      "C:\\Users\\ADMIN\\Desktop\\Hackathon\\Tho_Cot\\sample_data\\05_trung_nguyen_g7\\assets\\product_01.jpg",
+      "C:\\Users\\ADMIN\\Desktop\\Hackathon\\Tho_Cot\\sample_data\\05_trung_nguyen_g7\\assets\\product_02.jpg"
+    ],
+    "existing_product_visuals": []
+  },
+
+  "audience_brief": {
+    "target_customer": "Gen Z",
+    "language": "vi",
+    "platform": "TikTok Shop",
+    "market": "VN"
+  },
+
+  "market_signal": {
+    "trend": "functional beverages",
+    "seasonal_moment": null,
+    "consumer_pain_point": "sugar guilt",
+    "search_keyword": ["tra hoa qua khong duong"],
+    "competitor_angle": null,
+    "campaign_objective": "Drive trial purchases"
+  },
+
+  "curl_example": "curl -X POST http://localhost:8000/api/research/run -F \"schema_version=1.0\" -F \"campaign_id=fizzy-roots-sparkling-tea-launch\" -F 'product_brief={\"product_name\":\"Fizzy Roots Sparkling Tea\",\"category\":\"F&B\",\"key_selling_points\":[\"Zero added sugar\",\"Made in Vietnam\",\"Sparkling, refreshing finish\"],\"price_or_promotion\":{\"price\":25000,\"currency\":\"VND\",\"promotion\":\"Buy 4 Get 1 Free\"},\"target_market\":\"Vietnam\",\"required_claims\":[\"zero added sugar\",\"made in Vietnam\"],\"restricted_or_forbidden_claims\":[\"cures bloating\",\"cures illness\",\"guaranteed weight loss\"]}' -F 'brand_kit={\"brand_colors\":{\"primary\":\"#0E7C61\",\"secondary\":\"#F4D35E\",\"accent\":[\"#FFFFFF\"],\"palette\":[\"#0E7C61\",\"#F4D35E\",\"#FFFFFF\"]},\"tone_of_voice\":{\"description\":\"playful\",\"attributes\":[\"playful\",\"energetic\",\"youthful\"],\"do\":[\"Use short punchy sentences\"],\"dont\":[\"Do not make medical claims\"]}}' -F 'audience_brief={\"target_customer\":\"Gen Z\",\"language\":\"vi\",\"platform\":\"TikTok Shop\",\"market\":\"VN\"}' -F 'market_signal={\"trend\":\"functional beverages\",\"seasonal_moment\":null,\"consumer_pain_point\":\"sugar guilt\",\"search_keyword\":[\"tra hoa qua khong duong\"],\"competitor_angle\":null,\"campaign_objective\":\"Drive trial purchases\"}' -F \"logo=@C:\\Users\\ADMIN\\Desktop\\Hackathon\\Tho_Cot\\sample_data\\05_trung_nguyen_g7\\assets\\logo.png\" -F \"product_photos=@C:\\Users\\ADMIN\\Desktop\\Hackathon\\Tho_Cot\\sample_data\\05_trung_nguyen_g7\\assets\\product_01.jpg\" -F \"product_photos=@C:\\Users\\ADMIN\\Desktop\\Hackathon\\Tho_Cot\\sample_data\\05_trung_nguyen_g7\\assets\\product_02.jpg\""
+}
