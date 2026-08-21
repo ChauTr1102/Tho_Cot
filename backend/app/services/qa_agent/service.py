@@ -142,15 +142,13 @@ class AgentQAChecklistService:
             )
             result = validate_verification_result(json.loads(raw))
         except (ResearchOutputError, json.JSONDecodeError) as exc:
-            logger.warning("qa_agent.verify_item_failed item_id=%s error=%s", item["id"], exc)
-            # Treat an unusable verifier response as a fail-safe BLOCKER so
-            # transient model/parse errors surface as "needs another look"
-            # rather than silently passing.
-            return QAIssue(
-                rule_id=item["id"], severity=QASeverity(item["severity"]),
-                message=f"Không thể chấm tiêu chí này (lỗi verifier agent: {exc}).",
-                field=item["target_fields"][0], regenerate=RegenerateTarget(item["category"]),
-            )
+            # An unusable verifier response (transient model/parse failure)
+            # is an internal pipeline problem, not a real finding about the
+            # campaign — re-raise so the caller (verify()'s crash handling)
+            # logs it fully and excludes this item from the report, instead
+            # of fabricating a QAIssue whose message embeds a raw exception
+            # and reads as a fake "warning" about the user's content.
+            raise RuntimeError(f"verifier response unusable for item {item['id']}: {exc}") from exc
 
         if result["pass"]:
             return None
@@ -175,6 +173,7 @@ class AgentQAChecklistService:
 
         issues: list[QAIssue] = []
         failed_ids: set[str] = set()
+        crashed_ids: set[str] = set()
         with ThreadPoolExecutor(max_workers=_MAX_PARALLEL_VERIFIERS) as pool:
             futures = {
                 pool.submit(self._verify_item, client, item, request): item
@@ -184,13 +183,17 @@ class AgentQAChecklistService:
                 item = futures[future]
                 try:
                     issue = future.result()
-                except Exception as exc:  # noqa: BLE001 - isolate one item's crash from the rest
+                except Exception:  # noqa: BLE001 - isolate one item's crash from the rest
+                    # An internal pipeline failure (bad field resolution, a
+                    # malformed path treated as a file, etc.) is not a real
+                    # finding about the campaign, so it must never reach the
+                    # user as a QA "issue" carrying a raw exception message.
+                    # Log it fully server-side for debugging and drop the
+                    # item instead — it is neither a pass nor a user-facing
+                    # warning, just excluded from the report.
                     logger.exception("qa_agent.verify_item_crashed item_id=%s", item["id"])
-                    issue = QAIssue(
-                        rule_id=item["id"], severity=QASeverity(item["severity"]),
-                        message=f"Verifier agent crashed: {exc}",
-                        field=item["target_fields"][0], regenerate=RegenerateTarget(item["category"]),
-                    )
+                    crashed_ids.add(item["id"])
+                    continue
                 if issue is not None:
                     issues.append(issue)
                     failed_ids.add(item["id"])
@@ -205,13 +208,16 @@ class AgentQAChecklistService:
 
         # Full tick-list (pass + fail) for the client-facing checklist UI —
         # each generated item is "ticked" (passed=True) unless it produced
-        # an issue above.
+        # an issue above. A crashed item is excluded entirely rather than
+        # reported as failed: it was never actually judged, so marking it
+        # failed would misrepresent an internal error as a real QA finding.
         checked_items = [
             QACheckedItem(
                 rule_id=item["id"], description=item["description"],
                 passed=item["id"] not in failed_ids, category=RegenerateTarget(item["category"]),
             )
             for item in checklist
+            if item["id"] not in crashed_ids
         ]
 
         passed = not any(issue.severity == QASeverity.BLOCKER for issue in issues)

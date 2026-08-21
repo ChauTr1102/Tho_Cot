@@ -40,7 +40,13 @@ _MEDIA_URL_PREFIX = "/media/"
 
 
 def is_video_path(path: str) -> bool:
-    return pathlib.Path(path).suffix.lower() in _VIDEO_EXTENSIONS
+    try:
+        return pathlib.Path(path).suffix.lower() in _VIDEO_EXTENSIONS
+    except (OSError, ValueError):
+        # `path` isn't actually path-like (e.g. a checklist item pointed at a
+        # free-text field by mistake) — treat it as "not a video" rather than
+        # letting a malformed-path error escape here.
+        return False
 
 
 def _resolve_media_path(path: str) -> str | None:
@@ -89,13 +95,29 @@ def load_local_image(path: str) -> tuple[str | None, str]:
     elif path.startswith(("http://", "https://")):
         return None, f"Đường dẫn là remote URL, không phải local file path: {path}"
 
-    file_path = pathlib.Path(path)
-    if not file_path.is_file():
+    # A checklist item can point `needs_image` at a field that turns out to
+    # hold free text rather than a path (e.g. a long product description
+    # mistaken for an image reference). Pathlib operations on such a string
+    # can raise OSError ("File name too long") or ValueError (invalid path
+    # syntax) rather than just returning False/None — treat that the same as
+    # "file not found" instead of letting it escape and crash the verifier.
+    try:
+        file_path = pathlib.Path(path)
+        is_file = file_path.is_file()
+    except (OSError, ValueError) as exc:
+        logger.warning("qa_agent.image_path_invalid path_repr=%r error=%s", path[:200], exc)
+        return None, f"Đường dẫn ảnh không hợp lệ (không thể xử lý như một file path): {path[:200]}"
+
+    if not is_file:
         return None, f"Không tìm thấy file ảnh tại đường dẫn local: {path}"
     mime_type = mimetypes.guess_type(file_path.name)[0]
     if mime_type not in _ALLOWED_IMAGE_TYPES:
         return None, f"Định dạng ảnh không hỗ trợ: {path} ({mime_type})"
-    size = file_path.stat().st_size
+    try:
+        size = file_path.stat().st_size
+    except OSError as exc:
+        logger.warning("qa_agent.image_stat_failed path=%s error=%s", path, exc)
+        return None, f"Không thể đọc thông tin file ảnh: {path} ({exc})"
     if size > _MAX_IMAGE_BYTES:
         return None, f"Ảnh vượt quá 20 MB: {path}"
     try:

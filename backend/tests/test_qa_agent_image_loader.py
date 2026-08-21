@@ -79,3 +79,27 @@ def test_empty_path_reports_empty(data_dir):
 
     assert data_url is None
     assert "rỗng" in note
+
+
+def test_long_free_text_value_does_not_crash(data_dir):
+    """Reproduces the reported bug: a checklist item pointed `needs_image`
+    at a field that actually holds free text (e.g. a long product
+    description), not a path. pathlib raises OSError("File name too long")
+    on POSIX for a string this long as a single path segment — this must
+    degrade to a normal "could not load" note, not raise."""
+    long_text = (
+        "Trải nghiệm năng lượng bứt phá mỗi sáng với Cà phê G7 3in1. "
+        "Sự kết hợp hoàn hảo giữa cà phê đậm đặc, vị béo của kem và ngọt "
+        "của đường, mang lại một tách cà phê thơm lừng, chuẩn vị Việt "
+        "ngay tại văn phòng hay ở nhà." * 5
+    )
+
+    data_url, note = image_loader.load_local_image(long_text)
+
+    assert data_url is None
+    assert note  # some explanatory note, not an unhandled exception
+
+
+def test_is_video_path_does_not_crash_on_long_free_text(data_dir):
+    long_text = "a" * 5000
+    assert image_loader.is_video_path(long_text) is False
