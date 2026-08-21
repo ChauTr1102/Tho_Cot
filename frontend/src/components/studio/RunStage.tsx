@@ -67,7 +67,7 @@ export function RunStage({
   const started = status !== "idle";
 
   return (
-    <section className="flex min-w-0 flex-col gap-4">
+    <section className="flex min-w-0 flex-col gap-0 h-full">
       <RunStatusBar
         status={status}
         progress={progress}
@@ -141,7 +141,7 @@ function RunStatusBar({
         </div>
 
         <div className="flex min-w-[180px] flex-1 items-center gap-3">
-          <div className="studio-rail relative h-1 min-w-0 flex-1 overflow-hidden rounded-full">
+          <div className="studio-rail relative h-1 min-w-0 flex-1 overflow-hidden rounded-none">
             <div
               className="studio-rail-fill absolute inset-0"
               style={{ transform: `scaleX(${started ? progress.ratio : 0})` }}
@@ -194,7 +194,7 @@ function DisconnectedNotice({
   onRetry: () => void;
 }) {
   return (
-    <div className="flex flex-wrap items-start gap-3 rounded-xl border border-destructive/35 bg-destructive/8 px-4 py-3">
+    <div className="flex flex-wrap items-start gap-3 rounded-none border border-destructive/35 bg-destructive/8 px-4 py-3">
       <WifiOff aria-hidden className="mt-0.5 size-4 shrink-0 text-destructive" />
       <div className="min-w-0 flex-1">
         <p className="text-[13.5px] font-medium text-foreground">
@@ -269,9 +269,9 @@ function RouteLedger({
           return (
             <div key={origin} className="flex items-center gap-3">
               <OriginBadge origin={origin} size="xs" className="w-[86px]" />
-              <div className="studio-rail h-1 min-w-0 flex-1 overflow-hidden rounded-full">
+              <div className="studio-rail h-1 min-w-0 flex-1 overflow-hidden rounded-none">
                 <div
-                  className={cn("h-full rounded-full", barColor[origin])}
+                  className={cn("h-full rounded-none", barColor[origin])}
                   style={{ width: `${Math.round(share * 100)}%` }}
                 />
               </div>

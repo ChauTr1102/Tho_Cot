@@ -4,7 +4,7 @@ import * as React from "react";
 import { AlertTriangle, CheckCircle2, RefreshCw, ShieldAlert } from "lucide-react";
 import { api, ApiError } from "@/lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { QAIssue, VerifyChecklistResponseData } from "@/types/qa_checklist";
+import { humanizeRuleId, type QAIssue, type VerifyChecklistResponseData } from "@/types/qa_checklist";
 
 interface Props {
   /** CampaignInputDTO JSON (snake_case), matching backend/app/schemas/campaign_dto.py. */
@@ -237,12 +237,12 @@ export const StageQAGate: React.FC<Props> = ({ campaignInput, campaignOutput, it
                         <li key={issue.rule_id} className="space-y-1">
                           <div className="flex items-start gap-2">
                             <AlertTriangle className="h-3.5 w-3.5 text-amber-400 shrink-0 mt-0.5" />
-                            <span className="text-sm font-mono text-foreground/80 font-bold">{issue.rule_id}</span>
+                            <span className="text-sm font-mono text-foreground/80 font-bold">{humanizeRuleId(issue.rule_id)}</span>
                           </div>
                           <p className="text-xs font-mono text-amber-400/90 pl-5 leading-relaxed bg-amber-500/5 p-2 border border-amber-500/10">
                             {issue.message}
                           </p>
-                          <p className="text-[10px] font-mono text-foreground/30 pl-5">field: {issue.field}</p>
+                          <p className="text-[10px] font-mono text-foreground/30 pl-5">Liên quan đến: {issue.field}</p>
                         </li>
                       ))}
                     </ul>

@@ -90,7 +90,7 @@ export function StudioHeader({
         <div className="flex shrink-0 items-center gap-2.5">
           <span
             aria-hidden
-            className="grid size-7 place-items-center rounded-[9px] bg-primary font-display text-[11px] font-bold tracking-tight text-primary-foreground"
+            className="grid size-7 place-items-center rounded-none bg-primary font-display text-[11px] font-bold tracking-tight text-primary-foreground"
           >
             TC
           </span>
@@ -107,7 +107,7 @@ export function StudioHeader({
             placeholder — an empty centre is honest, a fake id is not. */}
         <div className="hidden min-w-0 flex-1 justify-center lg:flex">
           {campaignId ? (
-            <div className="flex min-w-0 items-center gap-2 rounded-full border border-border bg-muted/60 py-1 pr-3 pl-2.5">
+            <div className="flex min-w-0 items-center gap-2 rounded-none border border-border bg-muted/60 py-1 pr-3 pl-2.5">
               {brandName ? (
                 <span className="truncate text-[12.5px] text-foreground/90">
                   {brandName}
@@ -124,19 +124,19 @@ export function StudioHeader({
         <div className="ml-auto flex items-center gap-2 lg:ml-0">
           {/* Locale. VI is the shipped language; EN is disabled rather than
               faked, so the control tells the truth about what exists. */}
-          <div className="flex items-center gap-1 rounded-full border border-border bg-muted/50 p-0.5 pl-2">
+          <div className="flex items-center gap-1 rounded-none border border-border bg-muted/50 p-0.5 pl-2">
             <Globe aria-hidden className="size-3.5 text-muted-foreground" />
             <button
               type="button"
               disabled
               title="Bản tiếng Anh đang được chuẩn bị"
-              className="rounded-full px-2 py-0.5 text-[11.5px] font-medium text-muted-foreground/60"
+              className="rounded-none px-2 py-0.5 text-[11.5px] font-medium text-muted-foreground/60"
             >
               EN
             </button>
             <span
               aria-current="true"
-              className="rounded-full bg-primary px-2 py-0.5 text-[11.5px] font-semibold text-primary-foreground"
+              className="rounded-none bg-primary px-2 py-0.5 text-[11.5px] font-semibold text-primary-foreground"
             >
               VI
             </span>
@@ -145,7 +145,7 @@ export function StudioHeader({
           <div
             role="status"
             className={cn(
-              "flex items-center gap-2 rounded-full border bg-muted/40 py-1 pr-2.5 pl-2",
+              "flex items-center gap-2 rounded-none border bg-muted/40 py-1 pr-2.5 pl-2",
               chip.border
             )}
           >

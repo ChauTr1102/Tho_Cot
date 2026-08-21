@@ -119,16 +119,16 @@ export const AutopilotWorkflow: React.FC<Props> = ({ productName, errorMessage, 
   const formattedElapsed = `${Math.floor(elapsedSeconds / 60).toString().padStart(2, "0")}:${(elapsedSeconds % 60).toString().padStart(2, "0")}`;
 
   return (
-    <div className="relative overflow-hidden border border-[#35ea52]/20 bg-background p-5 sm:p-6">
+    <div className="relative overflow-hidden border border-[#35ea52]/20 bg-background p-5 sm:p-6 flex flex-col min-h-0 h-full">
       <div className="absolute inset-0 dot-grid opacity-40 pointer-events-none" />
-      <div className="relative space-y-4">
-        <header className="flex items-center justify-between gap-4">
+      <div className="relative flex flex-col gap-4 min-h-0 flex-1">
+        <header className="flex items-center justify-between gap-4 shrink-0">
           <div className="inline-flex items-center gap-2 text-[10px] font-mono tracking-[0.2em] text-[#35ea52]"><Zap className="h-4 w-4" /> QUY TRÌNH TỰ ĐỘNG</div>
           <div className="text-right"><p className="text-[9px] font-mono text-foreground/30 tracking-wider">CHIẾN DỊCH ĐANG XỬ LÝ</p><p className="text-sm font-mono text-foreground mt-0.5">{productName}</p></div>
         </header>
 
-        <div className="border border-foreground/10 bg-foreground/[0.03] p-4 space-y-3">
-          <div className="flex items-center gap-3">
+        <div className="border border-foreground/10 bg-foreground/[0.03] p-4 flex flex-col gap-3 min-h-0 flex-1">
+          <div className="flex items-center gap-3 shrink-0">
             <span className="text-[9px] font-mono text-foreground/30 tracking-wider shrink-0">TIẾN ĐỘ TỔNG</span>
             <div className="h-1 flex-1 bg-foreground/10 overflow-hidden">
               <div className="h-full bg-[#35ea52] transition-[width] duration-700" style={{ width: `${(completedCount / steps.length) * 100}%` }} />
@@ -137,29 +137,52 @@ export const AutopilotWorkflow: React.FC<Props> = ({ productName, errorMessage, 
             {runState === "running" && <span className="text-[9px] font-mono text-foreground/40 shrink-0">({formattedElapsed})</span>}
           </div>
 
-          <div className="flex flex-col divide-y divide-foreground/10">
+          <div className="flex flex-col divide-y divide-foreground/10 min-h-0 overflow-y-auto">
             {steps.map((step, index) => {
               const state = nodeStates[step.id];
               const canOpen = state === "complete" || state === "failed";
+              const isRunning = state === "running";
               const Icon = step.icon;
-              return <button key={step.id} type="button" disabled={!canOpen} onClick={() => canOpen && onOpenStep(step.id)} aria-label={`${step.title} · ${stateLabels[state]}${canOpen ? " · Mở chi tiết" : " · Chưa có chi tiết"}`} className={`relative flex items-center gap-3 text-left px-2 py-2.5 transition-all group ${state === "running" ? "bg-[#35ea52]/10 cursor-wait" : state === "complete" ? "cursor-pointer hover:bg-[#35ea52]/[0.05]" : state === "failed" ? "bg-red-500/5 cursor-pointer" : "cursor-not-allowed"}`}>
-                <span className="text-[10px] font-mono text-foreground/25 w-5 shrink-0">0{index + 1}</span>
-                <div className={`h-7 w-7 flex items-center justify-center border shrink-0 ${state === "running" || state === "complete" ? "border-[#35ea52]/40 text-[#35ea52]" : "border-foreground/10 text-foreground/35"}`}><Icon className="h-3.5 w-3.5" /></div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-xs font-display font-bold text-foreground truncate">{step.title}</h2>
-                    {state === "running" && <span className="text-[9px] font-mono text-[#35ea52] shrink-0">({formattedElapsed})</span>}
-                  </div>
-                  <p className="text-[9px] text-foreground/40 truncate">{step.agent}</p>
+              return (
+                <div key={step.id}>
+                  <button type="button" disabled={!canOpen} onClick={() => canOpen && onOpenStep(step.id)} aria-label={`${step.title} · ${stateLabels[state]}${canOpen ? " · Mở chi tiết" : " · Chưa có chi tiết"}`} className={`relative flex w-full items-center gap-3 text-left px-2 py-2.5 transition-all group ${isRunning ? "bg-[#35ea52]/10 cursor-wait" : state === "complete" ? "cursor-pointer hover:bg-[#35ea52]/[0.05]" : state === "failed" ? "bg-red-500/5 cursor-pointer" : "cursor-not-allowed"}`}>
+                    <span className="text-[10px] font-mono text-foreground/25 w-5 shrink-0">0{index + 1}</span>
+                    <div className={`h-7 w-7 flex items-center justify-center border shrink-0 ${isRunning || state === "complete" ? "border-[#35ea52]/40 text-[#35ea52]" : "border-foreground/10 text-foreground/35"}`}><Icon className="h-3.5 w-3.5" /></div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-xs font-display font-bold text-foreground truncate">{step.title}</h2>
+                        {isRunning && <span className="text-[9px] font-mono text-[#35ea52] shrink-0">({formattedElapsed})</span>}
+                      </div>
+                      <p className="text-[9px] text-foreground/40 truncate">{step.agent}</p>
+                    </div>
+                    <span className={`shrink-0 inline-flex items-center gap-1 text-[8px] font-mono tracking-wider ${isRunning ? "text-[#35ea52]" : state === "complete" ? "text-[#35ea52]" : state === "failed" ? "text-red-400" : "text-foreground/25"}`}>{isRunning && <Loader2 className="h-3 w-3 animate-spin" />}{state === "complete" && <Check className="h-3 w-3" />}{stateLabels[state]}</span>
+                    {canOpen && <ArrowRight className="h-3 w-3 text-foreground/25 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />}
+                  </button>
+                  {isRunning && (
+                    <div className="pl-[3.25rem] pr-3 pb-3 -mt-0.5 bg-[#35ea52]/[0.04] animate-in fade-in slide-in-from-top-1 duration-300">
+                      <div className="flex flex-col gap-1.5 pt-1">
+                        {activities[step.id].map((activity, activityIdx) => (
+                          <div key={activity} className={`flex items-center gap-2 text-[10px] font-mono ${activityIdx === activityIndex ? "text-[#35ea52]" : activityIdx < activityIndex ? "text-foreground/45" : "text-foreground/25"}`}>
+                            {activityIdx < activityIndex ? (
+                              <Check className="h-3 w-3 text-[#35ea52] shrink-0" />
+                            ) : activityIdx === activityIndex ? (
+                              <Loader2 className="h-3 w-3 text-[#35ea52] animate-spin shrink-0" />
+                            ) : (
+                              <span className="h-1.5 w-1.5 rounded-full mx-[3px] bg-foreground/15 shrink-0" />
+                            )}
+                            {activity}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <span className={`shrink-0 inline-flex items-center gap-1 text-[8px] font-mono tracking-wider ${state === "running" ? "text-[#35ea52]" : state === "complete" ? "text-[#35ea52]" : state === "failed" ? "text-red-400" : "text-foreground/25"}`}>{state === "running" && <Loader2 className="h-3 w-3 animate-spin" />}{state === "complete" && <Check className="h-3 w-3" />}{stateLabels[state]}</span>
-                {canOpen && <ArrowRight className="h-3 w-3 text-foreground/25 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />}
-              </button>;
+              );
             })}
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-foreground/10 bg-foreground/[0.02] p-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-foreground/10 bg-foreground/[0.02] p-4 shrink-0">
           <div><p className="text-xs font-mono font-bold text-foreground">{runState === "complete" ? "Báo cáo chiến dịch đã sẵn sàng" : runState === "running" ? "Các agent đang xây dựng chiến dịch" : runState === "failed" ? "Quy trình cần được xử lý" : "Sẵn sàng chạy toàn bộ quy trình"}</p><p className={`text-[10px] mt-1 ${runState === "failed" ? "text-red-400" : "text-foreground/35"}`}>{runState === "complete" ? "Mở báo cáo cuối để kiểm tra, tải xuống hoặc triển khai." : runState === "failed" ? (errorMessage || "Nghiên cứu thất bại. Mở bước Nghiên cứu để xem chi tiết rồi thử lại.") : "Bạn có thể mở các bước đã hoàn tất mà không làm gián đoạn quy trình."}</p></div>
           {runState === "complete" ? <button type="button" onClick={() => onOpenStep("final_output")} className="h-11 px-6 bg-[#35ea52] text-black text-xs font-mono font-bold inline-flex items-center gap-2 shrink-0"><FileText className="h-4 w-4" /> MỞ BÁO CÁO CUỐI</button> : <button type="button" onClick={() => void run()} disabled={runState === "running"} className="h-11 px-6 bg-[#35ea52] text-black text-xs font-mono font-bold inline-flex items-center gap-2 disabled:opacity-60 shrink-0">{runState === "running" ? <><Loader2 className="h-4 w-4 animate-spin" /> ĐANG CHẠY QUY TRÌNH</> : <><Sparkles className="h-4 w-4" /> TẠO TOÀN BỘ CHIẾN DỊCH</>}</button>}
         </div>

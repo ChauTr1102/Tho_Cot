@@ -40,7 +40,7 @@ export function AwaitingGraph() {
             {Array.from({ length: count }).map((_, row) => (
               <div
                 key={row}
-                className="h-[104px] rounded-[10px] border border-border bg-muted/30"
+                className="h-[104px] rounded-none border border-border bg-muted/30"
               />
             ))}
           </div>

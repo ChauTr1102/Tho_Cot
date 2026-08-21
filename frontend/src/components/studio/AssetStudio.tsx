@@ -327,7 +327,7 @@ export function AssetStudio({
             // the pipeline and on near-black at /studio with no second
             // stylesheet — provided the stylesheets load at all, which is the
             // bug this was previously mistaken for.
-            "flex flex-col"
+            "flex-1 h-full flex flex-col"
           : "studio-backdrop studio-theme-dark flex min-h-screen flex-col"
       }
     >
@@ -348,11 +348,11 @@ export function AssetStudio({
       <main
         className={
           embedded
-            ? "w-full px-3 pt-3 pb-4"
+            ? "flex-1 flex flex-col w-full"
             : "mx-auto w-full max-w-[1760px] flex-1 px-4 pt-4 pb-10 sm:px-6"
         }
       >
-        <div className="grid items-start gap-4 lg:grid-cols-[minmax(300px,340px)_minmax(0,1fr)]">
+        <div className="flex-1 grid items-stretch gap-0 lg:grid-cols-[minmax(300px,340px)_minmax(0,1fr)]">
           {/* One rail, two states. While a proposal is on the table it takes
               the whole rail — it is the only decision that matters at that
               moment, and leaving the brief editable beside it invites changes

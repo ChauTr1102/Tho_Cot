@@ -30,6 +30,7 @@ import {
   Background,
   BackgroundVariant,
   MiniMap,
+  Panel,
   ReactFlow,
   ReactFlowProvider,
   useEdgesState,
@@ -377,84 +378,17 @@ function Board({
     <div
       ref={shellRef}
       className={cn(
-        "studio-panel flex min-w-0 flex-col overflow-hidden",
+        "studio-panel flex min-w-0 flex-1 flex-col overflow-hidden h-full w-full min-h-[500px]",
         // Sixteen to twenty-five nodes will not be legible in a letterbox, so
         // the canvas takes most of the fold and the full-screen control takes
         // the rest — that is the one that makes the board properly readable.
-        expanded ? "fixed inset-3 z-50 h-auto" : "h-[clamp(520px,72vh,1180px)]"
+        expanded ? "fixed inset-3 z-50 h-auto" : ""
       )}
     >
-      <header className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2 border-b border-border px-4 py-2.5">
-        <h3 className="font-display text-[14px] font-semibold tracking-tight">
-          Sơ đồ dựng kit
-        </h3>
-        <p className="studio-nums font-mono text-[11.5px] text-muted-foreground">
-          {counts.finished}/{counts.total} node
-          {counts.running > 0 ? (
-            <span className="text-primary"> · {counts.running} đang chạy</span>
-          ) : null}
-        </p>
-
-        {/* In the header rather than floating over the board: an overlay in
-            any corner either occludes a node or collides with the app's own
-            floating navigation once the canvas goes full-screen. Hidden on
-            narrow windows, where every node still states its status in words
-            anyway — colour is never the only carrier. */}
-        <StateLegend />
-
-        <div className="ml-auto flex items-center gap-1">
-          <ToolButton onClick={() => void zoomOut()} label="Thu nhỏ">
-            <Minus aria-hidden className="size-[13px]" />
-          </ToolButton>
-          <ZoomReadout />
-          <ToolButton onClick={() => void zoomIn()} label="Phóng to">
-            <Plus aria-hidden className="size-[13px]" />
-          </ToolButton>
-
-          <span aria-hidden className="mx-1 h-4 w-px bg-border" />
-
-          <ToolButton
-            onClick={() => void fitView({ padding: FIT_PADDING, duration: 300 })}
-            label="Vừa khung hình"
-          >
-            <Maximize aria-hidden className="size-[13px]" />
-          </ToolButton>
-          <ToolButton
-            onClick={relayout}
-            label="Sắp xếp lại theo phụ thuộc (bỏ mọi vị trí đã kéo)"
-          >
-            <LayoutGrid aria-hidden className="size-[13px]" />
-          </ToolButton>
-
-          {/* Labelled, not another icon in the row: on a laptop this is the
-              control that takes the board from "shapes" to "readable", and a
-              judge should not have to hunt for it. */}
-          <button
-            type="button"
-            onClick={() => setExpanded((value) => !value)}
-            title={
-              expanded ? "Thu về bố cục trang (Esc)" : "Xem sơ đồ toàn màn hình"
-            }
-            className={cn(
-              "ml-1 inline-flex h-[24px] items-center gap-1.5 rounded-[6px] border px-2",
-              "text-[11px] font-medium transition-colors",
-              "border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground",
-              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-            )}
-          >
-            {expanded ? (
-              <Minimize aria-hidden className="size-[13px]" />
-            ) : (
-              <Fullscreen aria-hidden className="size-[13px]" />
-            )}
-            {expanded ? "Thu lại" : "Toàn màn hình"}
-          </button>
-        </div>
-      </header>
-
-      <div className="studio-flow relative min-h-0 flex-1">
+      <div className="studio-flow relative min-h-0 flex-1 h-full w-full">
         <GraphCanvasProvider value={services}>
           <ReactFlow<GraphFlowNode, GraphFlowEdge>
+            style={{ width: "100%", height: "100%" }}
             nodes={rfNodes}
             edges={rfEdges}
             onNodesChange={onNodesChange}
@@ -464,44 +398,88 @@ function Board({
             edgeTypes={edgeTypes}
             minZoom={0.2}
             maxZoom={1.75}
-            // A results board, not a diagram editor: nodes move, wiring does not.
             nodesConnectable={false}
             nodesDraggable
             elementsSelectable
             deleteKeyCode={null}
             multiSelectionKeyCode={null}
-            // Wheel zooms and drag pans — the ComfyUI convention, and the one
-            // anyone who has used a node canvas will try first. `nowheel` on
-            // the prompt boxes keeps scrolling *inside* a node from zooming.
             zoomOnScroll
             zoomOnPinch
             panOnDrag
             selectionOnDrag={false}
             proOptions={{ hideAttribution: true }}
-            aria-label="Sơ đồ phụ thuộc của lượt chạy studio"
+            fitView
+            fitViewOptions={{ padding: FIT_PADDING }}
           >
-            {/* A ruled grid, not dots. The board is a workspace and a grid
-                reads as one; dots at this density read as noise on a light
-                ground. */}
-            <Background
-              variant={BackgroundVariant.Lines}
-              gap={28}
-              size={1}
-              className="studio-flow-bg"
-            />
+            <Background color="#E5E7EB" variant={BackgroundVariant.Lines} />
             <MiniMap
-              pannable
-              zoomable
-              ariaLabel="Bản đồ thu nhỏ của sơ đồ"
               className="studio-minimap"
-              // Deliberately small. It is an orientation aid for a board that
-              // does not fit; at React Flow's default size it competes with
-              // the thing it is a map of.
+              zoomable
+              pannable
+              position="bottom-right"
               style={{ width: 148, height: 104 }}
               maskColor="color-mix(in srgb, var(--background) 78%, transparent)"
               nodeColor={miniMapColor}
               nodeStrokeWidth={0}
             />
+
+            <Panel position="top-left" className="m-3 flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2 rounded-none border border-border bg-background/90 px-3 py-1.5 backdrop-blur-sm">
+                <span className="font-display text-[13px] font-semibold tracking-tight">Sơ đồ kit</span>
+                <span className="text-muted-foreground/40">|</span>
+                <span className="studio-nums font-mono text-[11px] text-muted-foreground">
+                  {counts.finished}/{counts.total}
+                </span>
+                {counts.running > 0 && (
+                  <>
+                    <span className="text-muted-foreground/40">|</span>
+                    <span className="studio-nums font-mono text-[11px] text-primary">{counts.running} đang chạy</span>
+                  </>
+                )}
+              </div>
+              <div className="hidden sm:block">
+                <div className="rounded-none border border-border bg-background/90 px-3 py-1.5 backdrop-blur-sm">
+                  <StateLegend />
+                </div>
+              </div>
+            </Panel>
+
+            <Panel position="top-right" className="m-3">
+              <div className="flex items-center rounded-none border border-border bg-background/90 p-1 gap-1 backdrop-blur-sm">
+                <ToolButton onClick={() => void zoomOut()} label="Thu nhỏ">
+                  <Minus aria-hidden className="size-[13px]" />
+                </ToolButton>
+                <ZoomReadout />
+                <ToolButton onClick={() => void zoomIn()} label="Phóng to">
+                  <Plus aria-hidden className="size-[13px]" />
+                </ToolButton>
+                
+                <span aria-hidden className="mx-1 h-3 w-px bg-border" />
+                
+                <ToolButton
+                  onClick={() => void fitView({ padding: FIT_PADDING, duration: 300 })}
+                  label="Vừa khung hình"
+                >
+                  <Maximize aria-hidden className="size-[13px]" />
+                </ToolButton>
+                <ToolButton onClick={relayout} label="Sắp xếp lại">
+                  <LayoutGrid aria-hidden className="size-[13px]" />
+                </ToolButton>
+                
+                <span aria-hidden className="mx-1 h-3 w-px bg-border" />
+                
+                <ToolButton
+                  onClick={() => setExpanded((value) => !value)}
+                  label={expanded ? "Thu lại" : "Toàn màn hình"}
+                >
+                  {expanded ? (
+                    <Minimize aria-hidden className="size-[13px]" />
+                  ) : (
+                    <Fullscreen aria-hidden className="size-[13px]" />
+                  )}
+                </ToolButton>
+              </div>
+            </Panel>
           </ReactFlow>
         </GraphCanvasProvider>
       </div>
@@ -530,7 +508,7 @@ function ToolButton({
       onClick={onClick}
       title={label}
       className={cn(
-        "grid size-[24px] place-items-center rounded-[6px] border border-border/70",
+        "grid size-[24px] place-items-center rounded-none border border-border/70",
         "text-muted-foreground transition-colors",
         "hover:border-primary/45 hover:text-primary",
         "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"

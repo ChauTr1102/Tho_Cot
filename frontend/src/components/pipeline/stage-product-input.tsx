@@ -281,8 +281,8 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
             onClick={() => setInputMode("link")}
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-mono tracking-wider transition-all ${
               inputMode === "link"
-                ? "bg-[#35ea52] text-black font-bold shadow-md"
-                : "text-foreground/50 hover:text-foreground hover:bg-foreground/[0.05]"
+                ? "bg-[#28C840] text-white font-bold shadow-md"
+                : "text-foreground/60 hover:text-foreground hover:bg-foreground/[0.05]"
             }`}
           >
             <Link2 className="h-3.5 w-3.5" />
@@ -294,8 +294,8 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
             onClick={() => setInputMode("manual")}
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-mono tracking-wider transition-all ${
               inputMode === "manual"
-                ? "bg-foreground text-black font-bold shadow-md"
-                : "text-foreground/50 hover:text-foreground hover:bg-foreground/[0.05]"
+                ? "bg-[#28C840] text-white font-bold shadow-md"
+                : "text-foreground/60 hover:text-foreground hover:bg-foreground/[0.05]"
             }`}
           >
             <PenLine className="h-3.5 w-3.5" />

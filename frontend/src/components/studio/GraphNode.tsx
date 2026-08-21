@@ -129,7 +129,7 @@ function GraphNodeCard({ data, selected }: NodeProps<GraphFlowNode>) {
       data-state={dead ? "dead" : node.state}
       data-selected={selected ? "true" : undefined}
       className={cn(
-        "studio-node flex h-full w-full flex-col gap-[7px] rounded-[10px] border p-[9px]",
+        "studio-node flex h-full w-full flex-col gap-[7px] rounded-none border p-[9px]",
         dead ? "studio-node-dead border-border/45" : state.chip
       )}
     >
@@ -213,7 +213,7 @@ function MediaWell({
     return (
       <div
         onDoubleClick={open}
-        className="studio-media relative min-h-0 flex-1 overflow-hidden rounded-[7px]"
+        className="studio-media relative min-h-0 flex-1 overflow-hidden rounded-none"
       >
         {video ? (
           <video
@@ -253,7 +253,7 @@ function MediaWell({
           onClick={open}
           title={video ? "Phát video" : "Xem ảnh đầy đủ"}
           className={cn(
-            "nodrag studio-media-open absolute grid place-items-center rounded-full",
+            "nodrag studio-media-open absolute grid place-items-center rounded-none",
             "border border-primary/45 bg-background/80 text-primary backdrop-blur-sm",
             "transition-colors hover:bg-primary hover:text-primary-foreground",
             "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
@@ -279,7 +279,7 @@ function MediaWell({
      says which of the three reasons it is empty for. */
   if (node.state === "running" || node.state === "retry") {
     return (
-      <div className="studio-media studio-media-working relative grid min-h-0 flex-1 place-items-center overflow-hidden rounded-[7px]">
+      <div className="studio-media studio-media-working relative grid min-h-0 flex-1 place-items-center overflow-hidden rounded-none">
         <span className="relative z-10 font-mono text-[10.5px] tracking-[0.14em] text-primary/80 uppercase">
           Đang dựng
         </span>
@@ -289,7 +289,7 @@ function MediaWell({
 
   if (dead || node.state === "failed") {
     return (
-      <div className="studio-media grid min-h-0 flex-1 place-items-center rounded-[7px]">
+      <div className="studio-media grid min-h-0 flex-1 place-items-center rounded-none">
         <Ban aria-hidden className="size-[18px] text-muted-foreground/45" />
       </div>
     );
@@ -297,7 +297,7 @@ function MediaWell({
 
   if (node.state === "pending") {
     return (
-      <div className="studio-media studio-media-pending grid min-h-0 flex-1 place-items-center rounded-[7px]">
+      <div className="studio-media studio-media-pending grid min-h-0 flex-1 place-items-center rounded-none">
         <KindIcon aria-hidden className="size-[18px] text-muted-foreground/35" />
       </div>
     );
@@ -305,7 +305,7 @@ function MediaWell({
 
   // Finished, but the event carried no url. Say so rather than show a hole.
   return (
-    <div className="studio-media grid min-h-0 flex-1 place-items-center gap-1 rounded-[7px] px-2 text-center">
+    <div className="studio-media grid min-h-0 flex-1 place-items-center gap-1 rounded-none px-2 text-center">
       <KindIcon aria-hidden className="size-[16px] text-muted-foreground/45" />
       <span className="text-[10.5px] leading-tight text-muted-foreground/70">
         Không kèm bản xem trước
@@ -386,7 +386,7 @@ function QaChip({ verdict, notes }: { verdict: string; notes?: string[] }) {
     <span
       title={detail}
       className={cn(
-        "inline-flex shrink-0 items-center gap-[3px] rounded-[4px] border px-[4px] py-px",
+        "inline-flex shrink-0 items-center gap-[3px] rounded-none border px-[4px] py-px",
         "text-[9.5px] font-semibold tracking-[0.06em] uppercase",
         passed
           ? "border-primary/35 bg-primary/10 text-primary"
@@ -470,7 +470,7 @@ function PromptEditor({ node, dead }: { node: StudioNode; dead: boolean }) {
         // image node, and twenty shouting buttons would out-weigh the twenty
         // pictures they sit under.
         className={cn(
-          "nodrag inline-flex h-[20px] shrink-0 items-center justify-center gap-[5px] rounded-[5px] border",
+          "nodrag inline-flex h-[20px] shrink-0 items-center justify-center gap-[5px] rounded-none border",
           "text-[10px] font-medium transition-colors",
           "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
           blocked !== null || pending

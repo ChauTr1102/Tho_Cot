@@ -194,7 +194,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
               type="button"
               onClick={() => setTab("url")}
               className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-mono tracking-wider transition-all ${
-                tab === "url" ? "bg-foreground text-black font-bold" : "text-foreground/40 hover:text-foreground/60"
+                tab === "url" ? "bg-foreground text-white font-bold" : "text-foreground/40 hover:text-foreground/60"
               }`}
             >
               <Link2 className="h-3 w-3" /> DÁN.URL
@@ -204,7 +204,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
               type="button"
               onClick={() => setTab("manual")}
               className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-mono tracking-wider transition-all ${
-                tab === "manual" ? "bg-foreground text-black font-bold" : "text-foreground/40 hover:text-foreground/60"
+                tab === "manual" ? "bg-foreground text-white font-bold" : "text-foreground/40 hover:text-foreground/60"
               }`}
             >
               <ImageIcon className="h-3 w-3" /> THÊM.THỦ CÔNG
@@ -280,12 +280,12 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
               </button>
               {crawledData ? (
                 <button type="button" onClick={handleConfirmUrlImport}
-                  className="px-4 py-2 bg-foreground text-black text-xs font-mono font-bold tracking-wider hover:bg-foreground/90 transition-all">
+                  className="px-4 py-2 bg-foreground text-white text-xs font-mono font-bold tracking-wider hover:bg-foreground/90 transition-all">
                   LƯU.TÀI NGUYÊN
                 </button>
               ) : (
                 <button type="button" onClick={handleImportUrl} disabled={isCrawling || !urlInput.trim()}
-                  className="px-4 py-2 border-2 border-foreground text-foreground text-xs font-mono font-bold tracking-wider hover:bg-foreground hover:text-black transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+                  className="px-4 py-2 border-2 border-foreground text-foreground text-xs font-mono font-bold tracking-wider hover:bg-foreground hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed">
                   {isCrawling ? "ĐANG NHẬP..." : "NHẬP"}
                 </button>
               )}
@@ -358,7 +358,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
                 <Input placeholder="Or paste image URL..." value={imageUrlInput} onChange={(e) => setImageUrlInput(e.target.value)}
                   className="h-8 text-xs font-mono bg-transparent border-foreground/15 text-foreground/60 placeholder:text-foreground/15 focus:border-foreground/40" />
                 <button type="button" onClick={handleAddDirectUrl} disabled={!imageUrlInput.trim()}
-                  className="h-8 px-3 border border-foreground/20 text-[11px] font-mono text-foreground/40 hover:bg-foreground hover:text-black transition-all disabled:opacity-30 tracking-wider shrink-0 flex items-center gap-1">
+                  className="h-8 px-3 border border-foreground/20 text-[11px] font-mono text-foreground/40 hover:bg-foreground hover:text-white transition-all disabled:opacity-30 tracking-wider shrink-0 flex items-center gap-1">
                   <Plus className="h-2.5 w-2.5" /> THÊM
                 </button>
               </div>
@@ -371,14 +371,14 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={img.url} alt="asset" className="w-full h-full object-cover" />
                       {img.isCover && (
-                        <span className="absolute top-0.5 left-0.5 text-[7px] font-mono font-bold bg-foreground text-black px-1">
+                        <span className="absolute top-0.5 left-0.5 text-[7px] font-mono font-bold bg-foreground text-white px-1">
                           ẢNH BÌA
                         </span>
                       )}
                       <div className="absolute inset-0 bg-background/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
                         {!img.isCover && (
                           <button type="button" onClick={() => setImages(images.map((i) => ({ ...i, isCover: i.id === img.id })))}
-                            className="p-1 border border-foreground/50 text-foreground hover:bg-foreground hover:text-black" title="Set cover">
+                            className="p-1 border border-foreground/50 text-foreground hover:bg-foreground hover:text-white" title="Set cover">
                             <Star className="h-2.5 w-2.5" />
                           </button>
                         )}
@@ -402,7 +402,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
                   HỦY
                 </button>
                 <button type="submit"
-                  className="px-4 py-2 bg-foreground text-black text-xs font-mono font-bold tracking-wider hover:bg-foreground/90 transition-all">
+                  className="px-4 py-2 bg-foreground text-white text-xs font-mono font-bold tracking-wider hover:bg-foreground/90 transition-all">
                   LƯU.TÀI NGUYÊN
                 </button>
               </div>

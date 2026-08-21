@@ -1,81 +1,34 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   Asset Studio — surfaces for the live-run screen at /studio
-   ═══════════════════════════════════════════════════════════════════════════
-
-   Why this file exists rather than living in `app/globals.css`:
-
-   The studio's design tokens shipped in `dceac25` inside globals.css and were
-   lost when `f7d3d4e` merged main and took the other side of that file whole.
-   Every `.studio-*` class the screen references — `.studio-panel`,
-   `.studio-backdrop`, `.studio-live-dot`, `.studio-nums`, `.studio-rail` —
-   has been dead ever since. They are restored here, verbatim where the
-   original still applies, because globals.css is being worked on concurrently
-   by other agents and a second merge of that file would lose them again.
-   Scoped to this route, they cannot collide with anything.
-
-   Written as plain CSS, not `@layer components`: this stylesheet is loaded by
-   the studio layout rather than by the Tailwind entry point, so it cannot rely
-   on the layer order having been declared before it arrives.
-
-   Every animation has a `prefers-reduced-motion` fallback at the foot of the
-   file. Where an animation carries information — a live dot, a running edge —
-   the fallback keeps the *state* and drops only the movement.
-   ═════════════════════════════════════════════════════════════════════════ */
+   ASSET STUDIO — STYLES
+   Flat Brutalist Monospace & Clean Workbench Theme
+   ═══════════════════════════════════════════════════════════════════════════ */
 
 :root {
-  --studio-shadow-panel: 0 10px 40px -10px rgba(0, 5, 1, 0.7);
+  --studio-shadow-panel: none;
   --studio-gradient-cta: linear-gradient(135deg, #fe6e00, #ff9a3d);
-  --studio-shadow-cta: 0 0 40px rgba(238, 53, 51, 0.55);
+  --studio-shadow-cta: none;
 }
 
-/* The one coral call to action on the screen. Green is the brand and is spent
-   everywhere else, so the single button that costs the user twelve minutes is
-   the only thing wearing the CTA colour. Lost with the rest of the tokens in
-   `f7d3d4e`; the Run button has been referencing a dead class since. */
+/* The one coral call to action on the screen */
 .btn-cta {
   background-image: var(--studio-gradient-cta);
-  /* Near-black rather than white: white on this orange only reaches 2.8:1. */
-  color: #2a0f00;
-  font-weight: 600;
-  box-shadow: var(--studio-shadow-cta);
+  color: #ffffff;
+  font-weight: 700;
+  border-radius: 0px;
+  box-shadow: none;
   transition:
     filter 0.15s ease,
     transform 0.15s ease;
 }
 .btn-cta:hover:not(:disabled) {
-  filter: brightness(1.06);
-  transform: translateY(-1px);
+  filter: brightness(1.08);
 }
 .btn-cta:disabled {
   box-shadow: none;
+  opacity: 0.5;
 }
 
-/* ── Page substrate ──────────────────────────────────────────────────────
-   Forest base, two soft lime auroras bleeding in from the top corners, and
-   the faint 1px technical grid taken from the event site. The auroras are
-   fixed so they read as light in the room rather than as decoration glued to
-   the content. */
-/* ── The studio's own palette ────────────────────────────────────────────────
-   Pinned here, not inherited. Every token below used to come from globals.css
-   via `.dark`, and globals.css belongs to the whole app: a teammate moved the
-   landing page to a warm ivory light theme, which set `--primary: #000000` and
-   `--background: #f4f4f0` in both modes. The studio reads `--primary` fifteen
-   times for its lime, so that change turned this route into black text on white
-   with a few green glows left behind — a full merge away from anything anyone
-   would have tested.
-
-   `@theme inline` compiles `border-border` straight to `var(--border)`, so
-   redefining the tokens on the route's own root cascades to every component
-   underneath it and to nothing outside. The app theme and the studio theme can
-   now move independently, which is what both of them want.
-   Applied by the standalone `/studio` route only. Embedded in the campaign
-   pipeline the studio inherits whatever theme that page uses — which works
-   because every rule in this file reads tokens rather than hex. An earlier
-   version of this note claimed ivory was unreadable; that was a misdiagnosis.
-   The nodes washed out and the minimap rendered as a black slab because this
-   stylesheet and React Flow's were not being loaded at all outside `/studio`,
-   not because of the palette.
-   ──────────────────────────────────────────────────────────────────────────── */
+/* ── The studio's own palette (when standalone) ─────────────────────────── */
 .studio-theme-dark {
   --background: #001708;
   --foreground: #f4faf5;
@@ -99,13 +52,6 @@
   --input: rgba(107, 239, 117, 0.18);
   --ring: #35ea52;
 
-  /* Re-apply, do not merely redefine. `body` resolves `text-foreground` at the
-     body element and inherits the *computed* colour downwards, so redefining
-     `--foreground` on a descendant changes nothing that was already inherited.
-     Without this line every heading kept the ivory theme's near-black and went
-     invisible on the dark panel, while anything with an explicit
-     `text-muted-foreground` re-resolved locally and stayed readable — which is
-     exactly how the bug presented. */
   color: var(--foreground);
   background-color: var(--background);
 }
@@ -119,53 +65,42 @@
     linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
   background-size: 100% 100%, 100% 100%, 100% 3.5rem, 3.5rem 100%;
   background-attachment: fixed, fixed, scroll, scroll;
-
-  /* The BTC pairing: Inter for body, Space Grotesk for display. The root
-     stylesheet forces monospace on `html` for the brutalist marketing pages;
-     this screen is a working tool and keeps the event's own typography.
-     Elements carrying `font-mono` — ids, timers, counters — still win. */
   font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
 
-/* ── Panels ──────────────────────────────────────────────────────────────
-   One card treatment for the whole screen: dark fill, faint lime hairline, a
-   long soft drop so panels lift off the grid. No nesting — a panel never
-   contains another panel. */
+/* ── Panels — Flat and flush with the background, 0 border radius ────────── */
 .studio-panel {
-  background-color: color-mix(in srgb, var(--card) 86%, transparent);
+  background-color: var(--background);
   border: 1px solid var(--border);
-  border-radius: 14px;
-  box-shadow: var(--studio-shadow-panel);
+  border-radius: 0px !important;
+  box-shadow: none !important;
 }
 
-/* A selectable row or tile in the brief panel. Selection is carried by border
-   + tint + a tight lime glow, never by colour alone: every option also renders
-   a check mark. */
+/* A selectable row or tile in the brief panel */
 .studio-option {
   border: 1px solid var(--border);
-  background-color: color-mix(in srgb, var(--muted) 60%, transparent);
+  border-radius: 0px !important;
+  background-color: color-mix(in srgb, var(--foreground) 3%, transparent);
+  box-shadow: none !important;
   transition:
-    border-color 0.18s cubic-bezier(0.22, 1, 0.36, 1),
-    background-color 0.18s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+    border-color 0.18s ease,
+    background-color 0.18s ease;
 }
 .studio-option:hover {
-  border-color: color-mix(in srgb, var(--primary) 38%, transparent);
-  background-color: color-mix(in srgb, var(--muted) 92%, transparent);
+  border-color: color-mix(in srgb, var(--primary) 50%, transparent);
+  background-color: color-mix(in srgb, var(--foreground) 6%, transparent);
 }
 .studio-option:has(:focus-visible) {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
 }
 .studio-option[data-selected="true"] {
-  border-color: color-mix(in srgb, var(--primary) 60%, transparent);
-  background-color: color-mix(in srgb, var(--primary) 9%, transparent);
-  box-shadow: 0 0 26px -12px var(--primary);
+  border-color: var(--primary);
+  background-color: color-mix(in srgb, var(--primary) 8%, transparent);
+  box-shadow: none !important;
 }
 
-/* ── Numerals, rails, live dots ──────────────────────────────────────────
-   Numerals that do not jitter as a timer counts. Used on every elapsed time,
-   counter and progress figure on this screen. */
+/* ── Numerals, rails, live dots ────────────────────────────────────────── */
 .studio-nums {
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1;
@@ -173,18 +108,16 @@
 
 .studio-rail {
   background-color: color-mix(in srgb, var(--foreground) 8%, transparent);
+  border-radius: 0px !important;
 }
 
-/* Progress is driven by scaleX rather than width: the fill is composited, so a
-   rail that updates on every SSE event never costs a layout pass. */
 .studio-rail-fill {
   background-image: linear-gradient(90deg, var(--primary), var(--accent));
   transform-origin: left center;
   transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  border-radius: 0px !important;
 }
 
-/* A light sweep crosses the rail only while work is in flight, so the rail
-   distinguishes "stalled at 40%" from "running at 40%". */
 .studio-rail-sweep {
   background-image: linear-gradient(
     90deg,
@@ -196,18 +129,17 @@
   animation: studio-sweep 1.9s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
-/* Live indicator: a dot with a slow expanding halo drawn in currentColor, so
-   the same class serves lime (running), gold (retry) and red (failed). */
 .studio-live-dot::after {
   content: "";
   position: absolute;
-  inset: 0;
-  border-radius: 9999px;
-  animation: studio-halo 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  inset: -3px;
+  border-radius: 0px;
+  background-color: currentColor;
+  opacity: 0.35;
+  animation: studio-halo 2.4s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  pointer-events: none;
 }
 
-/* Applied to activity rows as they arrive — motion that reports an event, not
-   decoration. */
 .studio-enter {
   animation: studio-enter 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
@@ -248,25 +180,13 @@
 
 /* ═══════════════════════════════════════════════════════════════════════════
    The canvas
-   ═══════════════════════════════════════════════════════════════════════════
-
-   React Flow ships an unopinionated light theme. Everything below re-skins it
-   in the BTC palette. Selectors are doubled up with React Flow's own class
-   (`.react-flow__edge-path.studio-edge`) so this file wins regardless of how
-   the two stylesheets end up ordered in the bundle.
-   ═════════════════════════════════════════════════════════════════════════ */
+   ═══════════════════════════════════════════════════════════════════════════ */
 
 .studio-flow {
   --xy-background-pattern-color: color-mix(in srgb, var(--foreground) 12%, transparent);
   --xy-selection-background-color: color-mix(in srgb, var(--primary) 8%, transparent);
   --xy-selection-border: 1px dashed color-mix(in srgb, var(--primary) 45%, transparent);
-  /* Tinted with the foreground, not with black. `#000 30%` was the one
-     hardcoded colour left in this file and the one thing that could not survive
-     a light theme: on ivory it mixed #F5F3EF with black and produced the flat
-     mud-grey the canvas was showing. Tinting toward `--foreground` darkens a
-     light board and lightens a dark one, which is what "slightly recessed"
-     means in both. */
-  background-color: color-mix(in srgb, var(--background) 96%, var(--foreground) 4%);
+  background-color: var(--background);
 }
 
 .studio-flow .react-flow__pane {
@@ -276,46 +196,43 @@
   cursor: grabbing;
 }
 
-/* Ports exist to anchor the connectors, not to be grabbed: this board shows
-   wiring, it does not let you rewire it. */
 .react-flow__handle.studio-node-port {
   width: 7px;
   height: 7px;
   min-width: 0;
   min-height: 0;
   border: 1px solid color-mix(in srgb, var(--primary) 45%, transparent);
-  background-color: var(--card);
+  background-color: var(--background);
+  border-radius: 0px;
   pointer-events: none;
 }
 
-/* ── Node card ───────────────────────────────────────────────────────── */
-
+/* ── Node card — Flat with 0 border radius ────────────────────────────── */
 .studio-node {
-  background-color: color-mix(in srgb, var(--card) 94%, transparent);
+  background-color: var(--background);
+  border-radius: 0px !important;
+  box-shadow: none !important;
+  border: 1px solid var(--border);
   transition:
-    border-color 0.18s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.18s cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+    border-color 0.18s ease,
+    opacity 0.24s ease;
 }
 
 .studio-node[data-state="pending"] {
   opacity: 0.58;
 }
 
-/* The only node treatment with a glow. At any moment the boxes that are lit
-   are the boxes that are working, which is the whole reading of the screen. */
 .studio-node[data-state="running"],
 .studio-node[data-state="retry"] {
-  box-shadow: 0 0 34px -12px var(--primary);
+  border-color: var(--primary);
+  outline: 1px solid var(--primary);
 }
 
 .studio-node[data-state="failed"] {
-  box-shadow: 0 0 30px -14px var(--destructive);
+  border-color: var(--destructive);
+  outline: 1px solid var(--destructive);
 }
 
-/* A branch killed by someone else's failure. Dimmed rather than coloured: the
-   node that actually broke stays red and alone, and everything it cost drains
-   away behind it. */
 .studio-node[data-state="dead"] {
   opacity: 0.34;
 }
@@ -324,22 +241,21 @@
 }
 
 .studio-node[data-selected="true"] {
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ring) 70%, transparent);
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
 }
 
-/* ── Preview well ────────────────────────────────────────────────────── */
-
+/* ── Preview well — Flat ──────────────────────────────────────────────── */
 .studio-media {
   background-color: color-mix(in srgb, #000 34%, var(--background));
   border: 1px solid color-mix(in srgb, var(--foreground) 7%, transparent);
+  border-radius: 0px !important;
 }
 
 .studio-media-pending {
   border-style: dashed;
 }
 
-/* A slot being filled, not a spinner: the sweep runs inside the well the
-   picture is about to occupy. */
 .studio-media-working::before {
   content: "";
   position: absolute;
@@ -356,14 +272,13 @@
 
 .studio-media-open {
   opacity: 0;
+  border-radius: 0px !important;
   transition: opacity 0.16s ease;
 }
 .studio-media:hover .studio-media-open,
 .studio-media-open:focus-visible {
   opacity: 1;
 }
-/* A video's play control is an affordance, not a hover reveal — it has to say
-   "this is a clip" before anyone points at it. */
 .studio-media-open:has(> svg:first-child[fill]) {
   opacity: 0.92;
 }
@@ -375,12 +290,11 @@
 }
 
 /* ── Prompt box ──────────────────────────────────────────────────────── */
-
 .studio-prompt {
   width: 100%;
   height: 36px;
   resize: none;
-  border-radius: 5px;
+  border-radius: 0px !important;
   border: 1px solid var(--border);
   background-color: color-mix(in srgb, var(--muted) 55%, transparent);
   padding: 4px 6px;
@@ -407,7 +321,6 @@
 }
 
 /* ── Edges ───────────────────────────────────────────────────────────── */
-
 .react-flow__edge-path.studio-edge {
   fill: none;
   stroke: color-mix(in srgb, var(--foreground) 15%, transparent);
@@ -427,8 +340,6 @@
   stroke-width: 2;
 }
 
-/* A dead branch reads as absent rather than as wrong: hairline, dashed, no
-   colour. Two failures further down the same chain look like one event. */
 .react-flow__edge-path.studio-edge[data-state="dead"] {
   stroke: color-mix(in srgb, var(--foreground) 8%, transparent);
   stroke-width: 1.2;
@@ -439,7 +350,7 @@
   stroke: var(--primary);
   stroke-width: 2;
   stroke-dasharray: 7 9;
-  stroke-linecap: round;
+  stroke-linecap: square;
   filter: drop-shadow(0 0 4px color-mix(in srgb, var(--primary) 50%, transparent));
   animation: studio-edge-crawl 0.55s linear infinite;
   pointer-events: none;
@@ -451,27 +362,22 @@
   }
 }
 
-/* ── Minimap ─────────────────────────────────────────────────────────── */
-
+/* ── Minimap — Flat with 0 radius ────────────────────────────────────── */
 .react-flow__minimap.studio-minimap {
   background-color: color-mix(in srgb, var(--card) 92%, transparent);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 0px !important;
+  box-shadow: none !important;
   overflow: hidden;
 }
 .react-flow__minimap.studio-minimap .react-flow__minimap-node {
   stroke: none;
-  rx: 2;
+  rx: 0;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Reduced motion
-   ═══════════════════════════════════════════════════════════════════════════
-   Nothing here removes information. The live dot keeps a static halo, and a
-   running edge keeps its full-strength lime and its glow — it simply stops
-   crawling. "This edge is live" is a fact about the run, not an effect.
-   ═════════════════════════════════════════════════════════════════════════ */
-
+   ═══════════════════════════════════════════════════════════════════════════ */
 @media (prefers-reduced-motion: reduce) {
   .btn-cta,
   .studio-option,

@@ -455,8 +455,8 @@ export default function CampaignsPage() {
 
           {/* PIPELINE VIEW */}
           {isCreatingCampaign && (
-            <div className="flex-1 flex flex-col gap-3">
-              <div className="flex items-center justify-between gap-3">
+            <div className="flex-1 flex flex-col gap-3 min-h-0 max-h-[calc(100vh-11rem)]">
+              <div className="flex items-center justify-between gap-3 shrink-0">
                 <button type="button" onClick={returnToCampaigns} className="inline-flex items-center gap-2 text-[11px] font-mono text-foreground/40 hover:text-foreground tracking-wider"><ArrowLeft className="h-3.5 w-3.5" /> TẤT CẢ CHIẾN DỊCH</button>
                 {workflowMode === "autopilot" && !showAutopilotOverview && <button type="button" onClick={() => setShowAutopilotOverview(true)} className="inline-flex items-center gap-2 px-3 py-2 border border-[#35ea52]/30 text-[10px] font-mono text-[#35ea52]"><ListTree className="h-3.5 w-3.5" /> TỔNG QUAN LUỒNG TỰ ĐỘNG</button>}
               </div>

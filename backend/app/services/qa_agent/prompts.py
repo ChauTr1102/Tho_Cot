@@ -26,16 +26,29 @@ kiểm tra positioning/copy có phù hợp với tone_of_voice và platform đó
 Luôn tạo tối thiểu các item cấu trúc cơ bản: có positioning không rỗng, có ít nhất 2 creative routes
 khác biệt, có ảnh sản phẩm chính, có copy đầy đủ title/description.
 
-Mỗi item phải có: id (slug ngắn duy nhất, viết hoa, dùng underscore), category ("plan" nếu lỗi bắt
-nguồn từ bước lập plan/positioning/creative-routes và cần sửa ở đó; "asset" nếu lỗi bắt nguồn từ nội
-dung asset đã sinh ra — ảnh, video, hoặc commerce copy — và cần regenerate lại asset đó), severity
-(BLOCKER nếu vi phạm sẽ chặn campaign, WARNING nếu chỉ nên cải thiện), description (mô tả đủ rõ để một
-agent khác có thể chấm pass/fail chỉ dựa vào mô tả này, không cần thêm ngữ cảnh), target_fields (đường
-dẫn field trên CampaignOutputDTO cần xem, ví dụ "commerce_copy.product_description" hoặc
-"product_collection_image_set.product_hero_image"), needs_image (true nếu cần xem ảnh thật để chấm).
+Mỗi item phải có: id, category ("plan" nếu lỗi bắt nguồn từ bước lập plan/positioning/creative-routes
+và cần sửa ở đó; "asset" nếu lỗi bắt nguồn từ nội dung asset đã sinh ra — ảnh, video, hoặc commerce
+copy — và cần regenerate lại asset đó), severity (BLOCKER nếu vi phạm sẽ chặn campaign, WARNING nếu
+chỉ nên cải thiện), description (mô tả đủ rõ để một agent khác có thể chấm pass/fail chỉ dựa vào mô tả
+này, không cần thêm ngữ cảnh), target_fields (đường dẫn field trên CampaignOutputDTO cần xem, ví dụ
+"commerce_copy.product_description" hoặc "product_collection_image_set.product_hero_image" — CHỈ dùng
+nội bộ để tra dữ liệu, KHÔNG được xuất hiện trong "id" hay "description"), needs_image (true nếu cần
+xem ảnh thật để chấm).
 
-Không sinh quá 16 item (đã tính cả item bản quyền bắt buộc). Không lặp lại ý giữa các item. Viết
-description bằng tiếng Việt.
+QUY TẮC BẮT BUỘC VỀ NGÔN NGỮ VÀ CÁCH GỌI TÊN (áp dụng cho "id" và "description"):
+- Toàn bộ phải viết bằng tiếng Việt, không chèn từ tiếng Anh trừ khi là thuật ngữ phổ biến không có
+  bản dịch tự nhiên (ví dụ "banner", "CTA").
+- "id" phải là một cụm tên ngắn con người đọc hiểu ngay, viết thường, cách nhau bằng dấu gạch dưới,
+  KHÔNG phải là hằng số kiểu lập trình và KHÔNG chứa tên field/biến trong schema. Ví dụ đúng:
+  "khong_duoc_claim_tri_dau_bung"; ví dụ SAI: "FORBIDDEN_CLAIM_CURES_BLOATING",
+  "product_hero_image_check".
+- "description" không được nhắc đến tên field/đường dẫn kỹ thuật (snake_case, dot-path) hay tên biến
+  trong code. Khi cần chỉ đến một phần cụ thể của campaign, hãy gọi bằng tên con người thường dùng,
+  ví dụ: product_hero_image -> "ảnh chính sản phẩm", marketplace_thumbnail -> "ảnh thu nhỏ trên sàn
+  (thumbnail)", sku_detail_image -> "ảnh chi tiết sản phẩm", commerce_copy.product_description -> "mô
+  tả sản phẩm", ad_caption -> "caption quảng cáo", creative_routes -> "phương án sáng tạo".
+
+Không sinh quá 16 item (đã tính cả item bản quyền bắt buộc). Không lặp lại ý giữa các item.
 """
 
 CHECKLIST_VERIFIER_SYSTEM = """\
@@ -49,6 +62,10 @@ kiểm tra cả cách diễn đạt tương đương (paraphrase), không chỉ 
 yêu cầu ảnh nhất quán với brand nhưng không có ảnh thực (chỉ có đường dẫn/placeholder), hãy chấm FAIL vì
 không xem được nội dung thực.
 
-Trả lời đúng hai field: "pass" (boolean) và "reason" (một hoặc hai câu tiếng Việt giải thích, trích dẫn
-nội dung cụ thể đã xem để chứng minh phán quyết). Không thêm field khác.
+Trả lời đúng hai field: "pass" (boolean) và "reason". "reason" phải là một hoặc hai câu TIẾNG VIỆT giải
+thích, trích dẫn nội dung cụ thể đã xem để chứng minh phán quyết. "reason" KHÔNG được nhắc tên field kỹ
+thuật, đường dẫn dạng snake_case/dot-path, hay tên biến trong code — nếu cần chỉ đến một phần cụ thể
+của campaign, hãy gọi bằng tên con người thường dùng (ví dụ "ảnh chính sản phẩm" thay vì
+"product_hero_image", "mô tả sản phẩm" thay vì "commerce_copy.product_description"). Không thêm field
+khác ngoài "pass" và "reason".
 """

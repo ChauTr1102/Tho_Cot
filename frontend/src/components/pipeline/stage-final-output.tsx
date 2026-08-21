@@ -7,7 +7,7 @@ import { BarChart3, Check, Copy, Eye, ExternalLink, FlaskConical, ShieldAlert, S
 } from "lucide-react";
 import { toast } from "sonner";
 import type { ResearchCampaignPlan, ResearchInput } from "@/types/research";
-import type { VerifyChecklistResponseData } from "@/types/qa_checklist";
+import { humanizeRuleId, type VerifyChecklistResponseData } from "@/types/qa_checklist";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { StagePackage } from "./stage-package";
 import { StageDeploy } from "./stage-deploy";
@@ -115,7 +115,7 @@ function QaNotificationBubble({ qaResult }: { qaResult: VerifyChecklistResponseD
             <ul className="space-y-1.5">
               {qaResult.issues.map((issue) => (
                 <li key={issue.rule_id} className="text-xs font-mono text-amber-400/90">
-                  <span className="font-bold">{issue.rule_id}</span> — {issue.message}
+                  <span className="font-bold">{humanizeRuleId(issue.rule_id)}</span> — {issue.message}
                 </li>
               ))}
             </ul>

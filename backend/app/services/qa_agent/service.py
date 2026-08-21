@@ -34,7 +34,7 @@ from app.schemas.qa_checklist import (
     VerifyChecklistRequest,
     VerifyChecklistResponse,
 )
-from app.services.qa_agent.field_resolver import resolve_field, stringify_field
+from app.services.qa_agent.field_resolver import humanize_field_path, resolve_field, stringify_field
 from app.services.qa_agent.image_loader import is_video_path, load_local_images
 from app.services.qa_agent.prompts import CHECKLIST_GENERATOR_SYSTEM, CHECKLIST_VERIFIER_SYSTEM
 from app.services.qa_agent.schema import CHECKLIST_SCHEMA, VERIFICATION_RESULT_SCHEMA, validate_checklist, validate_verification_result
@@ -154,7 +154,7 @@ class AgentQAChecklistService:
             return None
         return QAIssue(
             rule_id=item["id"], severity=QASeverity(item["severity"]),
-            message=result["reason"], field=item["target_fields"][0],
+            message=result["reason"], field=humanize_field_path(item["target_fields"][0]),
             regenerate=RegenerateTarget(item["category"]),
         )
 

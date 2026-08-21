@@ -39,3 +39,12 @@ export interface VerifyChecklistRequest {
   campaign_output: Record<string, unknown>;
   iteration?: number;
 }
+
+/** `rule_id` from the backend is always a human-readable Vietnamese
+ * underscore-slug (e.g. "khong_duoc_claim_tri_dau_bung"), never a raw
+ * schema/variable name — see backend/app/services/qa_agent/prompts.py.
+ * This turns it into plain display text for the UI. */
+export function humanizeRuleId(ruleId: string): string {
+  const words = ruleId.replace(/_/g, " ").trim();
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}

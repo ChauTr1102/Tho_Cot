@@ -82,7 +82,7 @@ export function OriginBadge({
     <span
       title={meta.description}
       className={cn(
-        "inline-flex shrink-0 items-center gap-1 rounded-md border font-semibold uppercase",
+        "inline-flex shrink-0 items-center gap-1 rounded-none border font-semibold uppercase",
         "tracking-[0.09em] whitespace-nowrap",
         size === "xs"
           ? "h-[18px] px-1.5 text-[9.5px]"
