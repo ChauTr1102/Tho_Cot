@@ -171,6 +171,18 @@ class AgentQAChecklistService:
             request.iteration, len(checklist),
         )
 
+        # A checklist that came back empty is a generation failure, not a
+        # campaign with nothing worth checking. Carrying on verifies zero items
+        # and returns `passed=True` with an empty report — which the screen
+        # renders as a green "AI không thấy điểm nào cần lưu ý" over a kit the
+        # gate never looked at, and which the store then keeps. Raising hands
+        # the request to the rule-based checklist in the endpoint, which always
+        # has items, so the caller gets a real verdict instead of a false pass.
+        if not checklist:
+            raise RuntimeError(
+                "qa_agent: checklist rỗng — model không sinh được mục nào để kiểm."
+            )
+
         issues: list[QAIssue] = []
         failed_ids: set[str] = set()
         crashed_ids: set[str] = set()

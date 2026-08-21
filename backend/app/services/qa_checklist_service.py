@@ -31,6 +31,7 @@ from app.schemas.campaign_dto import CampaignInputDTO, CampaignOutputDTO
 from app.schemas.qa_checklist import (
     QAIssue,
     QASeverity,
+    QACheckedItem,
     RegenerateTarget,
     VerifyChecklistRequest,
     VerifyChecklistResponse,
@@ -261,13 +262,34 @@ class QAChecklistService:
         output = request.campaign_output
         campaign_input = request.campaign_input
 
+        # Each group is recorded as it runs, so the response can say what was
+        # examined and not only what was wrong. Without this a clean pass and a
+        # run that checked nothing are the same object — `issues: []`,
+        # `checked_items: []` — and the screen shows a green tick for both. One
+        # of those two is a lie, and it is the one that gets stored and replayed.
+        groups: list[tuple[str, str, RegenerateTarget, list[QAIssue]]] = [
+            ("plan", "Kế hoạch: định vị, phương án sáng tạo, kế hoạch A/B",
+             RegenerateTarget.PLAN, self._check_plan(output)),
+            ("images", "Bộ ảnh sản phẩm theo chuẩn từng sàn",
+             RegenerateTarget.ASSET, self._check_images(output)),
+            ("video", "Video ngắn: định dạng, thời lượng, nội dung",
+             RegenerateTarget.ASSET, self._check_video(output)),
+            ("copy", "Nội dung bán hàng: tiêu đề, mô tả, khuyến mãi",
+             RegenerateTarget.ASSET, self._check_copy(output)),
+            ("market_research", "Dẫn chứng thị trường và nguồn tham khảo",
+             RegenerateTarget.PLAN, self._check_market_research(output)),
+            ("brief_compliance", "Bám đúng brief người dùng đưa vào",
+             RegenerateTarget.PLAN, self._check_user_brief_compliance(campaign_input, output)),
+        ]
+
         issues: list[QAIssue] = []
-        issues += self._check_plan(output)
-        issues += self._check_images(output)
-        issues += self._check_video(output)
-        issues += self._check_copy(output)
-        issues += self._check_market_research(output)
-        issues += self._check_user_brief_compliance(campaign_input, output)
+        checked_items: list[QACheckedItem] = []
+        for rule_id, description, category, found in groups:
+            issues += found
+            checked_items.append(QACheckedItem(
+                rule_id=rule_id, description=description,
+                passed=not found, category=category,
+            ))
 
         # TEMP: only surface WARNING severity for now — never block the
         # pipeline (same policy as the agent-based service, kept in sync so
@@ -283,6 +305,7 @@ class QAChecklistService:
             passed=passed,
             iteration=request.iteration,
             issues=issues,
+            checked_items=checked_items,
             regenerate=regenerate,
         )
 
