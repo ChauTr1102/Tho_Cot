@@ -154,7 +154,7 @@ class CreativeRoutesAgent:
         if not enable_search:
             return self.client.ask(
                 system=CREATIVE_SYSTEM,
-                user=f"{context}\n\nĐỊNH VỊ:\n{positioning}\n\nSoạn hai creative routes A/B.",
+                user=f"{context}\n\nĐỊNH VỊ:\n{positioning}\n\nSoạn hai creative routes A/B, mỗi route có mục tiêu và kế hoạch thử nghiệm.",
                 images=images,
             ), []
         research, calls = _followup_or_disclose(
@@ -167,7 +167,7 @@ class CreativeRoutesAgent:
         draft = self.client.ask(
             system=CREATIVE_SYSTEM,
             user=(f"{context}\n\nĐỊNH VỊ:\n{positioning}\n\nTÌM KIẾM BỔ SUNG:\n{research}"
-                  "\n\nSoạn hai creative routes A/B."),
+                  "\n\nSoạn hai creative routes A/B, mỗi route có mục tiêu và kế hoạch thử nghiệm."),
             images=images,
         )
         return draft, calls
