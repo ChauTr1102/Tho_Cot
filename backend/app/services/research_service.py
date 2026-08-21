@@ -52,7 +52,7 @@ class ResearchService:
             raise RuntimeError("Thiếu ARK_API_KEY trong environment hoặc backend/.env")
         return RawModelClient(
             api_key, base_url=_env("ARK_BASE_URL", DEFAULT_BASE_URL) or DEFAULT_BASE_URL,
-            model=model, timeout=timeout,
+            model=model, timeout=timeout, exa_api_key=_env("EXA_API_KEY"),
         )
 
     def run(

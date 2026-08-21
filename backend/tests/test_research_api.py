@@ -62,6 +62,16 @@ def test_research_run_accepts_g7_contract_and_returns_frontend_payload(client, m
     assert all(url.startswith("data:image/") for url in image_urls)
     assert [item["source"] for item in manifest] == ["logo.png", "product_01.jpg", "product_02.jpg"]
 
+    campaign = client.get("/api/campaigns/trung-nguyen-g7-cross-border-9-9")
+    assert campaign.status_code == 200
+    saved = campaign.json()["data"]
+    assert saved["status"] == "researched"
+    assert saved["research_input"]["product_brief"]["product_name"]
+    assert saved["research_result"]["plan"] == body
+
+    listed = client.get("/api/campaigns").json()["data"]
+    assert listed[0]["has_research_result"] is True
+
 
 def test_research_run_rejects_unknown_campaign_objective(client):
     payload = _g7_payload()
