@@ -315,7 +315,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
             }`}
           >
             <Link2 className="h-3.5 w-3.5" />
-            DÁN LINK SẢN PHẨM (TIKTOK / SHOPEE / LAZADA / WEB)
+            DÁN LINK SẢN PHẨM
           </button>
           <div className="w-px bg-foreground/20" />
           <button
@@ -350,7 +350,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
             <div className="relative flex-1">
               <Link2 className="absolute left-3 top-2.5 h-4 w-4 text-foreground/30" />
               <Input
-                placeholder="https://... (TikTok Shop, Shopee, Lazada, Website sản phẩm)"
+                placeholder="https://... (Dán link sản phẩm tại đây)"
                 value={tiktokUrl}
                 onChange={(e) => setTiktokUrl(e.target.value)}
                 disabled={isExtracting}
@@ -520,7 +520,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
                   SẴN SÀNG TIẾP NHẬN LINK SẢN PHẨM
                 </h4>
                 <p className="text-xs font-mono text-foreground/45">
-                  Dán URL sản phẩm (TikTok Shop, Shopee, Lazada hoặc Website) vào thanh tìm kiếm phía trên và bấm{" "}
+                  Dán URL sản phẩm vào thanh tìm kiếm phía trên và bấm{" "}
                   <span className="text-[#35ea52] font-bold">TRÍCH XUẤT & ĐIỀN FORM</span>. Toàn bộ hồ sơ nghiên cứu sản phẩm sẽ được tự động phân tích và điền vào form chi tiết.
                 </p>
               </div>
