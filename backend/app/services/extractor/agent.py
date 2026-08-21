@@ -271,6 +271,88 @@ def run_with_rendered_content(url: str, model_id: str) -> TikTokShopExtraction:
         raise last_error
 
 
+DOCUMENT_INSTRUCTIONS = [
+    "You are a marketing product analyst and campaign planner.",
+    "You are given text extracted from a product brief, marketing document, brand guideline, or specification sheet.",
+    "Task: accurately extract and convert the document's information into structured JSON matching the provided schema.",
+    "Rules:",
+    "- Extract product name, description, USP / key selling points, price, target audience, brand kit, market signals, tone of voice, etc.",
+    "- If certain fields are not explicitly present in the document, provide reasonable defaults or leave empty as appropriate.",
+    "- Preserve the original language (Vietnamese / English) from the document.",
+] + EXTRACTION_RULES + [
+    "Return ONLY JSON matching the provided schema, with no explanation.",
+]
+
+
+def extract_text_from_file_bytes(content: bytes, filename: str) -> str:
+    """Extract plain text from PDF, DOCX, or text files."""
+    lower_name = filename.lower()
+    if lower_name.endswith(".pdf"):
+        import io
+        import pypdf
+        reader = pypdf.PdfReader(io.BytesIO(content))
+        text_parts = []
+        for idx, page in enumerate(reader.pages):
+            t = page.extract_text()
+            if t and t.strip():
+                text_parts.append(f"--- Page {idx+1} ---\n{t.strip()}")
+        return "\n\n".join(text_parts)
+    elif lower_name.endswith(".docx") or lower_name.endswith(".doc"):
+        import io
+        import docx
+        doc = docx.Document(io.BytesIO(content))
+        text_parts = [p.text.strip() for p in doc.paragraphs if p.text.strip()]
+        for table in doc.tables:
+            for row in table.rows:
+                row_text = " | ".join(cell.text.strip() for cell in row.cells if cell.text.strip())
+                if row_text:
+                    text_parts.append(row_text)
+        return "\n".join(text_parts)
+    else:
+        # Fallback to UTF-8 / latin-1 for .txt, .md, .json, etc.
+        try:
+            return content.decode("utf-8")
+        except UnicodeDecodeError:
+            return content.decode("latin-1", errors="ignore")
+
+
+def run_with_document_text(text: str, filename: str = "", model_id: str = "gemini-3.6-flash") -> TikTokShopExtraction:
+    """Extract structured marketing fields from document text using Gemini."""
+    api_key = _get_api_key()
+    candidate_models = [model_id]
+    for fallback in ["gemini-3.6-flash", "gemini-3.5-flash", "gemini-3.6-pro", "gemini-2.0-flash"]:
+        if fallback not in candidate_models:
+            candidate_models.append(fallback)
+
+    prompt = f"Source Document ({filename}):\n---\n{text[:30000]}\n---"
+    last_error = None
+
+    for cur_model in candidate_models:
+        for attempt in range(3):
+            try:
+                print(f"→ Extracting schema from document using model: {cur_model} (attempt {attempt + 1})...", file=sys.stderr)
+                model = Gemini(id=cur_model, api_key=api_key, url_context=False, temperature=0.1)
+                agent = Agent(
+                    model=model,
+                    instructions=DOCUMENT_INSTRUCTIONS,
+                    output_schema=TikTokShopExtraction,
+                    markdown=False,
+                )
+                response = agent.run(prompt)
+                return _parse_result(response.content)
+            except Exception as e:
+                err_str = str(e)
+                last_error = e
+                print(f"⚠️ Model {cur_model} failed on document: {err_str}", file=sys.stderr)
+                if any(k in err_str.lower() for k in ["503", "unavailable", "high demand", "429", "rate limit"]):
+                    time.sleep(2)
+                    continue
+                break
+
+    if last_error:
+        raise last_error
+
+
 def main():
     parser = argparse.ArgumentParser(description="Extract a marketing brief from a TikTok Shop URL using Gemini + Agno")
     parser.add_argument("url", help="TikTok Shop product URL")
