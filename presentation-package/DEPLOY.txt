@@ -1,0 +1,21 @@
+DEPLOY AS A STATIC WEBSITE
+
+Upload the entire presentation-package folder to any static host. Keep all
+subfolders unchanged and set index.html as the default page.
+
+Quick options:
+
+- Netlify: drag this folder into Netlify Drop.
+- Cloudflare Pages / Vercel: create a static project with this folder as the
+  root; no build command is required and the output directory is ".".
+- Nginx / Apache: copy the folder contents into the site's document root.
+
+Required server behavior:
+
+- Serve .html, .jpg, .png and .mp4 files normally.
+- Support byte-range requests for smooth MP4 seeking (standard on the hosts
+  above).
+- Do not flatten or rename the assets-gen and frontend subfolders.
+
+After deployment, open the site root. Verify slide 4 plays the video and slide
+5 displays all four product images.

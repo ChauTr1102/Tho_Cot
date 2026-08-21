@@ -44,15 +44,15 @@
   --secondary-foreground: #f4faf5;
   --muted: #012a14;
   --muted-foreground: #a1c1a7;
-  --accent: #7ef962;
+  --accent: #22c55e;
   --accent-foreground: #001708;
-  --cta: #fe6e00;
-  --gold: #fcbb00;
-  --danger: #fd393f;
-  --destructive: #ff3333;
-  --border: rgba(107, 239, 117, 0.18);
-  --input: rgba(107, 239, 117, 0.18);
-  --ring: #35ea52;
+  --cta: #ea580c;
+  --gold: #d97706;
+  --danger: #dc2626;
+  --destructive: #dc2626;
+  --border: rgba(34, 197, 94, 0.18);
+  --input: rgba(34, 197, 94, 0.18);
+  --ring: #22c55e;
 
   color: var(--foreground);
   background-color: var(--background);

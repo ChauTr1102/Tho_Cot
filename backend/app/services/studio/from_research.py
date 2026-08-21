@@ -43,6 +43,7 @@ from app.schemas.studio import (
     Platform,
     ProductBrief,
 )
+from app.core.config import settings
 from app.services.studio import upstream
 from app.services.studio.config import studio_settings
 
@@ -353,13 +354,41 @@ def map_platforms(names: list[str]) -> tuple[list[Platform], list[str]]:
     return (mapped or [Platform.SHOPEE]), unknown
 
 
+def _default_db_path() -> Path:
+    """The sqlite file `settings.DATABASE_URL` points at.
+
+    `load_row`/`list_campaigns` read the campaigns table directly with
+    sqlite3 rather than through the ORM (see their docstrings), and used to
+    default to a hardcoded `Path("sql_app.db")` — a literal that had no
+    connection to `settings.DATABASE_URL` at all. In development that
+    happened to be the same file by coincidence (both resolve relative to
+    the same cwd), but the moment `DATABASE_URL` is pointed anywhere else —
+    e.g. `sqlite:////app/data/sql_app.db` in docker-compose.yml, so the
+    database survives an image rebuild — this module would silently keep
+    reading a different, empty file at the old default path while the rest
+    of the app wrote to the new one. Deriving the default from the same
+    setting the ORM engine uses keeps the two from ever disagreeing about
+    which file is the actual database.
+
+    Only sqlite URLs are supported here (the studio's own scope); a
+    non-sqlite DATABASE_URL falls back to the historical literal, which
+    remains wrong for that case exactly as before — this only fixes sqlite,
+    which is 100% of this module's real deployments.
+    """
+    url = settings.DATABASE_URL
+    prefix = "sqlite:///"
+    if url.startswith(prefix):
+        return Path(url[len(prefix):])
+    return Path("sql_app.db")
+
+
 def load_row(campaign_id: str, db_path: str | Path | None = None) -> dict[str, Any]:
     """One campaign row, with its JSON columns already decoded.
 
     Read with sqlite3 directly rather than through the ORM: the studio owns no
     tables and should not acquire a session dependency to read two columns.
     """
-    path = Path(db_path or "sql_app.db")
+    path = Path(db_path or _default_db_path())
     if not path.is_file():
         raise FileNotFoundError(f"không tìm thấy database: {path}")
 
@@ -504,7 +533,7 @@ def research_digest(research_result: dict[str, Any]) -> str:
 
 def list_campaigns(db_path: str | Path | None = None) -> list[dict[str, Any]]:
     """Campaigns that have research done, newest first — the studio's inbox."""
-    path = Path(db_path or "sql_app.db")
+    path = Path(db_path or _default_db_path())
     if not path.is_file():
         return []
     connection = sqlite3.connect(f"file:{path}?mode=ro", uri=True)

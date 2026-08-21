@@ -1,8 +1,17 @@
 services:
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      # Repo root, not ./backend: app/services/studio/demo_briefs.py and
+      # from_research.py's photo-matching fallback both read `sample_data/`,
+      # a sibling of backend/ at the repo root — with the context scoped to
+      # ./backend alone, that directory was structurally unreachable by any
+      # COPY instruction, so it silently never made it into the image. The
+      # demo-brand studio flow (/studio/run, /studio/brands) had nothing to
+      # read, and a real campaign's missing-photo fallback lost its sample
+      # match candidates too — no crash (both paths already guard with
+      # `.is_dir()`), just a silently disabled feature.
+      context: .
+      dockerfile: backend/Dockerfile
     image: thocot-backend:latest
     restart: unless-stopped
     env_file:
@@ -13,11 +22,24 @@ services:
       ENVIRONMENT: ${ENVIRONMENT:-production}
       DEBUG: ${DEBUG:-false}
       CORS_ORIGINS: ${CORS_ORIGINS:-["https://thocot.io.vn","https://www.thocot.io.vn","http://localhost:3000"]}
-      DATABASE_URL: ${DATABASE_URL:-sqlite:///./sql_app.db}
+      # sqlite:///./sql_app.db (the app's own default) resolves relative to
+      # the container's cwd (/app), which is NOT under the /app/data volume
+      # below — every `docker compose build && up` recreates the image
+      # filesystem from scratch, so the whole database was silently wiped on
+      # every rebuild. Pointed at /app/data instead, which is bind-mounted
+      # from the host (see BACKEND_DATA_DIR below) and therefore survives a
+      # rebuild the same way generated campaign assets already do.
+      DATABASE_URL: ${DATABASE_URL:-sqlite:////app/data/sql_app.db}
       ARK_API_KEY: ${ARK_API_KEY}
       ARK_BASE_URL: ${ARK_BASE_URL:-https://ark.ap-southeast.bytepluses.com/api/v3}
     volumes:
-      # Data volume mount point (used by the Items demo feature)
+      # Persistent volume: generated campaign assets (studio_settings.DATA_DIR)
+      # AND the SQLite database (DATABASE_URL above) both live under here now,
+      # so a rebuild ("docker compose build && up", which recreates the
+      # container filesystem from the image) keeps both instead of starting
+      # from empty every time. Ownership of this host directory is fixed on
+      # every container start by backend/docker-entrypoint.sh, regardless of
+      # which UID created it on the host.
       - ${BACKEND_DATA_DIR:-./backend/data}:/app/data
     ports:
       # Exposed on the host so the VPS's system nginx (reverse proxy + SSL

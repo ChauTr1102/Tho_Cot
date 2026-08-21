@@ -16,8 +16,16 @@ const fontDisplay = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "CAIBS - Multi-Agent Campaign Platform",
-  description: "AI-driven product campaign generation",
+  title: "Thợ cốt",
+  description: "Hệ thống đa tác tử khởi tạo chiến dịch thương mại điện tử thông minh",
+  icons: {
+    icon: [
+      { url: "/brand/logo-header.png" },
+      { url: "/icon.png" },
+    ],
+    shortcut: "/brand/logo-header.png",
+    apple: "/brand/logo-header.png",
+  },
 };
 
 export default function RootLayout({

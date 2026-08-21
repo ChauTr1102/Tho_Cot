@@ -1,0 +1,43 @@
+# Root .dockerignore for the backend image (docker-compose.yml's backend
+# service now builds with context: . , not ./backend, so demo_briefs.py and
+# from_research.py can actually reach sample_data/ — see docker-compose.yml
+# and backend/Dockerfile for the full explanation). Everything below is
+# irrelevant to that image and would otherwise balloon the build context.
+
+# The frontend has its own image and build context; none of it belongs here.
+frontend/
+
+# Backend: build artifacts, local envs, secrets, local-only data.
+backend/__pycache__/
+backend/**/__pycache__/
+backend/*.py[cod]
+backend/**/*.py[cod]
+backend/*.egg-info/
+backend/.pytest_cache/
+backend/.mypy_cache/
+backend/.ruff_cache/
+backend/.venv/
+backend/venv/
+backend/env/
+backend/ENV/
+backend/.env
+backend/.env.*
+!backend/.env.example
+backend/*.db
+backend/*.sqlite3
+backend/data/
+backend/tests/
+
+# Repo-level noise not needed inside the image.
+.git/
+.gitignore
+.dockerignore
+**/Dockerfile
+**/.dockerignore
+*.md
+QA_checklist/
+fetch_tiktok_url/
+nginx/
+
+# sample_data/ is deliberately NOT excluded — the entire point of this
+# wider build context is to make it reachable by COPY.

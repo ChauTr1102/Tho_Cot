@@ -28,9 +28,9 @@ const STATUS_LABELS: Record<CampaignListItem["status"], string> = {
 
 const STATUS_STYLES: Record<CampaignListItem["status"], string> = {
   draft: "border-foreground/20 text-foreground/45",
-  researching: "border-amber-400/40 text-amber-400",
-  researched: "border-[#35ea52]/40 text-[#35ea52]",
-  failed: "border-red-400/40 text-red-400",
+  researching: "border-amber-500/40 text-amber-600",
+  researched: "border-[#28C840]/40 text-[#28C840]",
+  failed: "border-red-400/40 text-red-500",
 };
 
 function formatCampaignDate(value: string) {
@@ -418,40 +418,52 @@ export default function CampaignsPage() {
                   <h1 className="text-2xl font-bold tracking-wider text-foreground font-display uppercase">CHIẾN DỊCH</h1>
                   <p className="text-sm text-foreground/45 max-w-2xl">Biến thông tin sản phẩm thành góc bán hàng, hai phương án quảng cáo và bộ nội dung sẵn sàng triển khai.</p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <button type="button" onClick={() => void startAutopilotCampaign()} className="px-5 h-10 border-2 border-[#35ea52] bg-[#35ea52] text-black font-display text-sm font-bold tracking-wider flex items-center gap-2 transition-all hover:bg-transparent hover:text-[#35ea52]"><Sparkles className="h-4 w-4" /> LUỒNG TỰ ĐỘNG</button>
-                  <button type="button" onClick={startNewCampaign} className="px-5 h-10 border border-foreground/30 text-foreground font-display text-sm font-bold tracking-wider flex items-center gap-2 transition-all hover:border-foreground"><Plus className="h-4 w-4" /> LÀM TỪNG BƯỚC</button>
+                <div className="flex items-center gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => void startAutopilotCampaign()}
+                    className="px-5 h-10 bg-[#28C840] hover:bg-[#22B038] text-white font-mono text-xs font-bold tracking-wider rounded-sm flex items-center gap-2 transition-all shadow-[0_0_15px_rgba(40,200,64,0.2)] hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    <Sparkles className="h-4 w-4" /> LUỒNG TỰ ĐỘNG
+                  </button>
+                  <button
+                    type="button"
+                    onClick={startNewCampaign}
+                    className="px-5 h-10 border border-foreground/20 text-foreground/80 hover:text-foreground hover:border-foreground/50 font-mono text-xs font-bold tracking-wider rounded-sm flex items-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    <Plus className="h-4 w-4" /> LÀM TỪNG BƯỚC
+                  </button>
                 </div>
               </div>
 
               {!campaignsLoading && !campaignsError && campaigns.length > 0 && (
-                <div className="grid grid-cols-3 border border-foreground/10 divide-x divide-foreground/10">
+                <div className="grid grid-cols-3 border border-foreground/10 divide-x divide-foreground/10 bg-background/50">
                   <div className="p-4"><p className="text-2xl font-display font-bold text-foreground">{campaigns.length}</p><p className="text-[10px] font-mono text-foreground/35 tracking-wider mt-1">TỔNG CHIẾN DỊCH</p></div>
-                  <div className="p-4"><p className="text-2xl font-display font-bold text-[#35ea52]">{readyCampaigns}</p><p className="text-[10px] font-mono text-foreground/35 tracking-wider mt-1">CÓ ĐỀ XUẤT BÁN HÀNG</p></div>
-                  <div className="p-4"><p className="text-2xl font-display font-bold text-amber-400">{activeCampaigns}</p><p className="text-[10px] font-mono text-foreground/35 tracking-wider mt-1">ĐANG XỬ LÝ</p></div>
+                  <div className="p-4"><p className="text-2xl font-display font-bold text-[#28C840]">{readyCampaigns}</p><p className="text-[10px] font-mono text-foreground/35 tracking-wider mt-1">CÓ ĐỀ XUẤT BÁN HÀNG</p></div>
+                  <div className="p-4"><p className="text-2xl font-display font-bold text-amber-500">{activeCampaigns}</p><p className="text-[10px] font-mono text-foreground/35 tracking-wider mt-1">ĐANG XỬ LÝ</p></div>
                 </div>
               )}
 
               {campaignsLoading && (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" aria-label="Đang tải chiến dịch">
                   {[0, 1, 2].map((item) => (
-                    <div key={item} className="h-44 border border-foreground/10 bg-foreground/[0.02] animate-pulse" />
+                    <div key={item} className="h-44 border border-foreground/10 bg-foreground/[0.02] animate-pulse rounded-sm" />
                   ))}
                 </div>
               )}
 
               {!campaignsLoading && campaignsError && (
-                <div className="p-10 text-center border border-red-400/20 bg-red-400/[0.03] space-y-4">
+                <div className="p-10 text-center border border-red-400/20 bg-red-400/[0.03] space-y-4 rounded-sm">
                   <AlertTriangle className="h-8 w-8 text-red-400 mx-auto" />
-                  <p className="text-sm font-mono text-red-300">{campaignsError}</p>
-                  <button type="button" onClick={() => void loadCampaigns()} className="inline-flex items-center gap-2 px-4 py-2 border border-foreground/20 text-xs font-mono hover:border-foreground/50">
+                  <p className="text-sm font-mono text-red-400">{campaignsError}</p>
+                  <button type="button" onClick={() => void loadCampaigns()} className="inline-flex items-center gap-2 px-4 py-2 border border-foreground/20 text-xs font-mono hover:border-foreground/50 rounded-sm">
                     <RefreshCw className="h-3.5 w-3.5" /> THỬ LẠI
                   </button>
                 </div>
               )}
 
               {!campaignsLoading && !campaignsError && campaigns.length === 0 && (
-                <div className="p-12 text-center border border-dashed border-foreground/15 space-y-3 dot-grid">
+                <div className="p-12 text-center border border-dashed border-foreground/15 space-y-3 dot-grid rounded-sm">
                   <FolderKanban className="h-8 w-8 text-foreground/20 mx-auto" />
                   <p className="text-sm font-mono text-foreground/50 tracking-wider">CHƯA CÓ CHIẾN DỊCH</p>
                   <p className="text-xs text-foreground/35 max-w-lg mx-auto">Thêm sản phẩm, thị trường mục tiêu và hình ảnh. Hệ thống sẽ đề xuất thông điệp bán hàng cùng hai hướng quảng cáo để thử nghiệm.</p>
@@ -474,17 +486,17 @@ export default function CampaignsPage() {
                         onKeyDown={
                           canOpen
                             ? (event) => {
-                                if (event.key === "Enter" || event.key === " ") {
-                                  event.preventDefault();
-                                  void openCampaign(campaign);
-                                }
+                              if (event.key === "Enter" || event.key === " ") {
+                                event.preventDefault();
+                                void openCampaign(campaign);
                               }
+                            }
                             : undefined
                         }
                         className={cn(
-                          "group min-h-44 p-5 border border-foreground/10 bg-foreground/[0.02] flex flex-col justify-between gap-6 transition-all select-none outline-none",
+                          "group min-h-44 p-5 border border-foreground/10 bg-card/60 rounded-sm flex flex-col justify-between gap-6 transition-all select-none outline-none",
                           canOpen
-                            ? "cursor-pointer hover:border-[#35ea52]/50 hover:bg-[#35ea52]/[0.025] hover:shadow-sm focus-visible:border-[#35ea52] focus-visible:ring-2 focus-visible:ring-[#35ea52]/25 active:scale-[0.995]"
+                            ? "cursor-pointer hover:border-[#28C840]/50 hover:bg-[#28C840]/[0.025] hover:shadow-sm focus-visible:border-[#28C840] focus-visible:ring-2 focus-visible:ring-[#28C840]/25 active:scale-[0.995]"
                             : isOpening
                               ? "cursor-wait opacity-80"
                               : "opacity-75 cursor-default"
@@ -496,13 +508,8 @@ export default function CampaignsPage() {
                               <span className={`px-2 py-1 border text-[9px] font-mono tracking-widest ${STATUS_STYLES[campaign.status]}`}>
                                 {STATUS_LABELS[campaign.status]}
                               </span>
-                              {/* Research status is not the question a person
-                                  opening this list is asking. Three campaigns
-                                  for one product share a name, a status and a
-                                  badge; what tells them apart is which one has
-                                  a kit already rendered. */}
                               {builtKits[campaign.id] ? (
-                                <span className="px-2 py-1 border border-[#35ea52]/40 text-[#35ea52] text-[9px] font-mono tracking-widest">
+                                <span className="px-2 py-1 border border-[#28C840]/40 text-[#28C840] text-[9px] font-mono tracking-widest">
                                   {builtKits[campaign.id]}
                                 </span>
                               ) : campaign.has_research_result ? (
@@ -514,7 +521,7 @@ export default function CampaignsPage() {
                             <span className="text-[9px] font-mono text-foreground/20 truncate max-w-32" title={campaign.id}>{campaign.id}</span>
                           </div>
                           <div>
-                            <h2 className="font-display font-bold tracking-wide text-foreground line-clamp-2 group-hover:text-[#35ea52] transition-colors">{campaign.name}</h2>
+                            <h2 className="font-display font-bold tracking-wide text-foreground line-clamp-2 group-hover:text-[#28C840] transition-colors">{campaign.name}</h2>
                             {campaign.description && <p className="mt-2 text-xs font-mono text-foreground/40 line-clamp-2">{campaign.description}</p>}
                           </div>
                         </div>
@@ -525,7 +532,7 @@ export default function CampaignsPage() {
                           <span
                             className={cn(
                               "inline-flex items-center gap-1.5 text-[10px] font-mono font-bold tracking-wider group-hover:underline",
-                              campaign.has_research_result ? "text-[#35ea52]" : "text-foreground/20"
+                              campaign.has_research_result ? "text-[#28C840]" : "text-foreground/20"
                             )}
                           >
                             {isOpening ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" /> : <Search className="h-3.5 w-3.5" />}
@@ -573,44 +580,44 @@ export default function CampaignsPage() {
                   onQaResult={rememberQa}
                 />
               ) : (
-              <PipelineLayout
-              currentStage={currentStage}
-              stageStatuses={stageStatuses}
-              onStageChange={setCurrentStage}
-              onNext={handleNextStage}
-              onBack={handlePrevStage}
-              isNextDisabled={currentStage === "research" && (researchLoading || !researchPlan)}
-              nextLabel={
-                currentStage === "product_input" && workflowMode === "autopilot"
-                  ? "BẮT ĐẦU LUỒNG TỰ ĐỘNG"
-                  : currentStage === "final_output"
-                    ? "HOÀN THÀNH"
-                    : currentStage === "research"
-                      ? "SÁNG.TẠO_CHIẾN_DỊCH"
-                      : "BƯỚC.TIẾP"
-              }
-              >
-              {currentStage === "product_input" && <StageProductInput value={researchSubmission} onChange={setResearchSubmission} initialInputMode={workflowMode === "autopilot" ? "manual" : "link"} />}
-              {currentStage === "research" && <StageResearch plan={researchPlan} isLoading={researchLoading} error={researchError} onRetry={() => void runResearch()} />}
-              {currentStage === "content_generation" && (
-                <StageContentGeneration
-                  // Fall back to the brief being edited rather than passing
-                  // null: null makes the studio guess, and guessing means
-                  // picking the oldest of three identically-named campaigns.
-                  campaignId={activeCampaignId ?? researchSubmission.input.campaign_id ?? null}
-                  onAssetsReady={handleStudioAssetsReady}
-                />
-              )}
-              {currentStage === "qa_gate" && <StageQAGate campaignInput={campaignInputForQa} campaignOutput={campaignOutput ?? buildMockCampaignOutput(researchPlan, researchSubmission.input)} onResult={rememberQa} savedResult={qaResult} />}
-              {currentStage === "final_output" && <StageFinalOutput plan={researchPlan} input={researchSubmission.input} campaignOutput={campaignOutput ?? buildMockCampaignOutput(researchPlan, researchSubmission.input)} qaResult={qaResult} />}
-              {!["product_input", "research", "content_generation", "qa_gate", "final_output"].includes(currentStage) && (
-                <div className="flex items-center justify-center h-full min-h-[400px] border border-dashed border-foreground/10">
-                  <p className="text-sm font-mono text-foreground/30 tracking-wider">
-                    [{currentStage.toUpperCase()}_COMPONENT_PLACEHOLDER]
-                  </p>
-                </div>
-              )}
-              </PipelineLayout>
+                <PipelineLayout
+                  currentStage={currentStage}
+                  stageStatuses={stageStatuses}
+                  onStageChange={setCurrentStage}
+                  onNext={handleNextStage}
+                  onBack={handlePrevStage}
+                  isNextDisabled={currentStage === "research" && (researchLoading || !researchPlan)}
+                  nextLabel={
+                    currentStage === "product_input" && workflowMode === "autopilot"
+                      ? "BẮT ĐẦU LUỒNG TỰ ĐỘNG"
+                      : currentStage === "final_output"
+                        ? "HOÀN THÀNH"
+                        : currentStage === "research"
+                          ? "SÁNG.TẠO_CHIẾN_DỊCH"
+                          : "BƯỚC.TIẾP"
+                  }
+                >
+                  {currentStage === "product_input" && <StageProductInput value={researchSubmission} onChange={setResearchSubmission} initialInputMode={workflowMode === "autopilot" ? "manual" : "link"} />}
+                  {currentStage === "research" && <StageResearch plan={researchPlan} isLoading={researchLoading} error={researchError} onRetry={() => void runResearch()} />}
+                  {currentStage === "content_generation" && (
+                    <StageContentGeneration
+                      // Fall back to the brief being edited rather than passing
+                      // null: null makes the studio guess, and guessing means
+                      // picking the oldest of three identically-named campaigns.
+                      campaignId={activeCampaignId ?? researchSubmission.input.campaign_id ?? null}
+                      onAssetsReady={handleStudioAssetsReady}
+                    />
+                  )}
+                  {currentStage === "qa_gate" && <StageQAGate campaignInput={campaignInputForQa} campaignOutput={campaignOutput ?? buildMockCampaignOutput(researchPlan, researchSubmission.input)} initialResult={qaResult} onResult={rememberQa} />}
+                  {currentStage === "final_output" && <StageFinalOutput plan={researchPlan} input={researchSubmission.input} campaignOutput={campaignOutput ?? buildMockCampaignOutput(researchPlan, researchSubmission.input)} qaResult={qaResult} />}
+                  {!["product_input", "research", "content_generation", "qa_gate", "final_output"].includes(currentStage) && (
+                    <div className="flex items-center justify-center h-full min-h-[400px] border border-dashed border-foreground/10">
+                      <p className="text-sm font-mono text-foreground/30 tracking-wider">
+                        [{currentStage.toUpperCase()}_COMPONENT_PLACEHOLDER]
+                      </p>
+                    </div>
+                  )}
+                </PipelineLayout>
               )}
             </div>
           )}
