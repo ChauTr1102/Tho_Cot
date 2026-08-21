@@ -1,13 +1,13 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from app.storage import campaign_store as campaign_store_module
+from app.storage.campaign_store import campaign_store as campaign_store_instance
 
 
 @pytest.fixture(autouse=True)
 def isolate_campaign_store(tmp_path, monkeypatch):
     """Redirect the JSON campaign store to a temp dir so tests don't write into backend/data."""
-    monkeypatch.setattr(campaign_store_module.campaign_store, "root", tmp_path)
+    monkeypatch.setattr(campaign_store_instance, "root", tmp_path)
 
 
 def _sample_payload() -> dict:
