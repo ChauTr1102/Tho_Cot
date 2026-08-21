@@ -125,10 +125,16 @@ def build_nodes(campaign_id: str) -> list[dict[str, Any]]:
             # disk has none, and inventing one would be the only dishonest
             # number on the screen.
             "elapsed_sec": 0,
-            "payload": {
-                "url": f"/media/{campaign_id}/media/{path.name}",
-                "slot": stem,
-            },
+            # Audio carries no `url`: the node card renders one as an <img>,
+            # and an .mp3 in an image tag is a broken-image glyph with the alt
+            # text spelled out beside it — which is exactly how the voiceover
+            # nodes were rendering. The node still says what it is and that it
+            # finished; it simply has nothing to show.
+            "payload": (
+                {"slot": stem}
+                if _KINDS.get(path.suffix.casefold()) == "audio"
+                else {"url": f"/media/{campaign_id}/media/{path.name}", "slot": stem}
+            ),
             "updated_at": 0,
         })
 

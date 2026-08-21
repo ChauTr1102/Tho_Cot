@@ -147,7 +147,7 @@ export function BriefPanel({
                   onClick={() => onCampaignChange(campaign.id)}
                   data-selected={active}
                   className={cn(
-                    "studio-option flex items-start gap-2.5 rounded-lg px-2.5 py-2 text-left",
+                    "studio-option grid grid-cols-[auto_minmax(0,1fr)] items-start gap-2.5 rounded-lg px-2.5 py-2 text-left",
                     ready ? "cursor-pointer" : "cursor-not-allowed opacity-45",
                     locked && "cursor-not-allowed"
                   )}
@@ -163,7 +163,7 @@ export function BriefPanel({
                   >
                     {active ? <Check className="size-2.5" strokeWidth={3.5} /> : null}
                   </span>
-                  <span className="min-w-0 flex-1 leading-tight">
+                  <span className="min-w-0 leading-tight">
                     <span className="block truncate text-[13px] font-medium">
                       {campaign.name}
                     </span>
@@ -214,7 +214,14 @@ export function BriefPanel({
                 key={platform}
                 data-selected={selected}
                 className={cn(
-                  "studio-option flex cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2",
+                  // `grid-cols-[auto_minmax(0,1fr)_auto]`, not flex. A flex
+                  // item's `min-width: auto` has to be defeated on every nested
+                  // level to let a row shrink, and three separate attempts at
+                  // that still left the selection tick clipped at the rail's
+                  // edge. `minmax(0, 1fr)` states outright that the middle
+                  // track may shrink to nothing, so the row cannot outgrow the
+                  // panel no matter what its contents measure.
+                  "studio-option grid cursor-pointer grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2.5 rounded-lg px-2.5 py-2",
                   locked && "cursor-not-allowed"
                 )}
               >
@@ -236,7 +243,7 @@ export function BriefPanel({
                 >
                   <Icon className="size-4" strokeWidth={2.25} />
                 </span>
-                <span className="min-w-0 flex-1 leading-tight">
+                <span className="min-w-0 leading-tight">
                   <span className="flex min-w-0 items-baseline gap-2">
                     {/* `truncate` sets overflow and white-space; it does not set
                         `min-width: 0`, and a flex item without that will not
