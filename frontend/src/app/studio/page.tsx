@@ -90,10 +90,19 @@ export default function StudioPage() {
       .then((rows) => {
         if (cancelled) return;
         setCampaigns(rows);
-        const wanted =
-          rows.find((row) => row.id === requested && row.status === "researched") ??
-          rows.find((row) => row.status === "researched");
-        if (wanted) setSelectedCampaign(wanted.id);
+        const asked = requested
+          ? rows.find((row) => row.id === requested)
+          : undefined;
+        if (asked) {
+          // Named a campaign that exists. Select it only if research finished;
+          // otherwise select nothing and let the rail show it greyed with its
+          // real status. Quietly substituting a different campaign would build
+          // the wrong product under a URL that named the right one.
+          if (asked.status === "researched") setSelectedCampaign(asked.id);
+          return;
+        }
+        const ready = rows.find((row) => row.status === "researched");
+        if (ready) setSelectedCampaign(ready.id);
       })
       .catch(() => undefined);
     return () => {

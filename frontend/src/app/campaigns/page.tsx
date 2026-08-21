@@ -88,6 +88,11 @@ export default function CampaignsPage() {
   const startNewCampaign = () => {
     setResearchSubmission(createInitialResearchSubmission());
     setResearchPlan(null);
+    // Forget the campaign that was open before. Leaving it set would let the
+    // handoff to the studio carry the previous campaign's id if the user walked
+    // forward without running research — the studio would open, find a valid
+    // researched campaign under that id, and build the wrong product.
+    setActiveCampaignId(null);
     setResearchError(null);
     setCurrentStage("product_input");
     setIsCreatingCampaign(true);
