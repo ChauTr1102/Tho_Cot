@@ -51,18 +51,28 @@ def test_the_brief_survives_the_crossing(handoff):
     assert "135000.0" not in brief.price_or_promotion
 
 
-def test_photos_resolve_to_the_right_brand(handoff):
+def test_photos_resolve_to_the_right_brand(handoff, researched_id):
     """Six demo brands store their photos under the same filenames, so an
     alphabetical sweep once resolved a G7 coffee campaign onto COSRX's serum
-    bottle and rendered the whole kit as a serum wearing a coffee label."""
+    bottle and rendered the whole kit as a serum wearing a coffee label.
+
+    Two resolutions are legitimate and only one of them can be checked by name.
+    A campaign whose uploads were kept has them under its own
+    `data/<campaign_id>/source/`, which is correct by construction — nobody
+    else's photographs can be in there. Only the `sample_data/` fallback has to
+    prove itself, because that is the sweep that once picked the wrong brand.
+    """
     _, campaign_input, notes = handoff
     product = campaign_input.product_brief.product_name.casefold()
-    for path in campaign_input.brand_kit.product_photo_urls:
-        folder = Path(path).parent.parent.name.casefold()
-        shared = {w for w in folder.replace("_", " ").split() if len(w) > 1} & {
-            w for w in product.replace("_", " ").split() if len(w) > 1
-        }
-        assert shared, f"{path} không khớp tên sản phẩm {product!r}"
+    words = {w for w in product.replace("_", " ").split() if len(w) > 1}
+
+    for raw in campaign_input.brand_kit.product_photo_urls:
+        path = Path(raw)
+        if researched_id in path.parts:
+            continue  # the campaign's own upload directory
+        folder = path.parent.parent.name.casefold()
+        shared = {w for w in folder.replace("_", " ").split() if len(w) > 1} & words
+        assert shared, f"{raw} không khớp tên sản phẩm {product!r}"
     assert notes["photos_missing"] == []
 
 
