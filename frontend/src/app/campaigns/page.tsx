@@ -221,10 +221,15 @@ export default function CampaignsPage() {
       // mounts. Without this the report falls back to buildMockCampaignOutput
       // and shows four https://example.com/mock/*.jpg links under a heading
       // saying the assets are ready. That is the path a judge takes.
+      const freshPlan = parseResearchCampaignPlan(savedResult.plan);
+      const freshInput = (campaignData?.research_input ??
+        researchSubmission.input) as ResearchSubmission["input"];
       void api
         .getStudioAssets(campaign.id)
         .then((res) => {
-          if (res.data) handleStudioAssetsReady(res.data);
+          // Hand the campaign along rather than trusting state to have caught
+          // up: both were set moments ago and neither has re-rendered.
+          if (res.data) handleStudioAssetsReady(res.data, { plan: freshPlan, input: freshInput });
         })
         .catch(() => {
           // A campaign that was never rendered has no assets, which is a fact
@@ -295,9 +300,25 @@ export default function CampaignsPage() {
   // generated images/video/copy instead of mock URLs once a run has
   // completed, while still falling back to the mock for anything not ready.
   const handleStudioAssetsReady = React.useCallback(
-    (assets: StudioAssetDTOResponse) => {
+    (
+      assets: StudioAssetDTOResponse,
+      // The campaign these assets belong to, when the caller already has it.
+      // Without this the base comes from state that has not re-rendered yet:
+      // `openCampaign` sets the plan and the brief, then fetches the assets in
+      // the same tick, and this callback still closes over the *previous*
+      // campaign. That is how a shoe campaign was sent to the QA gate carrying
+      // "Cà Phê Hòa Tan G7 3in1 Hộp 50 Gói" as its product title with an empty
+      // creative-route list — the plan had cleared but the brief had not, and
+      // QA reported the mismatch it was handed.
+      source?: { plan: ResearchCampaignPlan | null; input: ResearchSubmission["input"] },
+    ) => {
       setCampaignOutput((current) => {
-        const base = current ?? buildMockCampaignOutput(researchPlan, researchSubmission.input);
+        const base =
+          current ??
+          buildMockCampaignOutput(
+            source ? source.plan : researchPlan,
+            source ? source.input : researchSubmission.input,
+          );
         return {
           ...base,
           ...(assets.product_collection_image_set
