@@ -82,12 +82,12 @@ export function RunStage({
 
       {/* The graph canvas. It manages its own height and its own full-screen
           state, so this slot imposes nothing on it. */}
+      {/* Nothing below the canvas. The route ledger and the activity log both
+          restated what the board already shows — every node carries its origin
+          badge, its state and its elapsed time — and between them they cost the
+          graph a third of the fold. Two live counts of one thing is one too
+          many; the canvas is the one that can be read at a glance. */}
       {children}
-
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
-        <RouteLedger nodes={nodes} plannedOrigins={plannedOrigins} />
-        <ActivityLedger activity={activity} started={started} />
-      </div>
     </section>
   );
 }

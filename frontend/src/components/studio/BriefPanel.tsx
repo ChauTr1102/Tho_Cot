@@ -33,6 +33,18 @@ const PLATFORM_ICONS: Record<Platform, LucideIcon> = {
   shopee: Store,
 };
 
+/** `2026-08-21 12:23:48.328695` as something a person reads at a glance. */
+function formatWhen(value: string): string {
+  const parsed = new Date(value.replace(" ", "T"));
+  if (Number.isNaN(parsed.getTime())) return value;
+  return new Intl.DateTimeFormat("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(parsed);
+}
+
 /** Upstream statuses, said in the words the pipeline screen uses. */
 const STATUS_TEXT: Record<string, string> = {
   draft: "chưa chạy nghiên cứu",
@@ -49,6 +61,15 @@ interface BriefPanelProps {
   /** Which one this run is for; null only before the fetch lands. */
   selectedCampaign: string | null;
   onCampaignChange: (id: string) => void;
+  /**
+   * True when the campaign was named by whoever opened this screen — the
+   * pipeline walking a specific campaign, or a `?campaign=` deep link. The
+   * list then states which campaign is being built rather than offering a
+   * choice: someone two stages into one campaign has no reason to switch, and
+   * every reason not to do it by accident. Two campaigns can carry the same
+   * product name, so a mis-click is silent and expensive.
+   */
+  campaignPinned: boolean;
   /** Free text: what the user wants this campaign to feel like. */
   direction: string;
   onDirectionChange: (value: string) => void;
@@ -66,6 +87,7 @@ export function BriefPanel({
   campaigns,
   selectedCampaign,
   onCampaignChange,
+  campaignPinned,
   direction,
   onDirectionChange,
   running,
@@ -124,7 +146,11 @@ export function BriefPanel({
       >
         <div className="mb-2 flex items-baseline justify-between gap-2">
           <h3 className="text-[12px] font-semibold text-foreground/80">Chiến dịch</h3>
-          {readyCount > 0 ? (
+          {campaignPinned ? (
+            <span className="text-muted-foreground/60 text-[11px]">
+              từ bước nghiên cứu
+            </span>
+          ) : readyCount > 0 ? (
             <span className="text-muted-foreground/60 text-[11px]">
               {readyCount} đã nghiên cứu
             </span>
@@ -143,13 +169,17 @@ export function BriefPanel({
                   // Not-yet-researched campaigns stay visible but unselectable:
                   // seeing one greyed out explains why it is absent, hiding it
                   // reads as the campaign having been lost.
-                  disabled={locked || !ready}
+                  disabled={locked || !ready || campaignPinned}
                   onClick={() => onCampaignChange(campaign.id)}
                   data-selected={active}
                   className={cn(
                     "studio-option grid grid-cols-[auto_minmax(0,1fr)] items-start gap-2.5 rounded-lg px-2.5 py-2 text-left",
-                    ready ? "cursor-pointer" : "cursor-not-allowed opacity-45",
-                    locked && "cursor-not-allowed"
+                    campaignPinned
+                      ? "cursor-default"
+                      : ready
+                        ? "cursor-pointer"
+                        : "cursor-not-allowed opacity-45",
+                    locked && !campaignPinned && "cursor-not-allowed"
                   )}
                 >
                   <span
@@ -168,7 +198,14 @@ export function BriefPanel({
                       {campaign.name}
                     </span>
                     <span className="mt-0.5 block truncate text-[11px] text-muted-foreground">
-                      {ready ? "brief và plan đã sẵn sàng" : STATUS_TEXT[campaign.status] ?? campaign.status}
+                      {ready
+                        ? campaignPinned || !campaign.updated_at
+                          ? "brief và plan đã sẵn sàng"
+                          : // Product names repeat — the same product researched
+                            // twice gives two identical rows — so an unpinned
+                            // list has to say which is which.
+                            `đã nghiên cứu · ${formatWhen(campaign.updated_at)}`
+                        : STATUS_TEXT[campaign.status] ?? campaign.status}
                     </span>
                   </span>
                 </button>

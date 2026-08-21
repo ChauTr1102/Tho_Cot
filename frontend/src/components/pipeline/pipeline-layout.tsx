@@ -29,7 +29,7 @@ export const PipelineLayout: React.FC<PipelineLayoutProps> = ({
     <div className="flex flex-col min-h-full space-y-4 animate-in fade-in duration-300">
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col">
-        <div className="flex-1 border border-foreground/10 bg-background relative p-4 lg:p-8 overflow-y-auto max-w-[1760px] w-full mx-auto">
+        <div className="flex-1 bg-background relative p-4 lg:p-6 overflow-y-auto max-w-[1760px] w-full mx-auto">
           <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-foreground/20" />
           <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-foreground/20" />
           

@@ -134,6 +134,8 @@ function Board({
   const [expanded, setExpanded] = useState(false);
 
   const { fitView, zoomIn, zoomOut } = useReactFlow();
+  /** The canvas shell, watched for resizes so the board can re-frame itself. */
+  const shellRef = useRef<HTMLDivElement | null>(null);
 
   /** Where auto-layout put each node. Recomputed only when the DAG changes. */
   const layoutRef = useRef<Map<string, Point>>(new Map());
@@ -259,6 +261,29 @@ function Board({
     return () => cancelAnimationFrame(frame);
   }, [rfNodes.length, fitView]);
 
+  /* -- re-fit whenever the shell is actually resized ---------------------- */
+  // Not just on the `expanded` toggle. Embedded in the pipeline the canvas is
+  // measured while its ancestors are still settling — a stage heading and an
+  // outer border coming and going each change the box — and React Flow keeps
+  // whatever zoom it computed against the wrong size. That is what left the
+  // board sitting at 119% with its top row cut off instead of framed.
+  useEffect(() => {
+    const shell = shellRef.current;
+    if (!shell || typeof ResizeObserver === "undefined") return;
+    let frame = 0;
+    const observer = new ResizeObserver(() => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() =>
+        fitView({ padding: FIT_PADDING, duration: 0 })
+      );
+    });
+    observer.observe(shell);
+    return () => {
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+    };
+  }, [fitView]);
+
   /* -- re-fit when the shell changes size -------------------------------- */
   useEffect(() => {
     if (!fittedRef.current) return;
@@ -350,6 +375,7 @@ function Board({
 
   return (
     <div
+      ref={shellRef}
       className={cn(
         "studio-panel flex min-w-0 flex-col overflow-hidden",
         // Sixteen to twenty-five nodes will not be legible in a letterbox, so
