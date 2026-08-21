@@ -35,16 +35,9 @@ export const StageContentGeneration: React.FC<StageContentGenerationProps> = ({
 }) => {
   return (
     <div className="flex flex-col animate-in fade-in duration-500">
-      <div className="shrink-0 space-y-2 border-b border-foreground/10 pb-4">
-        <h2 className="font-mono text-lg font-bold tracking-wider text-foreground">
-          SÁNG TẠO CHIẾN DỊCH
-        </h2>
-        <p className="font-mono text-sm text-foreground/40">
-          Dựng ảnh và video theo chuẩn từng sàn, giữ nguyên sản phẩm thật.
-        </p>
-      </div>
-
-      <div className="pt-4">
+      {/* No heading. The pipeline rail already names this stage, and a title
+          plus a subtitle repeating it cost the graph the top of the fold. */}
+      <div>
         <AssetStudio campaignId={campaignId} embedded />
       </div>
     </div>
