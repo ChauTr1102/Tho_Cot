@@ -180,9 +180,14 @@ export function BriefPanel({
       </section>
 
       {/* ── Platforms ─────────────────────────────────────────────────────── */}
+      {/* `min-w-0` is load-bearing. A <fieldset> carries an intrinsic
+          `min-inline-size: min-content` that `width: 100%` does not override, so
+          the longest kit note — "Hook trong 3 giây đầu, chừa vùng UI của sàn" —
+          set the floor for the whole rail and pushed the selection tick past the
+          panel's right edge, where it was clipped by the canvas beside it. */}
       <fieldset
         disabled={locked}
-        className="shrink-0 border-b border-border px-4 py-2.5 disabled:opacity-60"
+        className="min-w-0 shrink-0 border-b border-border px-4 py-2.5 disabled:opacity-60"
       >
         <legend className="mb-2 text-[12px] font-semibold text-foreground/80">
           Sàn mục tiêu
@@ -220,9 +225,13 @@ export function BriefPanel({
                   <Icon className="size-4" strokeWidth={2.25} />
                 </span>
                 <span className="min-w-0 flex-1 leading-tight">
-                  <span className="flex items-baseline gap-2">
-                    <span className="text-[13px] font-medium">{kit.name}</span>
-                    <span className="studio-nums font-mono text-[11px] text-muted-foreground">
+                  <span className="flex min-w-0 items-baseline gap-2">
+                    <span className="truncate text-[13px] font-medium">
+                      {kit.name}
+                    </span>
+                    {/* The counts are the reason to read this row, so they keep
+                        their width and the name gives way instead. */}
+                    <span className="studio-nums shrink-0 font-mono text-[11px] text-muted-foreground">
                       {kit.images.length} ảnh · {kit.videos.length} video
                     </span>
                   </span>
