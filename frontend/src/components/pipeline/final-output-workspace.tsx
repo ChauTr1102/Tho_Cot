@@ -155,7 +155,7 @@ export function FinalOutputWorkspace({ plan, input, campaignOutput, qaResult }: 
   const citationNumbers = new Map(citationUrls.map((url, index) => [url, index + 1]));
   const sourceTitles = new Map(plan?.source_summary.sources.map((source) => [source.url, source.title]) ?? []);
 
-  const preview = <div className="bg-neutral-100 p-3 lg:p-5"><ProductPdpPreview productName={productName} category={input?.product_brief.category} images={images} tiktokImages={tiktokImages.length ? tiktokImages : images} shopeeImages={shopeeImages.length ? shopeeImages : images} videos={videos} price={input?.product_brief.price ?? null} promotion={input?.product_brief.promotion ?? copy.promotion} description={copy.description} bullets={copy.bullets} angle={angle} /></div>;
+  const preview = <div className="bg-neutral-100 p-3 lg:p-5"><ProductPdpPreview productName={copy.title} category={input?.product_brief.category} images={images} tiktokImages={tiktokImages.length ? tiktokImages : images} shopeeImages={shopeeImages.length ? shopeeImages : images} videos={videos} price={input?.product_brief.price ?? null} promotion={input?.product_brief.promotion ?? copy.promotion} description={copy.description} caption={copy.caption} bullets={copy.bullets} angle={angle} /></div>;
 
   const inspector = <div className="flex min-h-full flex-col bg-background">
     <header className="border-b border-foreground/10 p-4 lg:p-5">
@@ -178,7 +178,7 @@ export function FinalOutputWorkspace({ plan, input, campaignOutput, qaResult }: 
         </section>
         {videos[0] ? <Field label="Video quảng cáo">
           <div className="mx-auto w-full max-w-[320px] overflow-hidden rounded-lg border border-foreground/10 bg-black shadow-xl">
-            <div className="aspect-[9/16]"><PlatformVideoPlayer src={videos[0]} poster={tiktokImages[0] ?? shopeeImages[0] ?? images[0]} title={productName} platform="tiktok" /></div>
+            <div className="aspect-[9/16]"><PlatformVideoPlayer src={videos[0]} poster={tiktokImages[0] ?? shopeeImages[0] ?? images[0]} title={productName} caption={copy.caption} platform="tiktok" /></div>
           </div>
           <div className="mt-3 flex items-center justify-between gap-3 border-t border-foreground/10 pt-3 text-xs">
             <span className="inline-flex min-w-0 items-center gap-2 text-foreground/75"><Video className="h-4 w-4 shrink-0 text-[#35ea52]" /><b className="truncate">{preferredVideo?.name ?? "Video chiến dịch"}</b></span>
