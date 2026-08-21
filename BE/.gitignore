@@ -1,0 +1,3 @@
+# BE runtime data (JSON file-system DB) — do not commit generated campaign data
+BE/data/
+BE/.pytest_cache/

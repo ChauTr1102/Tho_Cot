@@ -239,3 +239,6 @@ ENV/
 .env
 .env.local
 .env.*.local
+
+# Backend campaign JSON file-store (generated at runtime, not committed)
+backend/data/

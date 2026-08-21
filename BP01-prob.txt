@@ -1,0 +1,168 @@
+BP-01 - Commerce Campaign Launch Copilot
+One-liner: Product brief + market signal in → launch-ready e-commerce campaign pack out, including ad concepts, product visuals, marketplace assets, copy, and A/B testing plan.
+The Problem
+E-commerce sellers and brand teams do not just need more content. They need faster campaign launches that connect product positioning, marketplace assets, short-form ads, audience targeting, and performance learning.
+Today, a single product launch may require separate workstreams for consumer insight, ad strategy, product photography, listing visuals, short video concepts, campaign banners, copywriting, voiceover, and performance measurement. These workflows are often disconnected, making campaigns slow to launch and inconsistent across platforms.
+For advertising teams, the bigger challenge is not only “can we generate a video?” but “can we decide what to say, who to say it to, what assets to create, and how to test it?”
+Target User
+E-commerce sellers, SME brands, F&B brands, beauty and skincare brands, TikTok Shop operators, marketplace growth teams, and in-house advertising teams across SEA.
+The Mission
+Build an AI Commerce Campaign Launch Copilot that turns a product brief and market signal into a complete launch-ready advertising and e-commerce campaign.
+The system should help teams decide the campaign angle, generate matching creative assets, prepare marketplace-ready visuals, produce short-form ad content, and create a testing plan for performance learning.
+This should feel less like a simple content generator and more like an AI campaign operator for e-commerce growth.
+Input
+Teams may start from one product or one campaign brief.
+Input should include:
+- Product brief:
+  - Product name
+  - Category
+  - Key selling points
+  - Price or promotion, if applicable
+  - Target market
+  - Required claims
+  - Restricted or forbidden claims
+- Brand kit:
+  - Logo
+  - Brand colors
+  - Tone of voice
+  - Product photos
+  - Existing product visuals, if any
+- Audience brief:
+  - Target customer
+  - Language
+  - Platform
+  - Market
+- Market signal:
+  - Trend
+  - Seasonal moment
+  - Consumer pain point
+  - Search keyword
+  - Competitor angle
+  - Campaign objective
+- Optional past campaign data:
+  - CTR
+  - CVR
+  - ROAS
+  - Watch time
+  - Add-to-cart rate
+  - Comments
+  - Sales results
+Expected Output
+A complete campaign launch pack, including:
+1. Product Positioning
+  - Main campaign angle
+  - Target audience
+  - Key selling message
+  - Product benefit hierarchy
+2. Creative Routes
+  - At least 2 advertising routes for A/B testing
+  - Each route should include:
+    - Hook idea
+    - Visual direction
+    - Message angle
+    - Suggested platform usage
+3. Short-form Video Asset
+  - At least 1 generated short-form video or video prototype
+  - Recommended format:
+    - 15-30 seconds
+    - 9:16 vertical format
+  - Optional additional cut:
+    - 1:1 square format
+4. Product Collection Image Set
+  - At least 4 e-commerce-ready product visuals:
+    - Product hero image
+    - SKU / product detail image
+    - Campaign collection image
+    - Marketplace thumbnail / cover image
+  - Optional:
+    - Promotion banner
+    - Bundle image
+    - Seasonal sale image
+5. Commerce Copy
+  - Product title
+  - Product description
+  - Listing bullet points
+  - Ad caption
+  - Promotion copy
+  - Short hook lines
+6. A/B Testing Plan
+  - What to test
+  - Which creative route is A vs B
+  - Suggested success metrics
+  - Expected learning from the test
+7. Optional Performance Learning
+  - If past campaign data is provided, the system may recommend:
+    - What to keep
+    - What to change
+    - What to stop
+    - What to test next
+Must-have Requirements
+Required Models
+- Seedance 2.0, 2.0 mini (hoặc 2.5): Required for short-form video generation or video asset creation.
+- Seedream 5.0 Pro: Required for product image generation, product collection visuals, marketplace listing images, cover images, and campaign assets.
+Optional Models
+- Seed 2.1: Optional for campaign strategy, audience reasoning, product positioning, scriptwriting, listing copy, ad copy, and performance analysis.
+- Audio 1.0 by BytePlus: Optional for voiceover, audio generation/refinement, localization, or subtitle/audio workflow support.
+Important Rule
+Teams must use Seedance 2.0, Seedance 2.0 Mini, (hoặc Seedance 2.5) and Seedream 5.0 Pro for this challenge.
+Seed 2.1 and Audio 1.0 are optional. Teams will not receive extra points simply for using more models. Optional models only help if they improve the quality of the final output.
+Suggested Tech Stack
+Seedance 2.5 · Seedream 5.0 Pro · optional Seed 2.1 · optional Audio 1.0 by BytePlus · optional marketplace/product data · optional campaign performance CSV.
+Sample Scenarios
+Scenario 1: New F&B Product Launch
+A beverage brand wants to launch a new drink on TikTok Shop and Shopee. The system creates product positioning, video ad concept, product hero images, marketplace thumbnails, listing copy, and an A/B testing plan.
+Scenario 2: Skincare Campaign
+A serum brand provides product photos and target audience. The system creates “science-led,” “routine-led,” and “testimonial-led” campaign routes, then generates matching marketplace visuals and ad copy.
+Scenario 3: Seasonal Sale Campaign
+A seller prepares for 9.9 / 11.11. The system recommends campaign angles, generates promotional banners, creates short video ad concepts, and suggests which product benefit to test first.
+Scenario 4: Performance Refresh
+A team uploads last campaign results. The copilot identifies which hook, visual style, audience angle, or product claim worked best and generates the next campaign direction.
+Submission Checklist
+Teams must submit:
+- 1 product / campaign brief.
+- 1 main campaign angle.
+- At least 2 advertising routes for A/B testing.
+- At least 1 generated short-form video or video prototype.
+- At least 4 generated product / marketplace images:
+  - Product hero image
+  - SKU / product detail image
+  - Campaign collection image
+  - Marketplace thumbnail / cover image
+- Listing copy and ad copy.
+- A/B testing plan.
+- Short explanation of model usage.
+- Live demo, prototype, or recorded walkthrough.
+- GitHub repo or project folder.
+Judging Criteria
+Total: 100 points
+1. Problem Fit & Practical Usefulness — 20 pts
+Does the solution solve a real advertising or e-commerce workflow problem? Would a seller, brand team, or growth team actually use it?
+2. Output Completeness — 20 pts
+Does the team submit all required assets: campaign angle, 2 ad routes, video, product images, copy, and A/B testing plan?
+3. Creative Quality & Brand Consistency — 20 pts
+Are the video, product images, marketplace assets, and copy consistent with the product, audience, and brand tone?
+4. Required Model Use Quality — 15 pts
+Are Seedance 2.5 and Seedream 5.0 Pro used meaningfully and appropriately? Is the model usage clearly explained?
+5. Workflow & Demo Clarity — 15 pts
+Can judges clearly understand the input → processing → output flow? Is the demo easy to follow?
+6. Commercial Readiness — 10 pts
+Are the outputs realistic enough to be used or adapted for real e-commerce or advertising scenarios?
+Deliverables to Submit
+- Live demo or working prototype.
+- GitHub repo or project folder.
+- At least 1 full campaign launch pack.
+- At least 1 generated short-form video or video prototype.
+- Product collection image set generated with Seedream 5.0 Pro.
+- Listing copy and ad copy.
+- A/B testing plan.
+- Short model usage explanation.
+- Optional: performance-learning module using sample campaign data.
+Tags
+seedance-2.5 
+seedream-5.0-pro 
+ecommerce 
+advertising 
+campaign-launch 
+commerce-growth 
+product-visuals 
+byteplus
