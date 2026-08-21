@@ -11,7 +11,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
-WORKDIR /app
+WORKDIR /app/backend
 
 # System deps needed to build some Python wheels, plus ffmpeg/ffprobe —
 # app/services/studio/assemble.py shells out to both as bare PATH commands
@@ -25,7 +25,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies first for better layer caching
-COPY requirements.txt .
+COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Download the Playwright browser binaries + OS-level deps (chrome-headless-shell,
@@ -33,8 +33,22 @@ RUN pip install --no-cache-dir -r requirements.txt
 # installs the Python driver, not the actual browser executables.
 RUN playwright install --with-deps chromium
 
-# Copy application source
-COPY . .
+# Copy application source into /app/backend, mirroring the repo's own
+# backend/ subdirectory exactly (rather than flattening it into /app) —
+# several modules locate other repo-level directories by climbing a fixed
+# number of parents from their own file (demo_briefs.py's
+# `Path(__file__).resolve().parents[4] / "sample_data"`, for one). That math
+# is only correct if the container's directory depth matches the repo's;
+# flattening backend/ away here previously left it one level short, so
+# parents[4] resolved to `/` instead of `/app` and sample_data/ was
+# unreachable even after it started being copied in below.
+COPY backend/. .
+
+# Sample brand briefs + reference photos, copied as a sibling of backend/ —
+# exactly where they sit at the repo root — so demo_briefs.py and
+# from_research.py's missing-photo fallback find them at the same relative
+# depth as in local dev. ~3MB, safe to bake in rather than mount.
+COPY sample_data /app/sample_data
 
 # Create a non-root user and hand over ownership of the app + data dir.
 # Playwright's browsers were downloaded to root's cache above; move that
@@ -44,7 +58,7 @@ RUN useradd --create-home --uid 1000 appuser \
     && mkdir -p /home/appuser/.cache \
     && cp -r /root/.cache/ms-playwright /home/appuser/.cache/ms-playwright \
     && chown -R appuser:appuser /app /home/appuser/.cache/ms-playwright \
-    && chmod +x /app/docker-entrypoint.sh
+    && chmod +x /app/backend/docker-entrypoint.sh
 
 # Deliberately NOT `USER appuser` here: docker-compose.yml bind-mounts a host
 # directory over /app/data, which replaces this build-time chown with
@@ -62,5 +76,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:8000/api/health || exit 1
 
-ENTRYPOINT ["/app/docker-entrypoint.sh"]
+ENTRYPOINT ["/app/backend/docker-entrypoint.sh"]
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
