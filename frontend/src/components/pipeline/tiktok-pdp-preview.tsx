@@ -63,22 +63,22 @@ export function TiktokPdpPreview({
   const variantChips = bullets.slice(0, 4);
 
   return (
-    <div className="font-mono text-foreground">
+    <div className="font-sans text-neutral-900 bg-white rounded-lg p-1">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-1.5 text-[10px] text-foreground/40 mb-4 flex-wrap">
+      <nav className="flex items-center gap-1.5 text-[10px] text-neutral-400 mb-4 flex-wrap">
         <span>Trang chủ</span>
         <ChevronRight className="h-3 w-3" />
         <span>Sản phẩm</span>
         <ChevronRight className="h-3 w-3" />
         <span>TikTok Shop</span>
         <ChevronRight className="h-3 w-3" />
-        <span className="text-foreground/70 truncate max-w-[200px]">{productName}</span>
+        <span className="text-neutral-600 truncate max-w-[200px]">{productName}</span>
       </nav>
 
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-6">
         {/* Left: Gallery */}
         <div>
-          <div className="aspect-square relative border border-foreground/10 bg-foreground/[0.03] overflow-hidden flex items-center justify-center">
+          <div className="aspect-square relative rounded-sm border border-neutral-200 bg-neutral-50 overflow-hidden flex items-center justify-center">
             {activeImage ? (
               <Image
                 src={activeImage}
@@ -88,13 +88,13 @@ export function TiktokPdpPreview({
                 className="object-cover"
               />
             ) : (
-              <div className="flex flex-col items-center gap-2 text-foreground/30">
+              <div className="flex flex-col items-center gap-2 text-neutral-300">
                 <ImageOff className="h-8 w-8" />
                 <span className="text-[10px]">Chưa có hình ảnh</span>
               </div>
             )}
             {promotion ? (
-              <span className="absolute top-2 left-2 px-2 py-1 bg-[#35ea52] text-black text-[10px] font-bold">
+              <span className="absolute top-2 left-2 px-2 py-1 rounded-sm bg-[#FE2C55] text-white text-[10px] font-bold">
                 {promotion}
               </span>
             ) : null}
@@ -106,8 +106,8 @@ export function TiktokPdpPreview({
                   key={`${image}-${index}`}
                   type="button"
                   onClick={() => setSelectedImage(index)}
-                  className={`relative h-16 w-16 shrink-0 border overflow-hidden ${
-                    index === selectedImage ? "border-[#35ea52]" : "border-foreground/10"
+                  className={`relative h-16 w-16 shrink-0 rounded-sm border overflow-hidden ${
+                    index === selectedImage ? "border-[#FE2C55]" : "border-neutral-200"
                   }`}
                   aria-label={`Xem ảnh ${index + 1}`}
                 >
@@ -120,46 +120,46 @@ export function TiktokPdpPreview({
 
         {/* Right: Info column */}
         <div className="space-y-4 min-w-0">
-          <h1 className="text-lg font-display font-bold leading-snug text-foreground">{productName}</h1>
+          <h1 className="text-lg font-display font-bold leading-snug text-neutral-900">{productName}</h1>
 
-          <div className="flex items-center gap-3 text-[11px] text-foreground/50 flex-wrap">
-            <span className="inline-flex items-center gap-1 text-[#35ea52]">
-              <Star className="h-3.5 w-3.5 fill-current" /> {rating.toFixed(1)}
+          <div className="flex items-center gap-3 text-[11px] text-neutral-500 flex-wrap">
+            <span className="inline-flex items-center gap-1 text-amber-500">
+              <Star className="h-3.5 w-3.5 fill-amber-500" /> {rating.toFixed(1)}
             </span>
             <span>({DEFAULT_REVIEW_COUNT} đánh giá)</span>
-            <span className="text-foreground/20">|</span>
+            <span className="text-neutral-300">|</span>
             <span>Đã bán {soldCount.toLocaleString("vi-VN")}+</span>
           </div>
 
           {price ? (
-            <div className="border border-foreground/10 bg-[#35ea52]/[0.04] p-3 space-y-1.5">
+            <div className="rounded-sm border border-neutral-200 bg-[#FFE2E9]/30 p-3 space-y-1.5">
               <div className="flex items-baseline gap-2 flex-wrap">
-                <span className="text-xl font-bold text-[#35ea52]">{formatCurrency(price.amount, price.currency)}</span>
-                <span className="text-xs text-foreground/35 line-through">{formatCurrency(originalAmount, price.currency)}</span>
-                <span className="px-1.5 py-0.5 bg-red-500/10 text-red-400 text-[10px] font-bold">-{discountPct}%</span>
+                <span className="text-xl font-bold text-[#FE2C55]">{formatCurrency(price.amount, price.currency)}</span>
+                <span className="text-xs text-neutral-400 line-through">{formatCurrency(originalAmount, price.currency)}</span>
+                <span className="px-1.5 py-0.5 rounded-sm bg-[#FFE2E9] text-[#FE2C55] text-[10px] font-bold">-{discountPct}%</span>
               </div>
-              <p className="text-[10px] text-foreground/40">Đơn vị: {price.unit}</p>
-              {promotion ? <p className="text-[10px] text-[#35ea52]">{promotion}</p> : null}
+              <p className="text-[10px] text-neutral-500">Đơn vị: {price.unit}</p>
+              {promotion ? <p className="text-[10px] text-[#FE2C55]">{promotion}</p> : null}
             </div>
           ) : promotion ? (
-            <div className="border border-foreground/10 bg-[#35ea52]/[0.04] p-3">
-              <p className="text-xs font-bold text-[#35ea52]">{promotion}</p>
+            <div className="rounded-sm border border-neutral-200 bg-[#FFE2E9]/30 p-3">
+              <p className="text-xs font-bold text-[#FE2C55]">{promotion}</p>
             </div>
           ) : null}
 
-          <div className="flex items-center gap-1.5 text-[10px] text-foreground/45">
-            <Truck className="h-3.5 w-3.5 text-[#35ea52]" /> Miễn phí vận chuyển cho đơn từ khu vực nội thành
+          <div className="flex items-center gap-1.5 text-[10px] text-neutral-500">
+            <Truck className="h-3.5 w-3.5 text-[#FE2C55]" /> Miễn phí vận chuyển cho đơn từ khu vực nội thành
           </div>
 
           {variantChips.length ? (
             <div>
-              <p className="text-[9px] text-foreground/30 mb-1.5">PHIÊN BẢN / LỢI ÍCH</p>
+              <p className="text-[9px] text-neutral-400 mb-1.5">PHIÊN BẢN / LỢI ÍCH</p>
               <div className="flex flex-wrap gap-2">
                 {variantChips.map((chip, index) => (
                   <span
                     key={chip}
-                    className={`px-2.5 py-1 border text-[10px] ${
-                      index === 0 ? "border-[#35ea52] text-[#35ea52] bg-[#35ea52]/10" : "border-foreground/15 text-foreground/55"
+                    className={`px-2.5 py-1 rounded-sm border text-[10px] ${
+                      index === 0 ? "border-[#FE2C55] text-[#FE2C55] bg-[#FFE2E9]/60" : "border-neutral-200 text-neutral-600"
                     }`}
                   >
                     {chip}
@@ -170,21 +170,21 @@ export function TiktokPdpPreview({
           ) : null}
 
           <div>
-            <p className="text-[9px] text-foreground/30 mb-1.5">SỐ LƯỢNG</p>
-            <div className="inline-flex items-center border border-foreground/15">
+            <p className="text-[9px] text-neutral-400 mb-1.5">SỐ LƯỢNG</p>
+            <div className="inline-flex items-center rounded-sm border border-neutral-200">
               <button
                 type="button"
                 onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                className="h-7 w-7 flex items-center justify-center hover:bg-foreground/[0.05]"
+                className="h-7 w-7 flex items-center justify-center hover:bg-neutral-100"
                 aria-label="Giảm số lượng"
               >
                 <Minus className="h-3 w-3" />
               </button>
-              <span className="h-7 w-9 flex items-center justify-center text-xs border-x border-foreground/15">{quantity}</span>
+              <span className="h-7 w-9 flex items-center justify-center text-xs border-x border-neutral-200">{quantity}</span>
               <button
                 type="button"
                 onClick={() => setQuantity((q) => q + 1)}
-                className="h-7 w-7 flex items-center justify-center hover:bg-foreground/[0.05]"
+                className="h-7 w-7 flex items-center justify-center hover:bg-neutral-100"
                 aria-label="Tăng số lượng"
               >
                 <Plus className="h-3 w-3" />
@@ -195,42 +195,42 @@ export function TiktokPdpPreview({
           <div className="flex gap-2 pt-1">
             <button
               type="button"
-              className="flex-1 h-10 border border-[#35ea52]/40 text-[#35ea52] text-xs font-bold hover:bg-[#35ea52]/10"
+              className="flex-1 h-10 rounded-sm bg-white border border-neutral-300 text-neutral-900 text-xs font-bold hover:bg-neutral-50"
             >
               THÊM VÀO GIỎ
             </button>
             <button
               type="button"
-              className="flex-1 h-10 bg-[#35ea52] text-black text-xs font-bold hover:bg-[#35ea52]/90"
+              className="flex-1 h-10 rounded-sm bg-[#FE2C55] text-white text-xs font-bold hover:bg-[#e0264a]"
             >
               MUA NGAY
             </button>
           </div>
 
-          <div className="flex items-center gap-1.5 text-[9px] text-foreground/30 pt-1">
+          <div className="flex items-center gap-1.5 text-[9px] text-neutral-400 pt-1">
             <ShieldCheck className="h-3.5 w-3.5" /> Bảo đảm hoàn tiền TikTok Shop
           </div>
         </div>
       </div>
 
       {/* Product description */}
-      <div className="mt-8 border-t border-foreground/10 pt-5">
-        <p className="text-[10px] text-[#35ea52] mb-3">VỀ SẢN PHẨM NÀY</p>
+      <div className="mt-8 border-t border-neutral-200 pt-5">
+        <p className="text-[10px] text-[#FE2C55] mb-3">VỀ SẢN PHẨM NÀY</p>
         <div className="grid grid-cols-1 sm:grid-cols-[160px_minmax(0,1fr)] gap-4">
-          <div className="aspect-square relative border border-foreground/10 bg-foreground/[0.03] overflow-hidden flex items-center justify-center">
+          <div className="aspect-square relative rounded-sm border border-neutral-200 bg-neutral-50 overflow-hidden flex items-center justify-center">
             {activeImage ? (
               <Image src={activeImage} alt={`${productName} mô tả`} fill unoptimized className="object-cover" />
             ) : (
-              <ImageOff className="h-6 w-6 text-foreground/20" />
+              <ImageOff className="h-6 w-6 text-neutral-300" />
             )}
           </div>
           <div className="space-y-3 min-w-0">
-            <p className="text-xs text-foreground/60 leading-relaxed">{description}</p>
-            <p className="text-[10px] text-foreground/35 italic">Góc chiến dịch: {angle}</p>
+            <p className="text-xs text-neutral-700 leading-relaxed">{description}</p>
+            <p className="text-[10px] text-neutral-400 italic">Góc chiến dịch: {angle}</p>
             <ul className="space-y-1.5">
               {bullets.map((bullet) => (
-                <li key={bullet} className="flex gap-2 text-xs text-foreground/60">
-                  <span className="text-[#35ea52] shrink-0">✓</span>
+                <li key={bullet} className="flex gap-2 text-xs text-neutral-700">
+                  <span className="text-[#FE2C55] shrink-0">✓</span>
                   <span>{bullet}</span>
                 </li>
               ))}
@@ -240,27 +240,27 @@ export function TiktokPdpPreview({
       </div>
 
       {/* Reviews summary */}
-      <div className="mt-8 border-t border-foreground/10 pt-5">
-        <p className="text-[10px] text-[#35ea52] mb-3">ĐÁNH GIÁ SẢN PHẨM</p>
+      <div className="mt-8 border-t border-neutral-200 pt-5">
+        <p className="text-[10px] text-[#FE2C55] mb-3">ĐÁNH GIÁ SẢN PHẨM</p>
         <div className="flex flex-col sm:flex-row gap-5">
           <div className="flex flex-col items-center justify-center shrink-0 sm:w-28">
-            <span className="text-2xl font-bold text-foreground">{rating.toFixed(1)}</span>
+            <span className="text-2xl font-bold text-neutral-900">{rating.toFixed(1)}</span>
             <div className="flex gap-0.5 mt-1">
               {Array.from({ length: 5 }).map((_, index) => (
                 <Star
                   key={index}
-                  className={`h-3 w-3 ${index < Math.round(rating) ? "fill-[#35ea52] text-[#35ea52]" : "text-foreground/15"}`}
+                  className={`h-3 w-3 ${index < Math.round(rating) ? "fill-amber-500 text-amber-500" : "text-neutral-200"}`}
                 />
               ))}
             </div>
-            <span className="text-[9px] text-foreground/35 mt-1">{DEFAULT_REVIEW_COUNT} đánh giá</span>
+            <span className="text-[9px] text-neutral-400 mt-1">{DEFAULT_REVIEW_COUNT} đánh giá</span>
           </div>
           <div className="flex-1 space-y-1.5 min-w-0">
             {RATING_BREAKDOWN.map((row) => (
-              <div key={row.stars} className="flex items-center gap-2 text-[10px] text-foreground/40">
+              <div key={row.stars} className="flex items-center gap-2 text-[10px] text-neutral-500">
                 <span className="w-8 shrink-0">{row.stars} sao</span>
-                <div className="flex-1 h-1.5 bg-foreground/[0.06] overflow-hidden">
-                  <div className="h-full bg-[#35ea52]" style={{ width: `${row.pct}%` }} />
+                <div className="flex-1 h-1.5 rounded-full bg-neutral-100 overflow-hidden">
+                  <div className="h-full bg-amber-500" style={{ width: `${row.pct}%` }} />
                 </div>
                 <span className="w-8 text-right shrink-0">{row.pct}%</span>
               </div>
