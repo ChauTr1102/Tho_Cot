@@ -487,15 +487,22 @@ export default function CampaignsPage() {
                   initialComplete={autopilotInitiallyComplete}
                   onRun={() => runResearch(false)}
                   onOpenStep={(stage) => { setCurrentStage(stage); setShowAutopilotOverview(false); }}
+                  campaignId={activeCampaignId}
                   campaignInput={campaignInputForQa}
                   getCampaignOutput={() => {
-                    // Autopilot skips the real StageContentGeneration component per
-                    // product decision — content_generation stays mocked, using the
-                    // same buildMockCampaignOutput helper directly.
-                    const output = buildMockCampaignOutput(researchPlan, researchSubmission.input);
+                    // content_generation's headless studio run (see
+                    // runStudioForAutopilot) reports real assets through
+                    // onAssetsReady -> handleStudioAssetsReady as soon as
+                    // they're ready, merging them into campaignOutput. Read
+                    // that state here rather than unconditionally rebuilding
+                    // the mock, so a real run's assets are what qa_gate
+                    // actually verifies against instead of being discarded
+                    // right before use.
+                    const output = campaignOutput ?? buildMockCampaignOutput(researchPlan, researchSubmission.input);
                     setCampaignOutput(output);
                     return output;
                   }}
+                  onAssetsReady={handleStudioAssetsReady}
                   onQaResult={setQaResult}
                 />
               ) : (

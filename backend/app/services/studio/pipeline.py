@@ -28,6 +28,7 @@ thumbnails without a second round trip.
 """
 from __future__ import annotations
 
+import logging
 import threading
 import time
 from dataclasses import replace
@@ -51,6 +52,8 @@ from app.services.studio import assemble, direct, inventory, motion, qa_visual, 
 from app.services.studio.config import studio_settings
 from app.services.studio.graph import GraphEvent, Node, NodeState, degraded, run_graph
 from app.services.studio.platforms import KITS
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_PLATFORMS = (Platform.TIKTOK_SHOP, Platform.SHOPEE)
 
@@ -78,6 +81,30 @@ def _photo_paths(campaign_input: CampaignInput | None) -> list[str]:
 
 def _forbidden(campaign_input: CampaignInput | None) -> list[str]:
     return list(campaign_input.product_brief.forbidden_claims) if campaign_input else []
+
+
+def _warn_if_no_usable_photos(campaign_input: CampaignInput | None,
+                              photos: Sequence[str], campaign_id: str) -> None:
+    """Log one clear line when the brief provided product photos but none of
+    them resolved to a usable local path (see `_photo_paths`: this happens
+    when every entry is a remote URL never downloaded to disk, or a local
+    path that doesn't exist on this filesystem — e.g. copied over from a
+    different environment).
+
+    Every node anchored to a real product photo (hero, and anything built
+    from it) is about to fail without this: `render_hero` now raises a
+    clear per-node error (see render.py), but an operator watching N of
+    those fail independently still has to infer the shared cause. One line
+    here does that instead.
+    """
+    if not campaign_input or not campaign_input.brand_kit.product_photo_urls or photos:
+        return
+    logger.warning(
+        "studio.no_usable_product_photos campaign_id=%s provided=%d usable=0 "
+        "— every entry was a remote URL or an unreadable local path; nodes "
+        "anchored to a real product photo will fail.",
+        campaign_id, len(campaign_input.brand_kit.product_photo_urls),
+    )
 
 
 def _inspect(result: render.RenderedImage, expected: Sequence[str],
@@ -389,6 +416,7 @@ def run_directed(spec, draft_, plan: CampaignPlan,
 
     campaign_id = plan.campaign_id or "campaign"
     photos = _photo_paths(campaign_input)
+    _warn_if_no_usable_photos(campaign_input, photos, campaign_id)
     label = [campaign_input.product_brief.product_name] if campaign_input else []
     nodes = directed.build_nodes(
         spec, draft_, campaign_id, photos, label, _forbidden(campaign_input),

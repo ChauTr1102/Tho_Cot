@@ -138,14 +138,25 @@ def bytes_to_data_uri(data: bytes, mime: str | None = None) -> str:
     return f"data:{mime or _sniff_mime(data) or 'image/jpeg'};base64,{base64.b64encode(data).decode('ascii')}"
 
 
-def to_data_uri(path: str | Path) -> str:
+def to_data_uri(path: str | Path | None) -> str:
     """Read an image from disk and return it as a `data:` URI.
 
     Used for the Brand Lock reference: the brand's own product photo out of
     `sample_data/<brand>/assets/` becomes reference 1 of an image-to-image call.
     """
+    if not path:
+        # A None/empty path here means a caller skipped its own "do we have
+        # a usable reference" check (render_hero, render_item and
+        # render_poster all guard this before calling in) — fail with a
+        # message that names the actual problem instead of the raw
+        # `TypeError: argument should be a str or os.PathLike ... not
+        # 'NoneType'` pathlib raises three frames further down.
+        raise ValueError("to_data_uri: no path given (product photo reference is missing)")
     p = Path(path)
-    raw = p.read_bytes()
+    try:
+        raw = p.read_bytes()
+    except OSError as exc:
+        raise ValueError(f"to_data_uri: cannot read reference image at {path!r}: {exc}") from exc
     return bytes_to_data_uri(raw, _sniff_mime(raw) or mimetypes.guess_type(p.name)[0])
 
 

@@ -37,8 +37,16 @@ RUN useradd --create-home --uid 1000 appuser \
     && mkdir -p /app/data \
     && mkdir -p /home/appuser/.cache \
     && cp -r /root/.cache/ms-playwright /home/appuser/.cache/ms-playwright \
-    && chown -R appuser:appuser /app /home/appuser/.cache/ms-playwright
-USER appuser
+    && chown -R appuser:appuser /app /home/appuser/.cache/ms-playwright \
+    && chmod +x /app/docker-entrypoint.sh
+
+# Deliberately NOT `USER appuser` here: docker-compose.yml bind-mounts a host
+# directory over /app/data, which replaces this build-time chown with
+# whatever ownership the host directory happens to have (root, in the common
+# case of a directory created by `docker compose up` under sudo). The
+# container must start as root so the entrypoint can fix that mount's
+# ownership on every start, then it drops to appuser itself before running
+# the app — see docker-entrypoint.sh.
 
 # Data volume mount point (used by the Items demo feature)
 VOLUME ["/app/data"]
@@ -48,4 +56,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:8000/api/health || exit 1
 
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

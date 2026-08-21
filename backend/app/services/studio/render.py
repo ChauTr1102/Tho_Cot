@@ -117,6 +117,20 @@ def render_hero(item, spine, product_photo: str, label_text: Sequence[str],
 
     Only one reference here: there is no hero yet to anchor to.
     """
+    if not product_photo:
+        # Brand Lock requires a real product photo as reference 1 — without
+        # one, generating anyway risks redrawing the product's own packaging
+        # (see this module's docstring: a real bottle came back with its
+        # label misspelled). Raising here, before the ark call, turns what
+        # used to be a raw `TypeError` three frames deep inside
+        # `to_data_uri` (Path(None)) into one clear, actionable message the
+        # graph reports for this node.
+        raise ValueError(
+            f"{item.slot_id}: render_hero requires a local product photo, "
+            "but none was available (brand_kit.product_photo_urls was empty, "
+            "or every entry was a remote URL / unreadable local path)."
+        )
+
     prompt = prompts.build_image_prompt(
         scene=item.scene, spine=spine, texts=item.texts,
         label_text=label_text, ratio=item.ratio, rule=item.rule,

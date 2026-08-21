@@ -4,6 +4,8 @@ import * as React from "react";
 import { ArrowRight, Check, FileInput, FileText, FlaskConical, Loader2, Microscope, Sparkles, WandSparkles, Zap } from "lucide-react";
 import type { CampaignStage } from "@/types/campaign";
 import { api } from "@/lib/api";
+import { runStudioForAutopilot } from "@/lib/studio-draft";
+import type { StudioAssetDTOResponse } from "@/types/studio";
 import type { VerifyChecklistResponseData } from "@/types/qa_checklist";
 
 type RunState = "idle" | "running" | "complete" | "failed";
@@ -35,14 +37,26 @@ interface Props {
   initialComplete?: boolean;
   onRun: () => Promise<boolean>;
   onOpenStep: (stage: CampaignStage) => void;
+  /** The research campaign's id — what a real studio run needs to read the
+      brief and plan it was proposed against (`requestDraft({campaign_id})`). */
+  campaignId: string | null;
   /** CampaignInputDTO JSON (snake_case), matching backend/app/schemas/campaign_dto.py. */
   campaignInput: Record<string, unknown>;
-  /** Computed lazily since the mock output depends on researchPlan, which is only available after the research step completes. */
+  /** Reads whatever campaignOutput currently holds — real generated assets
+      once content_generation's headless run reports them via
+      onAssetsReady, mock data otherwise. Computed lazily since the mock
+      half depends on researchPlan, which is only available after the
+      research step completes. */
   getCampaignOutput: () => Record<string, unknown>;
+  /** Called with the real generated assets once the headless studio run
+      underneath the content_generation step finishes, so the pipeline can
+      feed real data into the QA gate / final report instead of always
+      falling back to the mock — mirrors the manual flow's onAssetsReady. */
+  onAssetsReady?: (assets: StudioAssetDTOResponse) => void;
   onQaResult: (result: VerifyChecklistResponseData) => void;
 }
 
-export const AutopilotWorkflow: React.FC<Props> = ({ productName, errorMessage, initialComplete = false, onRun, onOpenStep, campaignInput, getCampaignOutput, onQaResult }) => {
+export const AutopilotWorkflow: React.FC<Props> = ({ productName, errorMessage, initialComplete = false, onRun, onOpenStep, campaignId, campaignInput, getCampaignOutput, onAssetsReady, onQaResult }) => {
   const [runState, setRunState] = React.useState<RunState>(initialComplete ? "complete" : "idle");
   const [nodeStates, setNodeStates] = React.useState<Record<CampaignStage, NodeState>>(() => ({
     product_input: initialComplete ? "complete" : "waiting",
@@ -92,7 +106,41 @@ export const AutopilotWorkflow: React.FC<Props> = ({ productName, errorMessage, 
     for (const id of ["content_generation", "qa_gate", "final_output"] as CampaignStage[]) {
       setActivityIndex(0);
       setNode(id, "running");
-      if (id === "qa_gate") {
+      if (id === "content_generation") {
+        // Real generation, driven headlessly: autopilot has no one to show
+        // the draft to, so the proposal is approved unedited the moment it
+        // arrives — the equivalent of a user clicking "Duyệt" immediately.
+        // Mirrors the manual flow's AssetStudio.handlePropose + handleApprove,
+        // minus the review UI.
+        if (campaignId) {
+          try {
+            const result = await runStudioForAutopilot(campaignId);
+            if (result.productCollectionImageSet || result.shortFormVideoAsset || result.commerceCopy) {
+              onAssetsReady?.({
+                campaign_id: result.campaignId,
+                status: "done",
+                product_collection_image_set:
+                  (result.productCollectionImageSet as StudioAssetDTOResponse["product_collection_image_set"]) ?? null,
+                short_form_video_asset:
+                  (result.shortFormVideoAsset as StudioAssetDTOResponse["short_form_video_asset"]) ?? null,
+                commerce_copy: (result.commerceCopy as StudioAssetDTOResponse["commerce_copy"]) ?? null,
+              });
+            }
+            // A run that timed out without producing assets is not treated
+            // as a pipeline failure — the report falls back to mock data
+            // for whatever is still missing, same as the manual flow does
+            // for a campaign nobody has finished rendering yet.
+          } catch {
+            // A real failure (bad request, network error) must surface,
+            // not be swallowed — mirrors the research failure handling
+            // above. A slow-but-working run is not this branch; only a
+            // genuine error is.
+            setNode("content_generation", "failed");
+            setRunState("failed");
+            return;
+          }
+        }
+      } else if (id === "qa_gate") {
         try {
           const response = await api.verifyChecklist({
             campaign_input: campaignInput,
