@@ -1,14 +1,12 @@
 "use client";
 import * as React from "react";
 import {
-  ArrowDown,
   Bot,
   Briefcase,
   CheckCircle2,
   ExternalLink,
   FileText,
   ImageIcon,
-  Layers,
   Link2,
   Loader2,
   Palette,
@@ -32,6 +30,11 @@ import {
   type CampaignObjective,
   type ResearchSubmission,
 } from "@/types/research";
+
+const OBJECTIVE_LABELS: Record<CampaignObjective, string> = {
+  awareness: "Tăng nhận biết", consideration: "Tăng cân nhắc", conversion: "Tăng đơn hàng",
+  retention: "Giữ chân khách hàng", engagement: "Tăng tương tác", lead_generation: "Thu thập khách hàng tiềm năng",
+};
 
 interface Props {
   value: ResearchSubmission;
@@ -232,8 +235,8 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange }) => {
 
       setExtractedSuccess(true);
       toast.success("Đã trích xuất & tự động điền toàn bộ thông tin sản phẩm!");
-    } catch (error: any) {
-      toast.error(error.message || "Không thể trích xuất dữ liệu từ URL.");
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Không thể trích xuất dữ liệu từ URL.");
     } finally {
       setIsExtracting(false);
     }
@@ -255,14 +258,14 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange }) => {
       <div className="space-y-2 border-b border-foreground/10 pb-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold font-mono tracking-wider text-foreground">
-            THÔNG TIN NGHIÊN CỨU · LƯỢC ĐỒ 1.0
+            THÔNG TIN SẢN PHẨM & MỤC TIÊU BÁN HÀNG
           </h2>
           <span className="text-[10px] font-mono text-[#35ea52] border border-[#35ea52]/30 px-2 py-0.5 tracking-widest uppercase">
             2 CHẾ ĐỘ NHẬP LIỆU
           </span>
         </div>
         <p className="text-sm font-mono text-foreground/40">
-          Chọn phương thức cung cấp dữ liệu sản phẩm để hệ thống AI tiến hành nghiên cứu.
+          Cung cấp đủ thông tin để nhận chiến lược, nội dung và tài sản bán hàng phù hợp với từng kênh.
         </p>
 
         {/* 2 OPTIONS TAB SWITCHER */}
@@ -277,7 +280,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange }) => {
             }`}
           >
             <Link2 className="h-3.5 w-3.5" />
-            LỰA CHỌN 1: DÁN LINK TIKTOK SHOP (TỰ ĐỘNG)
+            DÁN LINK TIKTOK SHOP
           </button>
           <div className="w-px bg-foreground/20" />
           <button
@@ -290,7 +293,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange }) => {
             }`}
           >
             <PenLine className="h-3.5 w-3.5" />
-            LỰA CHỌN 2: NHẬP THÔNG TIN TỪ ĐẦU (THỦ CÔNG)
+            NHẬP THÔNG TIN THỦ CÔNG
           </button>
         </div>
       </div>
@@ -302,10 +305,10 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange }) => {
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-[#35ea52]" />
               <span className="text-xs font-mono font-bold tracking-wider text-foreground uppercase">
-                NHẬP TỰ ĐỘNG TỪ TIKTOK SHOP URL
+                LẤY THÔNG TIN TỪ TIKTOK SHOP
               </span>
             </div>
-            <span className="text-[10px] font-mono text-foreground/40">GEMINI + AGNO + PLAYWRIGHT</span>
+            <span className="text-[10px] font-mono text-foreground/40">TỰ ĐỘNG ĐIỀN THÔNG TIN SẢN PHẨM</span>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-2">
@@ -455,28 +458,28 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange }) => {
 
           <Section icon={Briefcase} title="1. Thông tin sản phẩm">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Campaign ID *">
+              <Field label="Mã chiến dịch *">
                 <Input
                   className={inputClass}
                   value={data.campaign_id}
                   onChange={(e) => setInput({ ...data, campaign_id: e.target.value })}
                 />
             </Field>
-            <Field label="Product name *">
+            <Field label="Tên sản phẩm *">
               <Input
                 className={inputClass}
                 value={data.product_brief.product_name}
                 onChange={(e) => product({ product_name: e.target.value })}
               />
             </Field>
-            <Field label="Category *">
+            <Field label="Ngành hàng *">
               <Input
                 className={inputClass}
                 value={data.product_brief.category}
                 onChange={(e) => product({ category: e.target.value })}
               />
             </Field>
-            <Field label="Promotion">
+            <Field label="Ưu đãi / khuyến mãi">
               <Input
                 className={inputClass}
                 value={data.product_brief.promotion ?? ""}
@@ -484,24 +487,24 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange }) => {
               />
             </Field>
             <ListField
-              label="Key selling points"
+              label="Điểm bán hàng nổi bật"
               required
               value={data.product_brief.key_selling_points}
               onChange={(key_selling_points) => product({ key_selling_points })}
             />
             <ListField
-              label="Target markets"
+              label="Thị trường mục tiêu"
               required
               value={data.product_brief.target_market}
               onChange={(target_market) => product({ target_market })}
             />
             <ListField
-              label="Required claims"
+              label="Thông tin bắt buộc phải nhắc"
               value={data.product_brief.required_claims}
               onChange={(required_claims) => product({ required_claims })}
             />
             <ListField
-              label="Restricted claims"
+              label="Nội dung không được sử dụng"
               value={data.product_brief.restricted_claims}
               onChange={(restricted_claims) => product({ restricted_claims })}
             />
@@ -527,7 +530,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange }) => {
                 }
               />
             </Field>
-            <Field label="Currency">
+            <Field label="Đơn vị tiền tệ">
               <Input
                 className={inputClass}
                 disabled={!data.product_brief.price}
@@ -538,7 +541,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange }) => {
                 }
               />
             </Field>
-            <Field label="Price unit">
+            <Field label="Đơn vị bán">
               <Input
                 className={inputClass}
                 disabled={!data.product_brief.price}
@@ -549,7 +552,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange }) => {
                 }
               />
             </Field>
-            <Field label="Price note">
+            <Field label="Ghi chú giá">
               <Input
                 className={inputClass}
                 disabled={!data.product_brief.price}
@@ -568,7 +571,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <label className="text-[10px] font-mono text-foreground/50 uppercase tracking-wider">
-              Brand color name *
+              Tên màu thương hiệu *
             </label>
             <div className="flex gap-2">
               <Input
@@ -591,7 +594,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange }) => {
 
           <div className="space-y-1.5">
             <label className="text-[10px] font-mono text-foreground/50 uppercase tracking-wider">
-              Brand color hex
+              Mã màu thương hiệu
             </label>
             <div className="flex items-center gap-2">
               <div
@@ -619,7 +622,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange }) => {
           </div>
 
           <ListField
-            label="Tone of voice"
+            label="Giọng điệu thương hiệu"
             required
             value={data.brand_kit.tone_of_voice}
             onChange={(tone_of_voice) => brand({ tone_of_voice })}
@@ -891,20 +894,20 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange }) => {
         )}
       </Section>
       <Section icon={Users} title="3. Khách hàng mục tiêu"><div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <ListField label="Target customers" required value={data.audience_brief.target_customer} onChange={(target_customer) => audience({ target_customer })} />
-        <ListField label="Languages" required value={data.audience_brief.languages} onChange={(languages) => audience({ languages })} />
-        <ListField label="Platforms" required value={data.audience_brief.platforms} onChange={(platforms) => audience({ platforms })} />
-        <ListField label="Markets" required value={data.audience_brief.markets} onChange={(markets) => audience({ markets })} />
+        <ListField label="Nhóm khách hàng" required value={data.audience_brief.target_customer} onChange={(target_customer) => audience({ target_customer })} />
+        <ListField label="Ngôn ngữ nội dung" required value={data.audience_brief.languages} onChange={(languages) => audience({ languages })} />
+        <ListField label="Kênh bán hàng" required value={data.audience_brief.platforms} onChange={(platforms) => audience({ platforms })} />
+        <ListField label="Khu vực bán" required value={data.audience_brief.markets} onChange={(markets) => audience({ markets })} />
       </div></Section>
       <Section icon={TrendingUp} title="4. Tín hiệu thị trường">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <ListField label="Trends" value={data.market_signal.trends} onChange={(trends) => market({ trends })} />
-          <ListField label="Seasonal moments" value={data.market_signal.seasonal_moments} onChange={(seasonal_moments) => market({ seasonal_moments })} />
-          <ListField label="Consumer pain points" value={data.market_signal.consumer_pain_points} onChange={(consumer_pain_points) => market({ consumer_pain_points })} />
-          <ListField label="Search keywords" value={data.market_signal.search_keywords} onChange={(search_keywords) => market({ search_keywords })} />
-          <ListField label="Competitor angles" value={data.market_signal.competitor_angles} onChange={(competitor_angles) => market({ competitor_angles })} />
+          <ListField label="Xu hướng liên quan" value={data.market_signal.trends} onChange={(trends) => market({ trends })} />
+          <ListField label="Dịp bán hàng / mùa vụ" value={data.market_signal.seasonal_moments} onChange={(seasonal_moments) => market({ seasonal_moments })} />
+          <ListField label="Vấn đề khách hàng đang gặp" value={data.market_signal.consumer_pain_points} onChange={(consumer_pain_points) => market({ consumer_pain_points })} />
+          <ListField label="Từ khóa khách hàng tìm kiếm" value={data.market_signal.search_keywords} onChange={(search_keywords) => market({ search_keywords })} />
+          <ListField label="Góc truyền thông của đối thủ" value={data.market_signal.competitor_angles} onChange={(competitor_angles) => market({ competitor_angles })} />
         </div>
-        <fieldset className="space-y-2"><legend className="text-[10px] font-mono text-foreground/50 uppercase tracking-wider">Campaign objectives *</legend><div className="flex flex-wrap gap-4">{CAMPAIGN_OBJECTIVES.map((objective) => <label key={objective} className="flex items-center gap-2 text-xs font-mono text-foreground/60"><input type="checkbox" className="accent-[#35ea52]" checked={data.market_signal.campaign_objectives.includes(objective)} onChange={(e) => market({ campaign_objectives: e.target.checked ? [...data.market_signal.campaign_objectives, objective] : data.market_signal.campaign_objectives.filter((item: CampaignObjective) => item !== objective) })} />{objective}</label>)}</div></fieldset>
+        <fieldset className="space-y-2"><legend className="text-[10px] font-mono text-foreground/50 uppercase tracking-wider">Mục tiêu chiến dịch *</legend><div className="flex flex-wrap gap-4">{CAMPAIGN_OBJECTIVES.map((objective) => <label key={objective} className="flex items-center gap-2 text-xs font-mono text-foreground/60"><input type="checkbox" className="accent-[#35ea52]" checked={data.market_signal.campaign_objectives.includes(objective)} onChange={(e) => market({ campaign_objectives: e.target.checked ? [...data.market_signal.campaign_objectives, objective] : data.market_signal.campaign_objectives.filter((item: CampaignObjective) => item !== objective) })} />{OBJECTIVE_LABELS[objective]}</label>)}</div></fieldset>
       </Section>
     </div>
     )}

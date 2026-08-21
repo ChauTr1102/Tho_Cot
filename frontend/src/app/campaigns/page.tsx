@@ -49,6 +49,8 @@ export default function CampaignsPage() {
   const [campaignsLoading, setCampaignsLoading] = React.useState(true);
   const [campaignsError, setCampaignsError] = React.useState<string | null>(null);
   const [openingCampaignId, setOpeningCampaignId] = React.useState<string | null>(null);
+  const readyCampaigns = campaigns.filter((campaign) => campaign.has_research_result).length;
+  const activeCampaigns = campaigns.filter((campaign) => campaign.status === "researching").length;
 
   const loadCampaigns = React.useCallback(async () => {
     setCampaignsLoading(true);
@@ -64,9 +66,19 @@ export default function CampaignsPage() {
   }, []);
 
   React.useEffect(() => {
-    const timer = window.setTimeout(() => void loadCampaigns(), 0);
-    return () => window.clearTimeout(timer);
-  }, [loadCampaigns]);
+    let cancelled = false;
+    api.getCampaigns()
+      .then((response) => {
+        if (!cancelled) setCampaigns(response.data ?? []);
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) setCampaignsError(error instanceof Error ? error.message : "Không thể tải danh sách chiến dịch.");
+      })
+      .finally(() => {
+        if (!cancelled) setCampaignsLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, []);
 
   const startNewCampaign = () => {
     setResearchSubmission(createInitialResearchSubmission());
@@ -216,7 +228,7 @@ export default function CampaignsPage() {
                     <div className="flex-1 h-px bg-foreground" />
                   </div>
                   <h1 className="text-2xl font-bold tracking-wider text-foreground font-display uppercase">CHIẾN DỊCH</h1>
-                  <p className="text-sm text-foreground/35 font-mono tracking-wider">Quản lý các chiến dịch quảng cáo do AI tạo.</p>
+                  <p className="text-sm text-foreground/45 max-w-2xl">Biến thông tin sản phẩm thành góc bán hàng, hai phương án quảng cáo và bộ nội dung sẵn sàng triển khai.</p>
                 </div>
                 <button
                   type="button"
@@ -227,6 +239,14 @@ export default function CampaignsPage() {
                   CHIẾN DỊCH.MỚI
                 </button>
               </div>
+
+              {!campaignsLoading && !campaignsError && campaigns.length > 0 && (
+                <div className="grid grid-cols-3 border border-foreground/10 divide-x divide-foreground/10">
+                  <div className="p-4"><p className="text-2xl font-display font-bold text-foreground">{campaigns.length}</p><p className="text-[10px] font-mono text-foreground/35 tracking-wider mt-1">TỔNG CHIẾN DỊCH</p></div>
+                  <div className="p-4"><p className="text-2xl font-display font-bold text-[#35ea52]">{readyCampaigns}</p><p className="text-[10px] font-mono text-foreground/35 tracking-wider mt-1">CÓ ĐỀ XUẤT BÁN HÀNG</p></div>
+                  <div className="p-4"><p className="text-2xl font-display font-bold text-amber-400">{activeCampaigns}</p><p className="text-[10px] font-mono text-foreground/35 tracking-wider mt-1">ĐANG XỬ LÝ</p></div>
+                </div>
+              )}
 
               {campaignsLoading && (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" aria-label="Đang tải chiến dịch">
@@ -250,7 +270,7 @@ export default function CampaignsPage() {
                 <div className="p-12 text-center border border-dashed border-foreground/15 space-y-3 dot-grid">
                   <FolderKanban className="h-8 w-8 text-foreground/20 mx-auto" />
                   <p className="text-sm font-mono text-foreground/50 tracking-wider">CHƯA CÓ CHIẾN DỊCH</p>
-                  <p className="text-xs font-mono text-foreground/25">Tạo chiến dịch mới để bắt đầu quy trình.</p>
+                  <p className="text-xs text-foreground/35 max-w-lg mx-auto">Thêm sản phẩm, thị trường mục tiêu và hình ảnh. Hệ thống sẽ đề xuất thông điệp bán hàng cùng hai hướng quảng cáo để thử nghiệm.</p>
                 </div>
               )}
 
@@ -283,7 +303,7 @@ export default function CampaignsPage() {
                             className="inline-flex items-center gap-1.5 text-[10px] font-mono font-bold tracking-wider text-[#35ea52] disabled:text-foreground/20 disabled:cursor-not-allowed"
                           >
                             {isOpening ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" /> : <Search className="h-3.5 w-3.5" />}
-                            {campaign.has_research_result ? "XEM KẾT QUẢ" : "CHƯA CÓ KẾT QUẢ"}
+                            {campaign.has_research_result ? "MỞ GÓI CHIẾN DỊCH" : "CHƯA CÓ ĐỀ XUẤT"}
                           </button>
                         </div>
                       </article>
