@@ -65,6 +65,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
@@ -229,25 +230,29 @@ class AssetBundle(BaseModel):
     generated_at: datetime = Field(default_factory=_utcnow)
 
 
-class QASeverity(str, Enum):
-    BLOCKER = "blocker"     # must fix, fails QA
-    WARNING = "warning"     # flagged but non-blocking
-    INFO = "info"
+class ChecklistItemResult(BaseModel):
+    """One checklist criterion + the review agent's verdict on it.
 
+    `verdict` is the raw string returned by ChecklistReviewAgent: literally
+    "Pass" on success, or a human-readable failure reason (e.g. "The color
+    is not match with user description") on failure. No severity/blocker
+    distinction — every failed item blocks QA, mirroring "lam cho den khi
+    dat cac tieu chi, va khong co van de phat hien."
+    """
+    criterion: str
+    verdict: str
 
-class QAIssue(BaseModel):
-    rule_id: str
-    severity: QASeverity
-    message: str
-    field: Optional[str] = None
-    remediation: Optional[str] = None  # additional-context to feed back into regeneration
+    @property
+    def passed(self) -> bool:
+        return self.verdict.strip().lower() == "pass"
 
 
 class QAResult(BaseModel):
     campaign_id: str
     passed: bool
     iteration: int
-    issues: list[QAIssue] = Field(default_factory=list)
+    issues: list[str] = Field(default_factory=list)  # failure-reason strings only (Pass items excluded)
+    checklist_results: list[ChecklistItemResult] = Field(default_factory=list)
     checked_at: datetime = Field(default_factory=_utcnow)
 
 
@@ -341,6 +346,65 @@ IMAGE_PROMPT_TEMPLATES: dict[ImageKind, str] = {
 VIDEO_PROMPT_TEMPLATE = (
     "{hook_idea}. Visual direction: {visual_direction}. Ends on a clean product hero shot."
 )
+
+# --- QA checklist agent prompts -------------------------------------------
+# ChecklistAgent: reads the raw CampaignInput and produces a short list of
+# concrete, checkable QA criteria (max 7) tailored to that specific brief —
+# e.g. "The product image colors must match brand_kit.brand_colors",
+# "The copy must not contain the forbidden claim 'cures bloating'".
+CHECKLIST_SYSTEM_PROMPT = (
+    "Ban la mot QA lead cho e-commerce marketing. Luon tra ve JSON hop le."
+)
+
+CHECKLIST_PROMPT_TEMPLATE = """Dua vao thong tin dau vao (input) cua mot campaign thuong mai dien tu duoi day,
+hay lap mot checklist QA gom TOI DA 7 va TOI THIEU 3 tieu chi cu the, co the kiem tra duoc,
+de danh gia xem ban ke hoach campaign (plan) va bo tai san (assets: hinh anh, video, copy)
+duoc sinh ra co dap ung dung brief nay khong.
+
+Moi tieu chi phai:
+- La mot cau khang dinh ro rang, co the kiem tra Pass/Fail (vi du: "Anh san pham phai dung
+  bang mau brand_colors trong brand_kit", "Copy phai chua claim bat buoc 'made in Vietnam'",
+  "Copy khong duoc chua claim cam 'cures bloating'", "Video phai co ti le khung hinh 9:16").
+- Bam sat cac field cu the trong input (product_brief, brand_kit, audience_brief, market_signal).
+- Khong trung lap y nghia voi tieu chi khac trong danh sach.
+
+Tra ve DUY NHAT mot JSON object hop le voi key chinh xac sau (khong markdown, khong giai thich them):
+
+{{
+  "checklist": ["<tieu chi 1>", "<tieu chi 2>", "..."]
+}}
+
+Campaign input:
+{campaign_input_json}
+"""
+
+# ChecklistReviewAgent: reviews ONE checklist criterion against the actual
+# generated CampaignPlan + AssetBundle (+ original CampaignInput for
+# grounding) and returns a plain string verdict: "Pass" or a short failure
+# reason.
+REVIEW_SYSTEM_PROMPT = (
+    "Ban la QA reviewer nghiem khac cho e-commerce marketing. Luon tra ve dung mot dong text, "
+    "khong markdown, khong giai thich dai dong."
+)
+
+REVIEW_PROMPT_TEMPLATE = """Tieu chi QA can kiem tra:
+"{criterion}"
+
+Du lieu campaign input (brief goc cua khach hang):
+{campaign_input_json}
+
+Ke hoach campaign da duoc sinh ra (plan):
+{plan_json}
+
+Bo tai san da duoc sinh ra (assets: hinh anh, video, copy):
+{assets_json}
+
+Hay danh gia xem ke hoach + tai san co dap ung tieu chi tren khong.
+- Neu DAP UNG, tra ve DUY NHAT chu "Pass" (khong dau cau, khong giai thich them).
+- Neu KHONG DAP UNG, tra ve DUY NHAT mot cau ngan gon giai thich ly do fail
+  (vi du: "The color is not match with user description"). Khong tra ve JSON,
+  khong markdown, chi mot dong text duy nhat.
+"""
 
 
 # ===========================================================================
@@ -628,195 +692,52 @@ class GenAssetsAgent:
 # QA passes only when there are zero BLOCKER issues.
 # ---------------------------------------------------------------------------
 
-MIN_CREATIVE_ROUTES = 2
-MIN_PRODUCT_IMAGES = 4
-REQUIRED_IMAGE_KINDS = {
-    ImageKind.HERO,
-    ImageKind.SKU_DETAIL,
-    ImageKind.COLLECTION,
-    ImageKind.THUMBNAIL,
-}
-MIN_VIDEOS = 1
-VIDEO_MIN_DURATION_SEC = 15
-VIDEO_MAX_DURATION_SEC = 30
-VIDEO_REQUIRED_ASPECT = "9:16"
+class ChecklistAgent:
+    """Reads the raw CampaignInput and produces a short, concrete QA
+    checklist (3-7 plain-string criteria) tailored to that specific brief.
+    Always calls Seed 2.1 via byteplus_ark.chat — no rule-based fallback,
+    since the checklist must be reasoned from the actual brief content
+    (colors, claims, audience, platform, etc.), not hardcoded structural
+    rules."""
+
+    def generate(self, campaign_input: CampaignInput) -> list[str]:
+        ark = _load_ark_client()
+        prompt = CHECKLIST_PROMPT_TEMPLATE.format(
+            campaign_input_json=campaign_input.model_dump_json(indent=2)
+        )
+        raw = ark.chat(prompt, system=CHECKLIST_SYSTEM_PROMPT)
+        data = _parse_llm_json(raw)
+        checklist = [str(item).strip() for item in data.get("checklist", []) if str(item).strip()]
+        if not checklist:
+            raise RuntimeError(f"ChecklistAgent returned an empty checklist. Raw output:\n{raw}")
+        return checklist[:MAX_CHECKLIST_ITEMS]
+
+
+class ChecklistReviewAgent:
+    """Reviews ONE checklist criterion against the actual generated
+    CampaignPlan + AssetBundle (grounded by the original CampaignInput) and
+    returns a plain string verdict: "Pass" or a short failure reason."""
+
+    def review_item(
+        self,
+        criterion: str,
+        campaign_input: CampaignInput,
+        plan: CampaignPlan,
+        assets: AssetBundle,
+    ) -> str:
+        ark = _load_ark_client()
+        prompt = REVIEW_PROMPT_TEMPLATE.format(
+            criterion=criterion,
+            campaign_input_json=campaign_input.model_dump_json(indent=2),
+            plan_json=plan.model_dump_json(indent=2),
+            assets_json=assets.model_dump_json(indent=2),
+        )
+        raw = ark.chat(prompt, system=REVIEW_SYSTEM_PROMPT)
+        return raw.strip().strip('"')
+
+
+MAX_CHECKLIST_ITEMS = 7
 MAX_ITERATIONS = 3
-
-
-def _check_internal_plan(plan: CampaignPlan) -> list[QAIssue]:
-    """Internal system criteria: is the plan structurally complete per BP-01 spec."""
-    issues: list[QAIssue] = []
-
-    if not plan.positioning.main_campaign_angle.strip():
-        issues.append(QAIssue(
-            rule_id="PLAN.ANGLE_EMPTY", severity=QASeverity.BLOCKER,
-            message="Main campaign angle is empty.", field="positioning.main_campaign_angle",
-            remediation="Regenerate positioning with a non-empty main_campaign_angle summarizing "
-                        "the core hook in one sentence.",
-        ))
-
-    if len(plan.creative_routes) < MIN_CREATIVE_ROUTES:
-        issues.append(QAIssue(
-            rule_id="PLAN.ROUTE_COUNT", severity=QASeverity.BLOCKER,
-            message=f"Need >= {MIN_CREATIVE_ROUTES} creative routes for A/B testing, got {len(plan.creative_routes)}.",
-            field="creative_routes",
-            remediation=f"Add creative routes until there are at least {MIN_CREATIVE_ROUTES}, each "
-                        "with a distinct hook_idea/message_angle for A/B testing.",
-        ))
-
-    route_ids = [r.route_id for r in plan.creative_routes]
-    if len(route_ids) != len(set(route_ids)):
-        issues.append(QAIssue(
-            rule_id="PLAN.ROUTE_ID_DUP", severity=QASeverity.BLOCKER,
-            message="Duplicate route_id values in creative_routes.", field="creative_routes",
-            remediation="Ensure every creative_routes[].route_id is unique (e.g. 'A', 'B', 'C').",
-        ))
-
-    ab = plan.ab_test_plan
-    if ab.route_a not in route_ids or ab.route_b not in route_ids:
-        issues.append(QAIssue(
-            rule_id="PLAN.AB_ROUTE_MISMATCH", severity=QASeverity.BLOCKER,
-            message="A/B test plan references a route_id not present in creative_routes.",
-            field="ab_test_plan",
-            remediation="Set ab_test_plan.route_a / route_b to route_ids that actually exist in "
-                        "creative_routes.",
-        ))
-    if not ab.success_metrics:
-        issues.append(QAIssue(
-            rule_id="PLAN.AB_NO_METRICS", severity=QASeverity.WARNING,
-            message="A/B test plan has no success metrics defined.", field="ab_test_plan.success_metrics",
-            remediation="Add measurable success_metrics (e.g. CTR, 3s view rate, add-to-cart rate).",
-        ))
-
-    return issues
-
-
-def _check_internal_assets(assets: AssetBundle) -> list[QAIssue]:
-    """Internal system criteria: asset bundle completeness per BP-01 spec."""
-    issues: list[QAIssue] = []
-
-    if len(assets.images) < MIN_PRODUCT_IMAGES:
-        issues.append(QAIssue(
-            rule_id="ASSETS.IMAGE_COUNT", severity=QASeverity.BLOCKER,
-            message=f"Need >= {MIN_PRODUCT_IMAGES} product images, got {len(assets.images)}.",
-            field="images",
-            remediation=f"Generate additional images via Seedream 5.0 Pro until there are at least "
-                        f"{MIN_PRODUCT_IMAGES}, covering all required kinds.",
-        ))
-
-    present_kinds = {img.kind for img in assets.images}
-    missing_kinds = REQUIRED_IMAGE_KINDS - present_kinds
-    if missing_kinds:
-        missing_list = sorted(k.value for k in missing_kinds)
-        issues.append(QAIssue(
-            rule_id="ASSETS.MISSING_IMAGE_KIND", severity=QASeverity.BLOCKER,
-            message=f"Missing required image kinds: {missing_list}.",
-            field="images",
-            remediation=f"Regenerate asset bundle and include the missing kind(s) {missing_list} via "
-                        "Seedream 5.0 Pro, matching the lighting/background style of the existing images.",
-        ))
-
-    if len(assets.videos) < MIN_VIDEOS:
-        issues.append(QAIssue(
-            rule_id="ASSETS.VIDEO_COUNT", severity=QASeverity.BLOCKER,
-            message=f"Need >= {MIN_VIDEOS} short-form video asset(s), got {len(assets.videos)}.",
-            field="videos",
-            remediation="Generate at least one short-form video via Seedance 2.5 (15-30s, 9:16).",
-        ))
-
-    for v in assets.videos:
-        if not (VIDEO_MIN_DURATION_SEC <= v.duration_sec <= VIDEO_MAX_DURATION_SEC):
-            issues.append(QAIssue(
-                rule_id="ASSETS.VIDEO_DURATION", severity=QASeverity.WARNING,
-                message=f"Video duration {v.duration_sec}s outside recommended {VIDEO_MIN_DURATION_SEC}-{VIDEO_MAX_DURATION_SEC}s window.",
-                field="videos",
-                remediation=f"Trim/regenerate the video to fall within {VIDEO_MIN_DURATION_SEC}-"
-                            f"{VIDEO_MAX_DURATION_SEC}s via Seedance 2.5.",
-            ))
-        if v.aspect_ratio != VIDEO_REQUIRED_ASPECT:
-            issues.append(QAIssue(
-                rule_id="ASSETS.VIDEO_ASPECT", severity=QASeverity.WARNING,
-                message=f"Video aspect ratio {v.aspect_ratio} != recommended {VIDEO_REQUIRED_ASPECT}.",
-                field="videos",
-                remediation=f"Regenerate the primary cut with --ratio {VIDEO_REQUIRED_ASPECT}. A 1:1 "
-                            "cut is only allowed as an OPTIONAL additional cut, not a replacement.",
-            ))
-
-    copy = assets.listing_copy
-    if not copy.product_title.strip() or not copy.product_description.strip():
-        issues.append(QAIssue(
-            rule_id="ASSETS.COPY_INCOMPLETE", severity=QASeverity.BLOCKER,
-            message="Commerce copy missing product_title or product_description.", field="copy",
-            remediation="Regenerate commerce copy ensuring both product_title and product_description "
-                        "are non-empty.",
-        ))
-    if len(copy.listing_bullet_points) == 0:
-        issues.append(QAIssue(
-            rule_id="ASSETS.COPY_NO_BULLETS", severity=QASeverity.WARNING,
-            message="Commerce copy has no listing bullet points.", field="copy.listing_bullet_points",
-            remediation="Add 3-5 listing_bullet_points highlighting key selling points.",
-        ))
-
-    return issues
-
-
-def _check_market_research(plan: CampaignPlan) -> list[QAIssue]:
-    """Market research criteria: positioning claims must be backed by cited sources."""
-    issues: list[QAIssue] = []
-
-    if not plan.positioning.sources:
-        issues.append(QAIssue(
-            rule_id="MARKET.NO_SOURCES", severity=QASeverity.WARNING,
-            message="Positioning has no cited market-research sources backing the angle.",
-            field="positioning.sources",
-            remediation="Cite the market_signal sources (trend report / social listening reference) "
-                        "that back the chosen campaign angle.",
-        ))
-
-    return issues
-
-
-def _check_user_brief_compliance(
-    campaign_input: CampaignInput, plan: CampaignPlan, assets: AssetBundle
-) -> list[QAIssue]:
-    """User-provided criteria: required claims present, forbidden claims absent."""
-    issues: list[QAIssue] = []
-    product = campaign_input.product_brief
-
-    text_blob = " ".join(
-        [
-            plan.positioning.main_campaign_angle,
-            plan.positioning.key_selling_message,
-            assets.listing_copy.product_title,
-            assets.listing_copy.product_description,
-            assets.listing_copy.ad_caption,
-            *assets.listing_copy.listing_bullet_points,
-            *assets.listing_copy.short_hook_lines,
-        ]
-    ).lower()
-
-    for forbidden in product.forbidden_claims:
-        if forbidden.strip() and forbidden.strip().lower() in text_blob:
-            issues.append(QAIssue(
-                rule_id="USER.FORBIDDEN_CLAIM", severity=QASeverity.BLOCKER,
-                message=f"Forbidden claim detected in generated copy: '{forbidden}'.",
-                field="copy",
-                remediation=f"Strip '{forbidden}' and any equivalent phrasing from all copy fields. "
-                            f"Never use forbidden_claims verbatim or as paraphrase: {product.forbidden_claims}.",
-            ))
-
-    for required in product.required_claims:
-        if required.strip() and required.strip().lower() not in text_blob:
-            issues.append(QAIssue(
-                rule_id="USER.MISSING_REQUIRED_CLAIM", severity=QASeverity.BLOCKER,
-                message=f"Required claim not found in generated copy: '{required}'.",
-                field="copy",
-                remediation=f"Insert the literal claim '{required}' somewhere in product_title, "
-                            f"product_description, bullet points, ad_caption, or hook lines. All "
-                            f"required_claims must appear: {product.required_claims}.",
-            ))
-
-    return issues
 
 
 def review(
@@ -824,24 +745,41 @@ def review(
     plan: CampaignPlan,
     assets: AssetBundle,
     iteration: int = 1,
+    checklist_agent: Optional[ChecklistAgent] = None,
+    review_agent: Optional[ChecklistReviewAgent] = None,
 ) -> QAResult:
-    """Run the full checklist against a plan + asset bundle for one campaign.
-
-    Returns a QAResult with passed=True only if there are no BLOCKER issues.
+    """Runs the full checklist-based QA review for one campaign:
+      1. ChecklistAgent derives 3-7 concrete criteria from campaign_input.
+      2. ChecklistReviewAgent judges each criterion against plan + assets,
+         in parallel, each returning "Pass" or a plain failure-reason string.
+    passed=True only when every criterion verdict is exactly "Pass".
     """
-    issues: list[QAIssue] = []
-    issues += _check_internal_plan(plan)
-    issues += _check_internal_assets(assets)
-    issues += _check_market_research(plan)
-    issues += _check_user_brief_compliance(campaign_input, plan, assets)
+    checklist_agent = checklist_agent or ChecklistAgent()
+    review_agent = review_agent or ChecklistReviewAgent()
 
-    passed = not any(i.severity == QASeverity.BLOCKER for i in issues)
+    checklist = checklist_agent.generate(campaign_input)
+
+    results: list[ChecklistItemResult] = [None] * len(checklist)  # type: ignore[list-item]
+    with ThreadPoolExecutor(max_workers=len(checklist)) as executor:
+        future_to_idx = {
+            executor.submit(review_agent.review_item, criterion, campaign_input, plan, assets): idx
+            for idx, criterion in enumerate(checklist)
+        }
+        for future in as_completed(future_to_idx):
+            idx = future_to_idx[future]
+            criterion = checklist[idx]
+            verdict = future.result()
+            results[idx] = ChecklistItemResult(criterion=criterion, verdict=verdict)
+
+    issues = [f"{r.criterion} -> {r.verdict}" for r in results if not r.passed]
+    passed = len(issues) == 0
 
     return QAResult(
         campaign_id=campaign_input.campaign_id,
         passed=passed,
         iteration=iteration,
         issues=issues,
+        checklist_results=results,
     )
 
 
@@ -886,8 +824,8 @@ def run_campaign(
         if result.passed:
             break
 
-        blockers = [i for i in result.issues if i.severity == QASeverity.BLOCKER]
-        extra_context = "\n".join(f"- {i.rule_id}: {i.remediation or i.message}" for i in blockers)
+        blockers = result.issues  # every failed checklist item blocks QA now
+        extra_context = "\n".join(f"- {issue}" for issue in blockers)
 
     assert plan is not None and assets is not None and result is not None
     return plan, assets, result, history
@@ -1147,8 +1085,9 @@ def main() -> int:
         for past_result in history:
             status = "PASS" if past_result.passed else "FAIL"
             print(f"  Iteration {past_result.iteration}: {status} ({len(past_result.issues)} issue(s))")
-            for issue in past_result.issues:
-                print(f"    [{issue.severity.value.upper():8}] {issue.rule_id:30} {issue.message}")
+            for item in past_result.checklist_results:
+                mark = "PASS" if item.passed else "FAIL"
+                print(f"    [{mark}] {item.criterion} -> {item.verdict}")
 
     _print_section("5. FINAL QA RESULT")
     print(f"campaign_id : {result.campaign_id}")
@@ -1156,21 +1095,18 @@ def main() -> int:
     print(f"iteration   : {result.iteration}")
     print(f"checked_at  : {result.checked_at}")
 
-    if result.issues:
-        print(f"\nIssues found ({len(result.issues)}):")
-        for issue in result.issues:
-            print(f"  [{issue.severity.value.upper():8}] {issue.rule_id:30} {issue.message}")
-            if issue.remediation:
-                print(f"           -> remediation: {issue.remediation}")
-    else:
-        print("\nNo issues found.")
+    print(f"\nChecklist ({len(result.checklist_results)} item(s)):")
+    for item in result.checklist_results:
+        mark = "PASS" if item.passed else "FAIL"
+        print(f"  [{mark}] {item.criterion}")
+        if not item.passed:
+            print(f"         -> {item.verdict}")
 
     _print_section("SUMMARY")
-    blockers = [i for i in result.issues if i.severity == QASeverity.BLOCKER]
-    warnings = [i for i in result.issues if i.severity == QASeverity.WARNING]
-    print(f"Result   : {'PASS' if result.passed else 'FAIL'}")
-    print(f"Blockers : {len(blockers)}")
-    print(f"Warnings : {len(warnings)}")
+    failed = [r for r in result.checklist_results if not r.passed]
+    print(f"Result  : {'PASS' if result.passed else 'FAIL'}")
+    print(f"Checked : {len(result.checklist_results)}")
+    print(f"Failed  : {len(failed)}")
 
     return 0 if result.passed else 1
 
