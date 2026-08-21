@@ -299,6 +299,12 @@ class RouteHints(BaseModel):
     raw_platforms: list[str] = Field(default_factory=list)
     #: Bracketed editorial spans removed from this route's text.
     stripped_placeholders: list[str] = Field(default_factory=list)
+    #: What this route is trying to prove, as upstream stated it. Added to the
+    #: research contract after the first version of this adapter, which is why
+    #: it is optional: campaigns researched before that carry neither field.
+    test_objective: str = ""
+    #: How upstream proposes to test it — variable, metric, expected learning.
+    testing_plan: str = ""
 
 
 class UpstreamPlan(BaseModel):
@@ -734,6 +740,9 @@ def _route_hints(route: dict[str, Any], index: int) -> RouteHints:
     notes, preserve = extract_art_direction(visual)
     photos = extract_reference_photos(visual, hook)
 
+    objective, _ = strip_placeholders(_scalar(_first(route, "test_objective", "objective")))
+    testing, _ = strip_placeholders(_scalar(_first(route, "testing_plan", "test_plan")))
+
     raw_platforms = _iter_strings(
         _first(route, "suggested_platform_usage", "platforms", "platform_usage", "channels")
     )
@@ -752,6 +761,8 @@ def _route_hints(route: dict[str, Any], index: int) -> RouteHints:
         unsupported_platforms=unsupported,
         raw_platforms=raw_platforms,
         stripped_placeholders=[*hook_removed, *visual_removed, *angle_removed],
+        test_objective=objective,
+        testing_plan=testing,
     )
 
 
@@ -841,9 +852,32 @@ def _ab_test_plan(
             expected_learning=learning or _synth_learning(body, routes, hints),
         )
 
+    # No top-level block, but the routes may describe the test themselves:
+    # `test_objective` and `testing_plan` were added to the research contract
+    # after this adapter was written. Preferring them to a synthesised sentence
+    # is the difference between reporting the team's actual experiment and
+    # inventing a plausible one over the top of it.
+    stated = [h for h in hints if h.test_objective or h.testing_plan]
+    if stated:
+        return ABTestPlan(
+            what_to_test=" · ".join(
+                f"{h.route_id}: {h.test_objective}" for h in stated if h.test_objective
+            ) or _synth_what_to_test(hints),
+            route_a=route_ids[0],
+            route_b=route_ids[1] if len(route_ids) > 1 else route_ids[0],
+            success_metrics=(
+                _metrics_named_in(" ".join(h.testing_plan for h in stated))
+                or list(DEFAULT_SUCCESS_METRICS)
+            ),
+            expected_learning=" ".join(
+                h.testing_plan for h in stated if h.testing_plan
+            ) or _synth_learning(body, routes, hints),
+        )
+
     warnings.append(
-        "Upstream plan carried no ab_test_plan; synthesised one from the "
-        f"{len(route_ids)} creative route(s) so the A/B comparison is testable."
+        "Upstream plan carried no ab_test_plan and no route stated a test "
+        f"objective; synthesised one from the {len(route_ids)} creative "
+        "route(s) so the A/B comparison is testable."
     )
     return ABTestPlan(
         what_to_test=_synth_what_to_test(hints),
@@ -852,6 +886,42 @@ def _ab_test_plan(
         success_metrics=list(DEFAULT_SUCCESS_METRICS),
         expected_learning=_synth_learning(body, routes, hints),
     )
+
+
+#: Metric names worth recognising when upstream writes its testing plan as
+#: prose. Deliberately a small, closed list: guessing at every noun that could
+#: be a metric would file "engagement is important" as a measurable target.
+_KNOWN_METRICS: tuple[tuple[str, str], ...] = (
+    ("ctr", "CTR"),
+    ("cvr", "CVR"),
+    ("roas", "ROAS"),
+    ("gmv", "GMV"),
+    ("aov", "AOV"),
+    ("add-to-cart", "Add-to-cart rate"),
+    ("add to cart", "Add-to-cart rate"),
+    ("thêm vào giỏ", "Add-to-cart rate"),
+    ("3s view", "3s view rate"),
+    ("watch time", "Watch time"),
+    ("thời gian xem", "Watch time"),
+    ("tỉ lệ chuyển đổi", "CVR"),
+    ("tỷ lệ chuyển đổi", "CVR"),
+    ("tỉ lệ nhấp", "CTR"),
+    ("tỷ lệ nhấp", "CTR"),
+)
+
+
+def _metrics_named_in(text: str) -> list[str]:
+    """Metrics upstream named in its testing plan, in canonical form.
+
+    Returns [] when the prose names none, so the caller falls back to the
+    defaults rather than shipping an empty success criterion.
+    """
+    lowered = (text or "").casefold()
+    found: list[str] = []
+    for needle, canonical in _KNOWN_METRICS:
+        if needle in lowered and canonical not in found:
+            found.append(canonical)
+    return found
 
 
 def _synth_what_to_test(hints: Sequence[RouteHints]) -> str:

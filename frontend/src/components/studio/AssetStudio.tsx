@@ -228,7 +228,13 @@ export function AssetStudio({
     <div
       className={
         embedded
-          ? "flex h-full flex-col"
+          ? // Still the studio's own surface, just inset as a panel. Inheriting
+            // the pipeline's ivory looked reasonable in theory — no component
+            // hardcodes a colour — and was unreadable in practice: the graph's
+            // contrast, its edges and its minimap are all tuned in `studio.css`
+            // against a near-black ground, so on ivory the nodes washed out to
+            // pale grey on white and the minimap read as a black slab.
+            "studio-backdrop flex h-full flex-col overflow-hidden rounded-xl border border-foreground/10"
           : "studio-backdrop flex min-h-screen flex-col"
       }
     >
@@ -249,7 +255,7 @@ export function AssetStudio({
       <main
         className={
           embedded
-            ? "w-full flex-1"
+            ? "w-full min-h-0 flex-1 px-3 py-3"
             : "mx-auto w-full max-w-[1760px] flex-1 px-4 pt-4 pb-10 sm:px-6"
         }
       >
