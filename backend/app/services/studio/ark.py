@@ -564,7 +564,7 @@ def describe_image(image_bytes: bytes, prompt: str, max_tokens: int = 600) -> st
 
 
 def chat(prompt: str, system: str | None = None, max_tokens: int = 2000,
-         json_mode: bool = False) -> str:
+         json_mode: bool = False, timeout: int = 420) -> str:
     """Ask the LLM a text-only question. `POST /chat/completions`.
 
     Same model as `describe_image` — Seed 2.1 Turbo is multimodal, and the only
@@ -589,10 +589,33 @@ def chat(prompt: str, system: str | None = None, max_tokens: int = 2000,
     if json_mode:
         payload["response_format"] = {"type": "json_object"}
 
-    body = _post_json(
-        f"{studio_settings.ARK_BASE_URL}/chat/completions",
-        payload, label="chat", timeout=180,
-    )
+    # Deliberately not routed through `_retry`. A long JSON completion measured
+    # 165 seconds against a 180-second ceiling, and retrying a *timeout* six
+    # times turned one slow call into eighteen minutes of hanging. A timeout
+    # here means the model is thinking, not that the network blipped, so it is
+    # allowed one generous attempt and one retry for a genuinely dropped
+    # connection — nothing more.
+    url = f"{studio_settings.ARK_BASE_URL}/chat/completions"
+    last: Exception | None = None
+    for attempt in range(2):
+        try:
+            resp = requests.post(url, headers=_headers(), json=payload, timeout=timeout)
+            _raise_for_api(resp, "chat")
+            body = resp.json()
+            break
+        except requests.Timeout as exc:
+            raise ArkError(status=0, body=f"chat timed out after {timeout}s",
+                           label="chat") from exc
+        except requests.ConnectionError as exc:
+            last = exc
+            if attempt == 0:
+                time.sleep(2)
+                continue
+            raise ArkError(status=0, body=f"chat connection failed: {exc}",
+                           label="chat") from exc
+    else:                                             # pragma: no cover
+        raise ArkError(status=0, body=f"chat failed: {last}", label="chat")
+
     try:
         return body["choices"][0]["message"]["content"]
     except (KeyError, IndexError, TypeError) as exc:

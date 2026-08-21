@@ -412,7 +412,8 @@ Chữ trên ảnh viết bằng tiếng Việt. "prompt" viết bằng tiếng A
 
     try:
         raw = ark.parse_json(ark.chat(prompt, system=_DESIGN_SYSTEM,
-                                      json_mode=True, max_tokens=3000))
+                                      json_mode=True, max_tokens=2600,
+                                      timeout=420))
     except Exception as exc:
         return GraphSpec(rationale="", repaired=[f"director không phản hồi: {exc}"])
     if not isinstance(raw, dict):
@@ -524,6 +525,190 @@ def _validate(raw: dict[str, Any], forbidden_claims: list[str]) -> GraphSpec:
 
     return GraphSpec(nodes=nodes, rationale=str(raw.get("rationale", ""))[:600],
                      repaired=repaired)
+
+
+def plan_graph(draft_: Draft, plan: CampaignPlan,
+               campaign_input: CampaignInput | None = None,
+               with_video: bool = True) -> GraphSpec:
+    """Derive the graph from an approved draft, in code.
+
+    An earlier version asked the LLM to design the graph too. It worked and it
+    was too slow to demo: the model bills by output length, not by difficulty,
+    and a graph with a written prompt per node is thousands of tokens — measured
+    at 165 seconds, and 101 even after the output was trimmed. It also produced
+    graphs that had to be repaired: two `hero` nodes in one answer, and a hero
+    staged around a person, which Seedance then refuses as a video reference.
+
+    So the division moved. The director still decides everything that needs
+    judgement — which platforms, which deliverables, how many shots, and the
+    register, all shaped by what the user asked for. The wiring is arithmetic:
+    stills depend on the hero, each clip on its keyframe, the master on every
+    clip. There is no creativity in that, and paying three minutes for a model
+    to rediscover it is a bad trade in front of an audience.
+
+    Scene text still comes from the director — it is carried on each
+    `Deliverable.purpose` — so the frames differ per campaign. Only the edges
+    are fixed.
+    """
+    nodes: list[NodeSpec] = []
+    texts = _campaign_texts(plan, campaign_input)
+    label = _label_strings(campaign_input)
+    platform = (draft_.platforms or ["shopee"])[0]
+
+    nodes.append(NodeSpec(id="inventory", kind="inventory", deps=[], platform=platform))
+    nodes.append(NodeSpec(id="hero", kind="hero", deps=["inventory"],
+                          ratio="1:1", platform=platform,
+                          prompt="the product centred, lit exactly as the register describes"))
+
+    for item in draft_.deliverables:
+        is_poster = item.kind == "poster"
+        # A poster carries the campaign's whole message; a still carries at most
+        # a headline. Handing every string to every frame is how a listing image
+        # ends up looking like a leaflet.
+        node_texts = list(texts) if is_poster else [t for t in texts if t[0] == "headline"]
+        if item.id.endswith("main") or "main" in item.id:
+            node_texts = []          # the marketplace listing image stays clean
+        nodes.append(NodeSpec(
+            id=item.id, kind=item.kind, deps=["hero"],
+            ratio=item.ratio, platform=item.platform,
+            prompt=item.purpose or "the product, staged for this slot",
+            texts=node_texts,
+        ))
+
+    if with_video:
+        roles = ["hook", "product", "benefit", "cta"]
+        clip_ids: list[str] = []
+        vsecs = max(4, min(15, round(draft_.video_seconds / max(1, draft_.video_shots))))
+        for i in range(draft_.video_shots):
+            role = roles[i] if i < len(roles) else "product"
+            kf = f"keyframe_{i}"
+            nodes.append(NodeSpec(
+                id=kf, kind="keyframe", deps=["hero"], ratio="9:16",
+                platform="tiktok_shop" if "tiktok_shop" in draft_.platforms else platform,
+                prompt=_shot_scene(role, plan, campaign_input),
+                texts=[("headline", _shot_text(role, texts))] if _shot_text(role, texts) else [],
+                role=role, seconds=vsecs))
+            nodes.append(NodeSpec(id=f"clip_{i}", kind="clip", deps=[kf], ratio="9:16",
+                                  platform="tiktok_shop", role=role, seconds=vsecs))
+            clip_ids.append(f"clip_{i}")
+        nodes.append(NodeSpec(id="voiceover", kind="voiceover", deps=["inventory"]))
+        nodes.append(NodeSpec(id="master", kind="assemble", deps=clip_ids + ["voiceover"],
+                              ratio="9:16", platform="tiktok_shop"))
+
+    del label
+    return GraphSpec(nodes=nodes,
+                     rationale=draft_.summary,
+                     repaired=[])
+
+
+def _campaign_texts(plan: CampaignPlan,
+                    campaign_input: CampaignInput | None) -> list[tuple[str, str]]:
+    """The strings this campaign puts on screen, filtered for forbidden claims."""
+    banned = [c.casefold() for c in (campaign_input.product_brief.forbidden_claims
+                                     if campaign_input else []) if c.strip()]
+
+    def ok(value: str) -> bool:
+        low = (value or "").casefold()
+        return bool(value.strip()) and not any(b in low for b in banned)
+
+    route = plan.creative_routes[0] if plan.creative_routes else None
+    out: list[tuple[str, str]] = []
+    for role, value in (
+        ("headline", _headline(route, plan)),
+        ("badge", _badge(campaign_input)),
+        ("cta", "MUA NGAY"),
+    ):
+        if ok(value):
+            out.append((role, value))
+    return out
+
+
+# A slogan is short. Anything past this is prose, and prose on a poster reads as
+# a mistake even when every character is correct.
+_MAX_HEADLINE = 42
+_MAX_BADGE = 22
+
+
+def _headline(route: Any, plan: CampaignPlan) -> str:
+    """The line that goes on the poster, which is rarely `hook_idea` verbatim.
+
+    Upstream writes `hook_idea` as a shot description — "Cận cảnh bàn tay lật
+    gói G7, đổ bột vào cốc… Dòng chữ nhảy ra: 'Mệt buổi sáng?'" — so taking it
+    whole prints the director's stage direction onto the artwork. The slogan is
+    usually inside the quotation marks; failing that, the positioning line is a
+    real sentence written to be read.
+    """
+    hook = (getattr(route, "hook_idea", "") or "").strip()
+    for opener, closer in (("'", "'"), ("\u2018", "\u2019"), ("\u201c", "\u201d"), ('"', '"')):
+        start = hook.find(opener)
+        end = hook.find(closer, start + 1)
+        if start != -1 and end > start + 1:
+            quoted = hook[start + 1:end].strip()
+            if 3 < len(quoted) <= _MAX_HEADLINE * 2:
+                return _trim(quoted, _MAX_HEADLINE)
+
+    if hook and len(hook) <= _MAX_HEADLINE:
+        return hook
+    return _trim(plan.positioning.key_selling_message or hook, _MAX_HEADLINE)
+
+
+def _badge(campaign_input: CampaignInput | None) -> str:
+    """The offer, as a badge reads it: a few words, upper case.
+
+    "Cross-border 9.9: mua 3 tặng 1 và miễn phí vận chuyển" is the offer; the
+    badge wants "MUA 3 TẶNG 1". Pull the strongest fragment rather than
+    truncating, because a truncated offer is worse than a short one.
+    """
+    import re
+
+    raw = (campaign_input.product_brief.price_or_promotion if campaign_input else "") or ""
+    if not raw.strip():
+        return ""
+    # Vietnamese character classes are a trap: [ăa] does not match "ặ", because
+    # ă and ặ are different characters, not the same letter with a mark. Match
+    # whole words and let \w carry the diacritics.
+    for pattern in (
+        r"(mua\s*\d+\s*\w+\s*\d+)",          # mua 3 tặng 1
+        r"(\w+\s*đến\s*\d+\s*%)",             # giảm đến 50%
+        r"(\w+\s*\d+\s*%)",                    # giảm 25%
+        r"(\d+\s*%\s*off)",
+        r"(miễn\s*phí\s*vận\s*chuyển)",
+        r"(freeship)",
+    ):
+        found = re.search(pattern, raw, re.IGNORECASE)
+        if found:
+            return _trim(found.group(1).strip().upper(), _MAX_BADGE)
+    first = re.split(r"[·:;,\u2013\u2014]", raw)[0].strip()
+    return _trim(first.upper(), _MAX_BADGE)
+
+
+def _trim(text: str, limit: int) -> str:
+    text = " ".join((text or "").split())
+    if len(text) <= limit:
+        return text
+    cut = text[:limit].rsplit(" ", 1)[0]
+    return cut or text[:limit]
+
+
+def _shot_scene(role: str, plan: CampaignPlan,
+                campaign_input: CampaignInput | None) -> str:
+    """Staging for one beat, drawn from the brief rather than invented."""
+    signal = campaign_input.market_signal if campaign_input else None
+    brief = campaign_input.product_brief if campaign_input else None
+    return {
+        "hook": (signal.consumer_pain_point if signal and signal.consumer_pain_point
+                 else "the product arriving in frame"),
+        "product": "the product held towards the camera, label facing forward",
+        "benefit": (brief.key_selling_points[0] if brief and brief.key_selling_points
+                    else plan.positioning.key_selling_message),
+        "cta": (brief.price_or_promotion if brief and brief.price_or_promotion
+                else "the product with the offer beside it"),
+    }.get(role, "the product, centred")
+
+
+def _shot_text(role: str, texts: list[tuple[str, str]]) -> str:
+    lookup = dict(texts)
+    return {"hook": lookup.get("headline", ""), "cta": lookup.get("badge", "")}.get(role, "")
 
 
 def to_dict(spec: GraphSpec) -> dict[str, Any]:

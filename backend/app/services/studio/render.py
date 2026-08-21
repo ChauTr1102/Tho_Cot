@@ -167,6 +167,49 @@ def render_item(item, spine, product_photo: str | None, hero_path: str | None,
     )
 
 
+def render_poster(slot_id: str, background: str, spine, texts, label_text: Sequence[str],
+                  ratio: str, size: str, product_photo: str | None,
+                  hero_path: str | None, out_dir: str | Path,
+                  extra_instruction: str = "") -> RenderedImage:
+    """Render a sale poster: flat ground, display headline, badges, a CTA button.
+
+    Same two references as `render_item` — the product fixes what it is, the hero
+    fixes the light — but a different prompt, because a poster is graphic design
+    laid over a photographed product rather than a photograph with a caption.
+    """
+    refs: list[str] = []
+    if product_photo:
+        refs.append(ark.to_data_uri(product_photo))
+    if hero_path:
+        refs.append(ark.to_data_uri(hero_path))
+
+    prompt = prompts.build_poster_prompt(
+        background=background, spine=spine, texts=texts,
+        label_text=label_text, ratio=ratio,
+    )
+    if extra_instruction:
+        prompt = f"{prompt}\n\n{extra_instruction}"
+
+    started = time.time()
+    data = ark.generate_image(prompt, size, refs=refs or None)
+    path, w, h = _save(data, Path(out_dir), slot_id)
+    return RenderedImage(
+        local_path=path, width=w, height=h, origin=AssetOrigin.GENERATE,
+        prompt=prompt, texts=[t for _, t in texts],
+        source_photo=product_photo, gen_seconds=time.time() - started,
+    )
+
+
+def size_for(ratio: str) -> str:
+    """The Seedream size string for a frame shape."""
+    return {
+        "1:1": studio_settings.IMAGE_SIZE_SQUARE,
+        "9:16": studio_settings.IMAGE_SIZE_PORTRAIT,
+        "4:5": studio_settings.IMAGE_SIZE_FEED,
+        "2:1": studio_settings.IMAGE_SIZE_LANDSCAPE,
+    }.get(ratio, studio_settings.IMAGE_SIZE_SQUARE)
+
+
 def keyframe_size(ratio: str) -> str:
     """Pick the Seedream size that produces a given video aspect ratio.
 

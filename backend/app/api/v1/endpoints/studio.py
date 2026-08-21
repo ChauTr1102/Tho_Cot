@@ -42,7 +42,7 @@ from app.schemas.campaign_dto import (
     ShortFormVideoAsset,
 )
 from app.schemas.common import StandardResponse
-from app.services.studio import demo_briefs, dto_bridge, pipeline
+from app.services.studio import demo_briefs, directed, director, dto_bridge, pipeline, upstream
 from app.services.studio.config import studio_settings
 from app.services.studio.graph import GraphEvent
 
@@ -69,6 +69,35 @@ class StudioRunRequest(BaseModel):
 
 class StudioRunResponse(BaseModel):
     campaign_id: str
+
+
+class DraftRequest(BaseModel):
+    """Everything needed to propose a campaign.
+
+    `plan` is the planning agent's output in either the nested research format
+    or the flat DTO; `campaign_input` is the team's CampaignInputDTO. Both are
+    optional so the demo shortcut can pass `brand_dir` instead, but a real
+    caller sends the artefacts it already has.
+    """
+    brand_dir: str | None = None
+    plan: dict[str, Any] | None = None
+    campaign_input: dict[str, Any] | None = None
+    direction: str = Field("", description="Điều người dùng muốn: dễ thương, điện ảnh, sale tưng bừng…")
+    with_video: bool = True
+
+
+class DraftResponse(BaseModel):
+    campaign_id: str
+    draft: dict[str, Any]
+    graph: dict[str, Any]
+
+
+class ApproveRequest(BaseModel):
+    """Approve a draft, optionally after editing it in the UI."""
+    draft: dict[str, Any] | None = Field(
+        None, description="Bản draft đã sửa. Bỏ trống thì dùng bản đã đề xuất.")
+    with_video: bool = True
+    qa: bool | None = None
 
 
 class AssetDTOResponse(BaseModel):
@@ -382,6 +411,129 @@ def get_assets(campaign_id: str):
             short_form_video_asset=dto_bridge.to_video_asset(run.bundle, _to_url),
             commerce_copy=run.bundle.listing_copy,
         ),
+    )
+
+
+# Drafts awaiting approval. Separate from _RUNS because a draft exists before
+# any work does, and a user may sit on the approve screen for a while.
+_DRAFTS: dict[str, dict[str, Any]] = {}
+
+
+def _resolve_brief(req: DraftRequest, campaign_id: str):
+    """Assemble (plan, campaign_input) from whatever the caller sent."""
+    if req.campaign_input:
+        try:
+            dto = CampaignInputDTO.model_validate(req.campaign_input)
+        except ValidationError as exc:
+            raise BadRequestException(f"campaign_input không khớp DTO: {exc.errors()[:2]}")
+        studio_input = dto_bridge.to_campaign_input(dto, campaign_id, None)
+        studio_plan = dto_bridge.plan_from_positioning(req.plan or {}, campaign_id, studio_input)
+        return studio_plan, studio_input
+
+    if req.plan and req.brand_dir:
+        studio_input = demo_briefs.build_input(req.brand_dir, campaign_id)
+        return upstream.load_plan(req.plan, campaign_id), studio_input
+
+    if req.brand_dir:
+        if req.brand_dir not in demo_briefs.available_brands():
+            raise NotFoundException(message=f"Không có brand '{req.brand_dir}'.")
+        return demo_briefs.build_pair(req.brand_dir, campaign_id)
+
+    raise BadRequestException("Cần campaign_input hoặc brand_dir.")
+
+
+@router.post("/draft", response_model=StandardResponse[DraftResponse],
+             status_code=status.HTTP_200_OK)
+def propose(req: DraftRequest):
+    """Ask the director what this campaign should be, and show it for approval.
+
+    This is the slow step by design — the model bills by output length and takes
+    around a minute — but it lands while the user is about to read the proposal
+    rather than while they watch an empty screen. Approving then starts
+    rendering immediately, because the graph is derived in code.
+    """
+    campaign_id = f"c-{uuid.uuid4().hex[:10]}"
+    plan, campaign_input = _resolve_brief(req, campaign_id)
+
+    d = director.draft(plan, campaign_input, direction=req.direction)
+    spec = director.plan_graph(d, plan, campaign_input, with_video=req.with_video)
+
+    _DRAFTS[campaign_id] = {
+        "plan": plan, "input": campaign_input, "draft": d,
+        "direction": req.direction, "with_video": req.with_video,
+    }
+    return StandardResponse(
+        success=True, message="Đề xuất đã sẵn sàng — xem lại rồi duyệt",
+        data=DraftResponse(campaign_id=campaign_id,
+                           draft=director.draft_to_dict(d),
+                           graph=director.to_dict(spec)),
+    )
+
+
+@router.post("/{campaign_id}/approve", response_model=StandardResponse[StudioRunResponse],
+             status_code=status.HTTP_202_ACCEPTED)
+def approve(campaign_id: str, req: ApproveRequest):
+    """Approve a draft and start building it. Returns immediately."""
+    held = _DRAFTS.get(campaign_id)
+    if held is None:
+        raise NotFoundException(message=f"Không tìm thấy đề xuất '{campaign_id}'.")
+
+    d = _apply_edits(held["draft"], req.draft)
+    plan, campaign_input = held["plan"], held["input"]
+    with_video = req.with_video and held["with_video"]
+    spec = director.plan_graph(d, plan, campaign_input, with_video=with_video)
+
+    run = Run(campaign_id)
+    with _LOCK:
+        _RUNS[campaign_id] = run
+
+    def _go() -> None:
+        try:
+            bundle = pipeline.run_directed(
+                spec, d, plan, campaign_input,
+                on_event=lambda e: run.publish(_event_payload(e)), qa=req.qa)
+            run.finish(bundle)
+        except Exception as exc:                                # noqa: BLE001
+            run.publish({"event": "error", "message": f"{type(exc).__name__}: {exc}"})
+            run.finish(None, error=str(exc))
+
+    threading.Thread(target=_go, daemon=True).start()
+    return StandardResponse(success=True, message="Đã duyệt — bắt đầu dựng",
+                            data=StudioRunResponse(campaign_id=campaign_id))
+
+
+def _apply_edits(original, edited: dict[str, Any] | None):
+    """Fold the user's edits into the proposal.
+
+    Only the fields a person can sensibly change are honoured; anything else in
+    the payload is ignored rather than trusted, because this body comes from a
+    browser.
+    """
+    if not edited:
+        return original
+    from dataclasses import replace as _replace
+
+    reg = original.register
+    raw_reg = edited.get("register") or {}
+    if isinstance(raw_reg, dict):
+        reg = _replace(
+            reg,
+            lens=str(raw_reg.get("lens", reg.lens))[:160],
+            light=str(raw_reg.get("light", reg.light))[:300],
+            surface=str(raw_reg.get("surface", reg.surface))[:300],
+            grade=str(raw_reg.get("grade", reg.grade))[:200],
+        )
+
+    deliverables = original.deliverables
+    raw_items = edited.get("deliverables")
+    if isinstance(raw_items, list) and raw_items:
+        keep = {str(x.get("id")) for x in raw_items if isinstance(x, dict)}
+        deliverables = [x for x in original.deliverables if x.id in keep] or original.deliverables
+
+    return _replace(
+        original, register=reg, deliverables=deliverables,
+        video_shots=int(edited.get("video_shots", original.video_shots) or original.video_shots),
+        video_seconds=int(edited.get("video_seconds", original.video_seconds) or original.video_seconds),
     )
 
 

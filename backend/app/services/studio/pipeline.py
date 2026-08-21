@@ -41,6 +41,7 @@ from app.schemas.campaign import (
     CampaignPlan,
     CommerceCopy,
     ImageAsset,
+    ImageKind,
     Platform,
     ShotAsset,
     VideoAsset,
@@ -370,6 +371,102 @@ def _listing_copy(plan: CampaignPlan, campaign_input: CampaignInput | None) -> C
         promotion_copy=(brief.price_or_promotion if brief else None),
         short_hook_lines=[r.hook_idea for r in plan.creative_routes[:3] if r.hook_idea],
     )
+
+
+def run_directed(spec, draft_, plan: CampaignPlan,
+                 campaign_input: CampaignInput | None = None,
+                 on_event: Callable[[GraphEvent], None] | None = None,
+                 *, qa: bool | None = None) -> AssetBundle:
+    """Run a graph the director designed, and map the result into an AssetBundle.
+
+    Falls back to the fixed graph when the directed one has nothing runnable —
+    a duller campaign is survivable, an empty screen in front of judges is not.
+    """
+    from app.services.studio import directed
+
+    if not getattr(spec, "is_runnable", False):
+        return run_studio(plan, campaign_input, on_event=on_event, qa=qa)
+
+    campaign_id = plan.campaign_id or "campaign"
+    photos = _photo_paths(campaign_input)
+    label = [campaign_input.product_brief.product_name] if campaign_input else []
+    nodes = directed.build_nodes(
+        spec, draft_, campaign_id, photos, label, _forbidden(campaign_input),
+        on_event=on_event, qa=qa)
+
+    if on_event:
+        on_event(GraphEvent(
+            node_id="__graph__", kind="graph", state=NodeState.PENDING,
+            payload={"nodes": [{"id": n.id, "kind": n.kind, "deps": list(n.deps)}
+                               for n in nodes]}))
+
+    results = run_graph(nodes, on_event=on_event)
+
+    # Assign each image a distinct DTO kind. The director names nodes freely, so
+    # several can hint at the same kind — and three DTO fields pointing at one
+    # file reads as a broken run even when every image is good. First claim
+    # wins its hint; the rest take the next free kind in BP-01's own order.
+    order = [ImageKind.HERO, ImageKind.SKU_DETAIL, ImageKind.COLLECTION,
+             ImageKind.THUMBNAIL, ImageKind.BANNER, ImageKind.BUNDLE, ImageKind.SEASONAL]
+    taken: set[ImageKind] = set()
+
+    def _claim(hint: str | None) -> ImageKind:
+        try:
+            wanted = ImageKind(hint) if hint else ImageKind.HERO
+        except ValueError:
+            wanted = ImageKind.HERO
+        if wanted not in taken:
+            taken.add(wanted)
+            return wanted
+        for candidate in order:
+            if candidate not in taken:
+                taken.add(candidate)
+                return candidate
+        return wanted
+
+    images: list[ImageAsset] = []
+    for node_id, value in results.items():
+        if not isinstance(value, dict) or "image" not in value:
+            continue
+        img = value["image"]
+        images.append(ImageAsset(
+            kind=_claim(value.get("kind_hint")),
+            url=img.local_path, width=img.width, height=img.height,
+            platform=Platform(value["platform"]) if value.get("platform") in
+            {p.value for p in Platform} else None,
+            slot=value.get("slot"), origin=img.origin, local_path=img.local_path,
+            prompt=img.prompt, text_rendered=img.texts, source_photo=img.source_photo,
+            qa_passed=img.qa_passed, qa_notes=img.qa_notes, gen_seconds=img.gen_seconds,
+        ))
+
+    videos: list[VideoAsset] = []
+    for node_id, value in results.items():
+        if not isinstance(value, dict) or "path" not in value:
+            continue
+        shots = []
+        for i, clip_id in enumerate(value.get("clips", ())):
+            r = results.get(clip_id)
+            if r is None:
+                continue
+            shots.append(ShotAsset(
+                index=i, role=getattr(r, "role", str(i)),
+                keyframe_path=str(getattr(r, "keyframe_path", "")),
+                clip_path=getattr(r, "clip_path", None),
+                duration_sec=float(getattr(r, "duration_sec", 0.0) or 0.0),
+                used_fallback=bool(getattr(r, "used_fallback", False)),
+                fallback_reason=getattr(r, "fallback_reason", None)))
+        videos.append(VideoAsset(
+            url=value["path"], duration_sec=float(value.get("duration") or 0.0),
+            resolution=studio_settings.VIDEO_RESOLUTION,
+            aspect_ratio=value.get("ratio", "9:16"), route_id="A",
+            local_path=value["path"], shots=shots,
+            has_voiceover=bool(value.get("has_vo")),
+            cutdowns=[VideoCutdown(label="15s", local_path=c, duration_sec=15.0,
+                                   aspect_ratio=value.get("ratio", "9:16"))
+                      for c in value.get("cutdowns", ())]))
+
+    return AssetBundle(campaign_id=campaign_id, images=images, videos=videos,
+                       listing_copy=_listing_copy(plan, campaign_input))
 
 
 def run_studio(plan: CampaignPlan, campaign_input: CampaignInput | None = None,

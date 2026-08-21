@@ -104,6 +104,99 @@ DEFAULT_PALETTE = "the product's own colours"
 
 
 # ---------------------------------------------------------------------------
+# The sale-poster prompt
+# ---------------------------------------------------------------------------
+# A different animal from the editorial still. A marketplace sale creative is
+# graphic design: a flat vivid ground, a display headline several times the size
+# of anything else, discount badges, a call-to-action button, a contact line.
+# Six to eight discrete elements, laid out.
+#
+# I expected Seedream to fail at this and was wrong. Asked for seven named
+# elements on one poster - script headline, huge display headline, three badges,
+# a pill button, a domain - it placed all seven correctly, twice, with the
+# Vietnamese intact including the stacked diacritics. The rule that makes it work
+# is the one that governs the editorial prompt, plus one more: name every string,
+# and name its *treatment*, because "badge" and "button" are shapes the model
+# knows and will draw properly once told which text belongs in which shape.
+
+POSTER_PROMPT = """SUBJECT: The product from reference image 1, exactly unchanged - same packaging, \
+same label artwork and proportions, label facing the camera. Do not restyle, redesign or \
+re-letter the product. It is the hero of the poster and sits in the lower two thirds.
+
+BACKGROUND: {background}
+
+LAYOUT - a real e-commerce sale poster, elements in this order from top to bottom, \
+each one its own graphic element:
+{layout_lines}
+
+STYLE: {lens}, {light}, {grade}, palette {palette}. Flat graphic design over a \
+photographic product, the way a marketplace campaign banner is built.
+
+FORMAT: {ratio}, marketplace-ready, generous margins, nothing important within \
+4% of any edge.
+
+NEGATIVE: no invented text, no placeholder or lorem ipsum, no text beyond the \
+list above, no watermark, no people, no misspelling of any string listed above, \
+no distorted or doubled lettering."""
+
+# How each text role is drawn. Role names come from the director's `texts` pairs,
+# so a role it has never used still gets a sane treatment.
+POSTER_TREATMENTS: dict[str, str] = {
+    "script": 'a flowing script headline reading exactly "{value}"',
+    "headline": 'a very large bold display headline, the biggest element on the poster, reading exactly "{value}"',
+    "subhead": 'a smaller supporting line under the headline reading exactly "{value}"',
+    "sub": 'a smaller supporting line under the headline reading exactly "{value}"',
+    "badge": 'a rounded badge filled in an accent colour, reading exactly "{value}"',
+    "promo": 'a rounded badge filled in an accent colour, reading exactly "{value}"',
+    "discount": 'a bold circular discount badge reading exactly "{value}"',
+    "cta": 'a wide pill-shaped button reading exactly "{value}"',
+    "button": 'a wide pill-shaped button reading exactly "{value}"',
+    "contact": 'a small line near the bottom edge reading exactly "{value}"',
+    "footer": 'a small line near the bottom edge reading exactly "{value}"',
+}
+DEFAULT_TREATMENT = 'a clearly legible text element reading exactly "{value}"'
+LABEL_TREATMENT = "the product packaging reading exactly {values}"
+
+
+def build_poster_prompt(
+    background: str,
+    spine: "StyleSpine",
+    texts: Sequence[tuple[str, str]],
+    label_text: Sequence[str],
+    ratio: str,
+) -> str:
+    """Assemble the prompt for a sale poster.
+
+    `texts` are `(role, string)` pairs, and the role decides the *shape* the
+    string is drawn in - a badge, a pill button, a script headline. Naming the
+    shape is what turns a list of strings into a layout; without it the model
+    stacks everything as centred paragraphs.
+
+    As with the editorial prompt, callers must have filtered these against
+    `forbidden_claims` already.
+    """
+    lines = []
+    for role, value in texts:
+        if not str(value).strip():
+            continue
+        treatment = POSTER_TREATMENTS.get(str(role).strip().lower(), DEFAULT_TREATMENT)
+        lines.append("  - " + treatment.format(value=value))
+    if label_text:
+        lines.append("  - " + LABEL_TREATMENT.format(
+            values=", ".join(f'"{t}"' for t in label_text)))
+    if not lines:
+        lines.append("  - no text anywhere in the image")
+
+    palette = ", ".join(p for p in spine.palette if str(p).strip()) or DEFAULT_PALETTE
+    return POSTER_PROMPT.format(
+        background=background.strip() or "a flat vivid brand-coloured background",
+        layout_lines="\n".join(lines),
+        lens=spine.lens, light=spine.light, grade=spine.grade,
+        palette=palette, ratio=ratio,
+    )
+
+
+# ---------------------------------------------------------------------------
 # Marketplace rules
 # ---------------------------------------------------------------------------
 # A rule outranks the art direction. Shopee will take a listing down over a
