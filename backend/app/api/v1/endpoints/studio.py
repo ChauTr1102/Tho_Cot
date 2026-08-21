@@ -30,14 +30,19 @@ from dataclasses import is_dataclass
 from pathlib import Path
 from typing import Any, Iterator
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, File, Form, UploadFile, status
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 
-from app.core.exceptions import NotFoundException
-from app.schemas.campaign import AssetBundle, Platform
+from app.core.exceptions import BadRequestException, NotFoundException
+from app.schemas.campaign import AssetBundle, CommerceCopy, Platform
+from app.schemas.campaign_dto import (
+    CampaignInputDTO,
+    ProductCollectionImageSet,
+    ShortFormVideoAsset,
+)
 from app.schemas.common import StandardResponse
-from app.services.studio import demo_briefs, pipeline
+from app.services.studio import demo_briefs, dto_bridge, pipeline
 from app.services.studio.config import studio_settings
 from app.services.studio.graph import GraphEvent
 
@@ -64,6 +69,30 @@ class StudioRunRequest(BaseModel):
 
 class StudioRunResponse(BaseModel):
     campaign_id: str
+
+
+class AssetDTOResponse(BaseModel):
+    """The studio's slice of `CampaignOutputDTO`.
+
+    Both asset fields are nullable on purpose: the caller is told a field is not
+    ready rather than handed a placeholder that would type-check and fail the
+    brief."""
+    campaign_id: str
+    status: str
+    product_collection_image_set: ProductCollectionImageSet | None = None
+    short_form_video_asset: ShortFormVideoAsset | None = None
+    commerce_copy: CommerceCopy | None = None
+
+
+def _json_object(value: str, field_name: str) -> dict[str, Any]:
+    """Parse a multipart form field that is meant to carry a JSON object."""
+    try:
+        parsed = json.loads(value)
+    except json.JSONDecodeError as exc:
+        raise BadRequestException(f"Trường {field_name} phải là JSON object hợp lệ") from exc
+    if not isinstance(parsed, dict):
+        raise BadRequestException(f"Trường {field_name} phải là JSON object")
+    return parsed
 
 
 class Run:
@@ -143,6 +172,20 @@ def _event_payload(event: GraphEvent) -> dict[str, Any]:
         "elapsed_sec": round(float(event.elapsed_sec or 0.0), 2),
         "payload": payload,
     }
+
+
+def _run_prepared(run: Run, plan, campaign_input, req: StudioRunRequest) -> None:
+    """Run the studio against a brief that has already been assembled."""
+    try:
+        bundle = pipeline.run_studio(
+            plan, campaign_input, platforms=req.platforms,
+            on_event=lambda e: run.publish(_event_payload(e)),
+            route_id=req.route_id, qa=req.qa, with_video=req.with_video,
+        )
+        run.finish(bundle)
+    except Exception as exc:                                    # noqa: BLE001
+        run.publish({"event": "error", "message": f"{type(exc).__name__}: {exc}"})
+        run.finish(None, error=str(exc))
 
 
 def _run_in_background(run: Run, req: StudioRunRequest) -> None:
@@ -239,6 +282,107 @@ def get_pack(campaign_id: str):
                 shot.clip_path = _to_url(shot.clip_path)
 
     return StandardResponse(success=True, message="Bộ kit đã sẵn sàng", data=bundle)
+
+
+@router.post("/assets", response_model=StandardResponse[StudioRunResponse],
+             status_code=status.HTTP_202_ACCEPTED)
+async def generate_assets(
+    campaign_input: str = Form(..., description="CampaignInputDTO as a JSON object"),
+    plan: str | None = Form(None, description="Planning-agent output as JSON; optional"),
+    product_photos: list[UploadFile] = File(default_factory=list),
+    platforms: str = Form("tiktok_shop,shopee", description="Comma-separated platform keys"),
+    route_id: str = Form("A"),
+    want: str = Form("both", description="images | video | both"),
+):
+    """Generate the asset half of a campaign from whatever the upstream stage produced.
+
+    This is the studio's real entry point. `/run` above is a demo shortcut that
+    fills a brief from `sample_data/`; this one accepts the actual artefacts —
+    the team's `CampaignInputDTO`, the planning agent's output, and the brand's
+    product photographs as uploaded files — which is what a downstream stage has
+    to work with.
+
+    Returns 202 and a `campaign_id` immediately. A run takes minutes, so progress
+    is watched on `/studio/{id}/events` and the result collected from
+    `/studio/{id}/assets`, which answers in the DTO shapes the caller assembles
+    its `CampaignOutputDTO` from.
+
+    `want=images` skips video generation entirely, which takes a run from
+    minutes to well under one — worth it while iterating on art direction.
+    """
+    try:
+        input_dto = CampaignInputDTO.model_validate(_json_object(campaign_input, "campaign_input"))
+    except ValidationError as exc:
+        raise BadRequestException(f"campaign_input không khớp CampaignInputDTO: {exc.errors()[:3]}")
+
+    plan_raw = _json_object(plan, "plan") if plan else {}
+    campaign_id = f"assets-{uuid.uuid4().hex[:10]}"
+
+    # Uploaded photographs are the Brand Lock reference, so they have to land on
+    # disk before the graph starts — the studio reads them as files, not bytes.
+    photo_dir = Path(studio_settings.DATA_DIR) / campaign_id / "source"
+    photo_dir.mkdir(parents=True, exist_ok=True)
+    saved: list[str] = []
+    for index, upload in enumerate(product_photos):
+        name = Path(upload.filename or f"product_{index}").name
+        target = photo_dir / f"{index:02d}_{name}"
+        target.write_bytes(await upload.read())
+        saved.append(str(target))
+
+    try:
+        studio_input = dto_bridge.to_campaign_input(input_dto, campaign_id, saved or None)
+        studio_plan = dto_bridge.plan_from_positioning(plan_raw, campaign_id, studio_input)
+    except (ValueError, KeyError) as exc:
+        raise BadRequestException(f"Không dựng được brief cho studio: {exc}")
+
+    wanted = [Platform(p.strip()) for p in platforms.split(",")
+              if p.strip() in {x.value for x in Platform}]
+    run = Run(campaign_id)
+    with _LOCK:
+        _RUNS[campaign_id] = run
+
+    request = StudioRunRequest(
+        brand_dir="", platforms=wanted or [Platform.TIKTOK_SHOP],
+        route_id=route_id, with_video=want in {"video", "both"},
+    )
+    threading.Thread(
+        target=_run_prepared, args=(run, studio_plan, studio_input, request), daemon=True
+    ).start()
+
+    return StandardResponse(
+        success=True,
+        message=f"Đang dựng asset cho {input_dto.product_brief.product_name}",
+        data=StudioRunResponse(campaign_id=campaign_id),
+    )
+
+
+@router.get("/{campaign_id}/assets", response_model=StandardResponse[AssetDTOResponse])
+def get_assets(campaign_id: str):
+    """The finished assets, in the DTO shapes `CampaignOutputDTO` is assembled from.
+
+    `product_collection_image_set` is null until all four required images exist,
+    and `short_form_video_asset` is null until a video does — a half-filled
+    object would satisfy the type while failing the brief, so the caller is told
+    plainly that the field is not ready rather than handed a placeholder.
+    """
+    run = _RUNS.get(campaign_id)
+    if run is None:
+        raise NotFoundException(message=f"Không tìm thấy lượt chạy '{campaign_id}'.")
+    if run.bundle is None:
+        raise NotFoundException(
+            message=f"Lượt chạy '{campaign_id}' chưa xong (trạng thái: {run.status})."
+        )
+
+    return StandardResponse(
+        success=True, message="Asset đã sẵn sàng",
+        data=AssetDTOResponse(
+            campaign_id=campaign_id,
+            status=run.status,
+            product_collection_image_set=dto_bridge.to_image_set(run.bundle, _to_url),
+            short_form_video_asset=dto_bridge.to_video_asset(run.bundle, _to_url),
+            commerce_copy=run.bundle.listing_copy,
+        ),
+    )
 
 
 @router.get("/brands", response_model=StandardResponse[list[dict]])
