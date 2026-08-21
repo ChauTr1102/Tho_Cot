@@ -436,3 +436,50 @@ def build_zip(campaign_id: str, out_path: str | Path) -> str | None:
             build_manifest(campaign_id, ab_pair(campaign_id)),
         )
     return str(target)
+
+
+# ---------------------------------------------------------------------------
+# The QA verdict, kept beside the kit it judged
+# ---------------------------------------------------------------------------
+
+#: One file per campaign, next to `media/`. Not a database row: the studio owns
+#: no tables, and a verdict that lives beside the pictures it judged cannot end
+#: up describing a different campaign's kit.
+_QA_FILE = "qa.json"
+
+
+def qa_path(campaign_id: str) -> Path:
+    return Path(studio_settings.DATA_DIR) / campaign_id / _QA_FILE
+
+
+def save_qa(campaign_id: str, result: dict[str, Any]) -> str:
+    """Persist a QA verdict so re-opening the campaign does not re-run it.
+
+    A QA pass costs a model call and a minute, and it is not deterministic —
+    running it twice on one unchanged kit gives two slightly different reports,
+    which reads as the system being unsure rather than the model being sampled.
+    A campaign that has been judged should open with its judgement.
+    """
+    import json
+
+    target = qa_path(campaign_id)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
+    return str(target)
+
+
+def load_qa(campaign_id: str) -> dict[str, Any] | None:
+    """The stored verdict, or None when this campaign has never been judged.
+
+    None is the signal to offer a run; it is not an error.
+    """
+    import json
+
+    path = qa_path(campaign_id)
+    if not path.is_file():
+        return None
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        # A half-written verdict is worse than none: it would be shown as fact.
+        return None

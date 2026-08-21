@@ -596,6 +596,34 @@ def saved_result(campaign_id: str, include_intermediate: bool = False):
     )
 
 
+@router.get("/{campaign_id}/qa", response_model=StandardResponse[dict | None])
+def get_qa(campaign_id: str):
+    """The QA verdict this campaign already has, or null.
+
+    Null means nobody has judged this kit yet, which is an answer rather than an
+    error — the screen offers to run it. 200 either way.
+    """
+    stored = saved.load_qa(campaign_id)
+    return StandardResponse(
+        success=True,
+        message="Đã có kết quả QA" if stored else "Chưa chạy QA lần nào",
+        data=stored,
+    )
+
+
+@router.put("/{campaign_id}/qa", response_model=StandardResponse[dict])
+def put_qa(campaign_id: str, result: dict[str, Any]):
+    """Store a verdict so re-opening the campaign does not re-run it.
+
+    A QA pass costs a model call and a minute, and it is sampled rather than
+    deterministic: run it twice on one unchanged kit and the two reports differ
+    slightly, which reads as the system being unsure instead of the model being
+    sampled. A campaign that has been judged should open with its judgement.
+    """
+    saved.save_qa(campaign_id, result)
+    return StandardResponse(success=True, message="Đã lưu kết quả QA", data=result)
+
+
 @router.get("/campaigns", response_model=StandardResponse[list[dict]])
 def list_research_campaigns():
     """Campaigns the research stage has finished — the studio's inbox.

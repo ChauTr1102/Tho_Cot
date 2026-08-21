@@ -12,6 +12,7 @@ import { AutopilotWorkflow } from "@/components/pipeline/autopilot-workflow";
 import { AlertTriangle, ArrowLeft, CalendarDays, FolderKanban, ListTree, LoaderCircle, Plus, RefreshCw, Search, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
+import { fetchSavedQa, saveQa } from "@/lib/studio-draft";
 import { attachDefaultSampleProductPhotos, createEmptyResearchSubmission, createInitialResearchSubmission, parseResearchCampaignPlan, validateResearchSubmission, type ResearchCampaignPlan, type ResearchSubmission } from "@/types/research";
 import { buildCampaignInputDTO, buildMockCampaignOutput } from "@/types/campaign_output_mock";
 import type { VerifyChecklistResponseData } from "@/types/qa_checklist";
@@ -50,6 +51,16 @@ export default function CampaignsPage() {
   const [researchPlan, setResearchPlan] = React.useState<ResearchCampaignPlan | null>(null);
   const [campaignOutput, setCampaignOutput] = React.useState<Record<string, unknown> | null>(null);
   const [qaResult, setQaResult] = React.useState<VerifyChecklistResponseData | null>(null);
+
+  // A verdict belongs to the kit it judged, so it is stored beside it and read
+  // back when the campaign is reopened rather than recomputed.
+  const rememberQa = React.useCallback(
+    (result: VerifyChecklistResponseData) => {
+      setQaResult(result);
+      if (activeCampaignIdRef.current) void saveQa(activeCampaignIdRef.current, result);
+    },
+    [],
+  );
   const [researchLoading, setResearchLoading] = React.useState(false);
   const [researchError, setResearchError] = React.useState<string | null>(null);
   const [campaigns, setCampaigns] = React.useState<CampaignListItem[]>([]);
@@ -64,6 +75,9 @@ export default function CampaignsPage() {
   // Which campaign the pipeline is currently walking through. Set when one is
   // opened from the list; the handoff to the studio needs it by id.
   const [activeCampaignId, setActiveCampaignId] = React.useState<string | null>(null);
+  // Read inside callbacks that must not re-create on every id change.
+  const activeCampaignIdRef = React.useRef<string | null>(null);
+  React.useEffect(() => { activeCampaignIdRef.current = activeCampaignId; }, [activeCampaignId]);
   const readyCampaigns = campaigns.filter((campaign) => campaign.has_research_result).length;
   const activeCampaigns = campaigns.filter((campaign) => campaign.status === "researching").length;
 
@@ -221,6 +235,12 @@ export default function CampaignsPage() {
       // mounts. Without this the report falls back to buildMockCampaignOutput
       // and shows four https://example.com/mock/*.jpg links under a heading
       // saying the assets are ready. That is the path a judge takes.
+      // Whatever QA already concluded about this kit, rather than judging it
+      // again the moment the screen opens.
+      void fetchSavedQa(campaign.id).then((stored) => {
+        if (stored) setQaResult(stored as unknown as VerifyChecklistResponseData);
+      });
+
       const freshPlan = parseResearchCampaignPlan(savedResult.plan);
       const freshInput = (campaignData?.research_input ??
         researchSubmission.input) as ResearchSubmission["input"];
@@ -550,7 +570,7 @@ export default function CampaignsPage() {
                     return output;
                   }}
                   onAssetsReady={handleStudioAssetsReady}
-                  onQaResult={setQaResult}
+                  onQaResult={rememberQa}
                 />
               ) : (
               <PipelineLayout
@@ -581,7 +601,7 @@ export default function CampaignsPage() {
                   onAssetsReady={handleStudioAssetsReady}
                 />
               )}
-              {currentStage === "qa_gate" && <StageQAGate campaignInput={campaignInputForQa} campaignOutput={campaignOutput ?? buildMockCampaignOutput(researchPlan, researchSubmission.input)} onResult={setQaResult} />}
+              {currentStage === "qa_gate" && <StageQAGate campaignInput={campaignInputForQa} campaignOutput={campaignOutput ?? buildMockCampaignOutput(researchPlan, researchSubmission.input)} onResult={rememberQa} savedResult={qaResult} />}
               {currentStage === "final_output" && <StageFinalOutput plan={researchPlan} input={researchSubmission.input} campaignOutput={campaignOutput ?? buildMockCampaignOutput(researchPlan, researchSubmission.input)} qaResult={qaResult} />}
               {!["product_input", "research", "content_generation", "qa_gate", "final_output"].includes(currentStage) && (
                 <div className="flex items-center justify-center h-full min-h-[400px] border border-dashed border-foreground/10">

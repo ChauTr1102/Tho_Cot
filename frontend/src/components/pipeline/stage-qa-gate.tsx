@@ -14,6 +14,14 @@ interface Props {
   iteration?: number;
   /** Called with the verify-checklist response data right after a successful call resolves. */
   onResult?: (result: VerifyChecklistResponseData) => void;
+  /**
+   * A verdict this campaign already has. When present the gate shows it instead
+   * of judging again: a QA pass costs a model call and a minute, and it is
+   * sampled rather than deterministic — two runs over one unchanged kit
+   * disagree slightly, which reads as the system being unsure instead of the
+   * model being sampled. "Kiểm tra lại" is still one click away.
+   */
+  savedResult?: VerifyChecklistResponseData | null;
 }
 
 // Fallback sample data so this stage is runnable end-to-end before the
@@ -84,9 +92,11 @@ const SAMPLE_CAMPAIGN_OUTPUT: Record<string, unknown> = {
 
 const REGENERATE_LABEL: Record<string, string> = { plan: "PLAN", asset: "ASSET (ảnh / video / copy)" };
 
-export const StageQAGate: React.FC<Props> = ({ campaignInput, campaignOutput, iteration = 1, onResult }) => {
-  const [state, setState] = React.useState<"checking" | "done" | "error">("checking");
-  const [result, setResult] = React.useState<VerifyChecklistResponseData | null>(null);
+export const StageQAGate: React.FC<Props> = ({ campaignInput, campaignOutput, iteration = 1, onResult, savedResult = null }) => {
+  const [state, setState] = React.useState<"checking" | "done" | "error">(
+    savedResult ? "done" : "checking"
+  );
+  const [result, setResult] = React.useState<VerifyChecklistResponseData | null>(savedResult);
   const [error, setError] = React.useState<string | null>(null);
 
   const runVerify = React.useCallback(() => {
@@ -113,8 +123,12 @@ export const StageQAGate: React.FC<Props> = ({ campaignInput, campaignOutput, it
   }, [campaignInput, campaignOutput, iteration, onResult]);
 
   React.useEffect(() => {
+    // Judge only what has never been judged. Re-running over a stored verdict
+    // spends a minute to produce a slightly different report about an identical
+    // kit, which is worse than showing the one already on file.
+    if (savedResult) return;
     runVerify();
-  }, [runVerify]);
+  }, [runVerify, savedResult]);
 
   // Group issues by regenerate target for display, purely for readability —
   // does not affect severity (all issues are surfaced as WARNING for now;

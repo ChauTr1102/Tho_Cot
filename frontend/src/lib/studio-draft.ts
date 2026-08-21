@@ -306,3 +306,33 @@ export async function runStudioForAutopilot(
   // than blocking the pipeline forever.
   return { campaignId, productCollectionImageSet: null, shortFormVideoAsset: null, commerceCopy: null };
 }
+
+/** The QA verdict a campaign already has, or null when nobody has judged it. */
+export async function fetchSavedQa(
+  campaignId: string
+): Promise<Record<string, unknown> | null> {
+  const res = await fetch(
+    `${API_BASE_URL}/studio/${encodeURIComponent(campaignId)}/qa`
+  );
+  if (!res.ok) return null;
+  const body = await res.json().catch(() => null);
+  return (body?.data ?? null) as Record<string, unknown> | null;
+}
+
+/**
+ * Store a verdict so re-opening the campaign does not re-run it.
+ *
+ * A QA pass costs a model call and a minute, and it is sampled rather than
+ * deterministic — two runs over one unchanged kit disagree slightly, which
+ * reads as the system being unsure instead of the model being sampled.
+ */
+export async function saveQa(
+  campaignId: string,
+  result: unknown
+): Promise<void> {
+  await fetch(`${API_BASE_URL}/studio/${encodeURIComponent(campaignId)}/qa`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(result),
+  }).catch(() => undefined);
+}
