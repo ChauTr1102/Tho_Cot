@@ -23,8 +23,8 @@ import { toast } from "sonner";
 import { BriefPanel } from "@/components/studio/BriefPanel";
 import { DraftPanel } from "@/components/studio/DraftPanel";
 import { GraphCanvas } from "@/components/studio/GraphCanvas";
-import { OriginLegend } from "@/components/studio/OriginBadge";
 import { RunStage } from "@/components/studio/RunStage";
+import { ThinkingPanel } from "@/components/studio/ThinkingPanel";
 import { StudioHeader } from "@/components/studio/StudioHeader";
 import { estimateKit } from "@/lib/studio-catalog";
 import { useRunClock, useStudioStream } from "@/lib/studio-events";
@@ -207,31 +207,13 @@ export default function StudioPage() {
         brandName={campaign?.name ?? null}
       />
 
-      <main className="mx-auto w-full max-w-[1440px] flex-1 px-4 pb-14 sm:px-6">
-        {/* Page head. One kicker on the page, at the top, as the brand
-            signature — sub-sections get plain titles rather than eyebrows. */}
-        <div className="flex flex-col gap-5 py-5 lg:flex-row lg:items-end lg:justify-between lg:gap-12 lg:py-6">
-          <div className="max-w-2xl">
-            <p className="text-[11px] font-semibold tracking-[0.22em] text-primary uppercase">
-              Asset Studio
-            </p>
-            <h1 className="mt-2 text-[27px] leading-[1.08] font-semibold tracking-[-0.025em] text-balance sm:text-[31px] xl:text-[35px]">
-              Từ ảnh sản phẩm thật
-              <br />
-              <span className="text-primary">đến kit sẵn đăng bán</span>
-            </h1>
-            <p className="mt-2.5 max-w-xl text-[14px] leading-relaxed text-muted-foreground text-pretty">
-              Chọn sản phẩm và sàn mục tiêu. Studio dựng đủ ảnh và video đúng
-              chuẩn từng sàn, giữ nguyên sản phẩm thật — 6–12 phút, hiện rõ từng
-              bước.
-            </p>
-          </div>
-
-          {/* The three routes, explained before any asset appears. This is the
-              studio's commercial judgement, not a legend for a colour key. */}
-          <OriginLegend className="w-full max-w-sm shrink-0 lg:w-[22rem]" />
-        </div>
-
+      {/* No page head. The masthead already names the product and the campaign,
+          and a title block plus a route legend cost about 200px of the fold —
+          on a laptop that was the difference between a graph readable at 33%
+          and one readable at 50%. The three routes are still explained, by the
+          route ledger under the stage, where they carry live counts instead of
+          a static description. */}
+      <main className="mx-auto w-full max-w-[1760px] flex-1 px-4 pt-4 pb-10 sm:px-6">
         <div className="grid items-start gap-4 lg:grid-cols-[minmax(300px,340px)_minmax(0,1fr)]">
           {/* One rail, two states. While a proposal is on the table it takes
               the whole rail — it is the only decision that matters at that
@@ -265,26 +247,36 @@ export default function StudioPage() {
             />
           )}
 
-          <RunStage
-            status={stream.status}
-            progress={stream.progress}
-            elapsedSec={elapsedSec}
-            nodes={stream.nodes}
-            activity={stream.activity}
-            error={stream.error}
-            plannedOrigins={plannedOrigins}
-            onRetry={stream.reconnect}
-          >
-            {/* The graph, as a canvas: pan, zoom, drag, and every finished
-                node showing the picture it produced. Before a run exists it
-                falls back to the kit manifest — see `KitManifest.tsx`. */}
-            <GraphCanvas
-              nodes={campaignId ? stream.nodes : previewNodes}
-              platforms={platforms}
-              campaignId={campaignId}
-              awaiting={running && stream.nodes.length === 0}
+          {/* While the director is writing there is no graph to draw and no run
+              to report, so the stage gives its whole area to saying what is
+              being decided. Ninety seconds of empty canvas reads as broken. */}
+          {starting ? (
+            <ThinkingPanel
+              direction={direction}
+              campaignName={campaign?.name ?? null}
             />
-          </RunStage>
+          ) : (
+            <RunStage
+              status={stream.status}
+              progress={stream.progress}
+              elapsedSec={elapsedSec}
+              nodes={stream.nodes}
+              activity={stream.activity}
+              error={stream.error}
+              plannedOrigins={plannedOrigins}
+              onRetry={stream.reconnect}
+            >
+              {/* The graph, as a canvas: pan, zoom, drag, and every finished
+                  node showing the picture it produced. Before a run exists it
+                  falls back to the kit manifest — see `KitManifest.tsx`. */}
+              <GraphCanvas
+                nodes={campaignId ? stream.nodes : previewNodes}
+                platforms={platforms}
+                campaignId={campaignId}
+                awaiting={running && stream.nodes.length === 0}
+              />
+            </RunStage>
+          )}
         </div>
       </main>
     </div>
