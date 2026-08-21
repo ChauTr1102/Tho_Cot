@@ -4,7 +4,7 @@ import * as React from "react";
 import { CampaignStage } from "@/types/campaign";
 import { 
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, 
-  RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, 
+  RadarChart, PolarGrid, PolarAngleAxis, Radar, 
   LineChart, Line, PieChart, Pie, Cell 
 } from "recharts";
 import { Activity } from "lucide-react";
@@ -49,7 +49,7 @@ const COLORS = ['#35ea52', '#22c55e', '#16a34a', '#15803d'];
 export const ContextPanel: React.FC<ContextPanelProps> = ({ currentStage }) => {
   const renderChart = () => {
     switch (currentStage) {
-      case "product_understanding":
+      case "product_input":
         return (
           <div className="h-[250px] w-full mt-4">
             <ResponsiveContainer width="100%" height="100%">
@@ -61,7 +61,7 @@ export const ContextPanel: React.FC<ContextPanelProps> = ({ currentStage }) => {
             </ResponsiveContainer>
           </div>
         );
-      case "user_research":
+      case "research":
         return (
           <div className="h-[250px] w-full mt-4">
             <ResponsiveContainer width="100%" height="100%">
@@ -74,7 +74,6 @@ export const ContextPanel: React.FC<ContextPanelProps> = ({ currentStage }) => {
             </ResponsiveContainer>
           </div>
         );
-      case "market_research":
       case "positioning":
         return (
           <div className="h-[250px] w-full mt-4">
@@ -88,7 +87,6 @@ export const ContextPanel: React.FC<ContextPanelProps> = ({ currentStage }) => {
             </ResponsiveContainer>
           </div>
         );
-      case "evidence_layer":
       case "qa_gate":
         return (
           <div className="h-[250px] w-full mt-4 flex justify-center items-center">
@@ -124,11 +122,9 @@ export const ContextPanel: React.FC<ContextPanelProps> = ({ currentStage }) => {
 
   const getChartTitle = () => {
     switch (currentStage) {
-      case "product_understanding": return "PHÂN TÍCH THUỘC TÍNH SẢN PHẨM";
-      case "user_research": return "PHÂN BỐ ĐỘ TUỔI KHÁCH HÀNG";
-      case "market_research": 
+      case "product_input": return "PHÂN TÍCH THUỘC TÍNH SẢN PHẨM";
+      case "research": return "PHÂN BỐ ĐỘ TUỔI KHÁCH HÀNG";
       case "positioning": return "XU HƯỚNG THỊ TRƯỜNG TỔNG QUAN";
-      case "evidence_layer": 
       case "qa_gate": return "PHÂN BỐ NGUỒN DỮ LIỆU";
       default: return "BIỂU ĐỒ PHÂN TÍCH";
     }

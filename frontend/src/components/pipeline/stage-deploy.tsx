@@ -64,7 +64,7 @@ export const StageDeploy: React.FC = () => {
             <Rocket className="h-8 w-8 text-[#35ea52]" />
           </div>
           <div className="space-y-1">
-            <h3 className="text-base font-mono font-bold text-foreground">ONE-CLICK DEPLOYMENT</h3>
+            <h3 className="text-base font-mono font-bold text-foreground">TRIỂN KHAI MỘT CHẠM</h3>
             <p className="text-xs font-mono text-foreground/50 max-w-md mx-auto">
               Kích hoạt toàn bộ chiến dịch trên tất cả các nền tảng cùng lúc. Agent sẽ tự động upload video, cấu hình banner và set nội dung SEO.
             </p>
@@ -106,7 +106,7 @@ export const StageDeploy: React.FC = () => {
                   </div>
                   <div>
                     <h4 className="text-sm font-mono font-bold text-foreground">Douyin / TikTok Shop</h4>
-                    <p className="text-[10px] font-mono text-foreground/50">2 Videos • 2 Captions</p>
+                    <p className="text-[10px] font-mono text-foreground/50">2 video • 2 chú thích</p>
                   </div>
                 </div>
                 {deployStatus.tiktok === "success" && (
@@ -147,7 +147,7 @@ export const StageDeploy: React.FC = () => {
                   </div>
                   <div>
                     <h4 className="text-sm font-mono font-bold text-foreground">Taobao / Tmall</h4>
-                    <p className="text-[10px] font-mono text-foreground/50">4 Banners • Product SEO Copy</p>
+                    <p className="text-[10px] font-mono text-foreground/50">4 banner • Nội dung SEO sản phẩm</p>
                   </div>
                 </div>
                 {deployStatus.shopee === "success" && (

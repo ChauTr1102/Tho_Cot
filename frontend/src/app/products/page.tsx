@@ -4,7 +4,6 @@ import * as React from "react";
 import { ProductsListView } from "@/components/flow/products-list-view";
 import { AddProductModal } from "@/components/flow/add-product-modal";
 import { ProductData } from "@/types/campaign";
-import { useRouter } from "next/navigation";
 
 const INITIAL_PRODUCTS: ProductData[] = [
   {
@@ -26,7 +25,6 @@ const INITIAL_PRODUCTS: ProductData[] = [
 ];
 
 export default function ProductsPage() {
-  const router = useRouter();
   const [products, setProducts] = React.useState<ProductData[]>(INITIAL_PRODUCTS);
   const [isAddModalOpen, setIsAddModalOpen] = React.useState(false);
 
@@ -60,18 +58,18 @@ export default function ProductsPage() {
           <div className="flex items-center gap-4 text-[10px] font-mono text-foreground/25 tracking-widest">
             <div className="flex items-center gap-1.5">
               <div className="w-1.5 h-1.5 rounded-full bg-[#35ea52] animate-pulse" />
-              <span>SYSTEM.ACTIVE</span>
+              <span>HỆ THỐNG.HOẠT ĐỘNG</span>
             </div>
             <span>V2.0.0</span>
           </div>
           <div className="flex items-center gap-4 text-[10px] font-mono text-foreground/20 tracking-widest">
-            <span>◐ MULTI.AGENT.CORE</span>
+            <span>◐ LÕI.ĐA.TÁC.TỬ</span>
             <div className="flex gap-1">
               <div className="w-1 h-1 bg-foreground/40 rounded-full animate-pulse" />
               <div className="w-1 h-1 bg-foreground/25 rounded-full animate-pulse" style={{ animationDelay: "0.2s" }} />
               <div className="w-1 h-1 bg-foreground/10 rounded-full animate-pulse" style={{ animationDelay: "0.4s" }} />
             </div>
-            <span>FRAME: ∞</span>
+            <span>KHUNG: ∞</span>
           </div>
         </div>
       </div>
@@ -80,9 +78,6 @@ export default function ProductsPage() {
         <ProductsListView
           products={products}
           onOpenAddModal={() => setIsAddModalOpen(true)}
-          onSelectProductForAd={() => {
-            router.push("/campaigns");
-          }}
           onDeleteProduct={() => {}}
         />
       </main>

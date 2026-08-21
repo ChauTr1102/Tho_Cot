@@ -60,7 +60,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
   const [currentPrice, setCurrentPrice] = React.useState("");
   const [originalPrice, setOriginalPrice] = React.useState("");
   const [category, setCategory] = React.useState("");
-  const [callToAction, setCallToAction] = React.useState("Shop now");
+  const [callToAction, setCallToAction] = React.useState("Mua ngay");
   const [description, setDescription] = React.useState("");
   const [images, setImages] = React.useState<ProductImageItem[]>([]);
   const [imageUrlInput, setImageUrlInput] = React.useState("");
@@ -68,7 +68,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
   const platformMeta = React.useMemo(() => getPlatformMeta(urlInput), [urlInput]);
 
   const handleImportUrl = () => {
-    if (!urlInput.trim()) { toast.error("Enter a valid product URL."); return; }
+    if (!urlInput.trim()) { toast.error("Hãy nhập URL sản phẩm hợp lệ."); return; }
     setIsCrawling(true);
     setCrawledData(null);
     setTimeout(() => {
@@ -122,7 +122,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
       }
       setCrawledData(result);
       setIsCrawling(false);
-      toast.success("Product imported.");
+      toast.success("Đã nhập sản phẩm.");
     }, 1200);
   };
 
@@ -139,7 +139,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
       rating: crawledData.rating, salesVolume: crawledData.salesVolume,
     };
     onSaveProduct(newProduct); onOpenChange(false); resetModal();
-    toast.success(`Added "${newProduct.name}".`);
+    toast.success(`Đã thêm "${newProduct.name}".`);
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -150,37 +150,37 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
       newImgs.push({ id: makeUniqueId("file"), url: URL.createObjectURL(file), isCover: images.length === 0 && idx === 0, name: file.name });
     });
     setImages((prev) => [...prev, ...newImgs]);
-    toast.success(`Uploaded ${newImgs.length} image(s).`);
+    toast.success(`Đã tải lên ${newImgs.length} ảnh.`);
     e.target.value = "";
   };
 
   const handleAddDirectUrl = () => {
     if (!imageUrlInput.trim()) return;
-    try { new URL(imageUrlInput.trim()); } catch { toast.error("Invalid image URL."); return; }
+    try { new URL(imageUrlInput.trim()); } catch { toast.error("URL hình ảnh không hợp lệ."); return; }
     setImages((prev) => [...prev, { id: makeUniqueId("url"), url: imageUrlInput.trim(), isCover: images.length === 0, name: `Image ${images.length + 1}` }]);
-    setImageUrlInput(""); toast.success("Image added.");
+    setImageUrlInput(""); toast.success("Đã thêm hình ảnh.");
   };
 
   const handleSaveManualProduct = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) { toast.error("Product title required."); return; }
+    if (!title.trim()) { toast.error("Tên sản phẩm là bắt buộc."); return; }
     const newProduct: ProductData = {
       id: makeUniqueId("prod"), name: title.trim(), category: category || "General",
       price: currentPrice.trim() || "0", originalPrice: originalPrice.trim() || undefined, currency: "₫",
       images: images.length > 0 ? images : [{ id: makeUniqueId("img-def"), url: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80", isCover: true, name: "Default" }],
-      description: description.trim() || "High quality product.", usps: ["Premium Quality", "Fast Shipping"],
+      description: description.trim() || "Sản phẩm chất lượng cao.", usps: ["Chất lượng cao", "Giao hàng nhanh"],
       targetAudience: { gender: "all", ageGroup: ["18-24", "25-34"], painPoints: [], interests: [] },
-      toneOfVoice: "Gen Z Trendy", campaignGoal: callToAction || "Shop now",
+      toneOfVoice: "Gen Z hiện đại", campaignGoal: callToAction || "Mua ngay",
       sourceUrl: productUrl.trim() || undefined, platform: "custom",
     };
     onSaveProduct(newProduct); onOpenChange(false); resetModal();
-    toast.success(`Saved "${newProduct.name}".`);
+    toast.success(`Đã lưu "${newProduct.name}".`);
   };
 
   const resetModal = () => {
     setUrlInput(""); setCrawledData(null); setIsCrawling(false);
     setTitle(""); setProductUrl(""); setCurrentPrice(""); setOriginalPrice("");
-    setCategory(""); setCallToAction("Shop now"); setDescription(""); setImages([]); setImageUrlInput("");
+    setCategory(""); setCallToAction("Mua ngay"); setDescription(""); setImages([]); setImageUrlInput("");
   };
 
   return (
@@ -195,13 +195,13 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-[#35ea52]" />
-              <span className="text-[11px] font-mono text-foreground/30 tracking-widest uppercase">PRODUCT_ASSET</span>
+              <span className="text-[11px] font-mono text-foreground/30 tracking-widest uppercase">TÀI NGUYÊN SẢN PHẨM</span>
             </div>
             <DialogTitle className="text-lg font-mono font-bold tracking-wider text-foreground uppercase">
-              ADD.PRODUCT
+              THÊM.SẢN PHẨM
             </DialogTitle>
             <p className="text-xs font-mono text-foreground/30">
-              Import a public product page or enter details manually.
+              Nhập trang sản phẩm công khai hoặc điền thông tin thủ công.
             </p>
           </div>
 
@@ -214,7 +214,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
                 tab === "url" ? "bg-foreground text-black font-bold" : "text-foreground/40 hover:text-foreground/60"
               }`}
             >
-              <Link2 className="h-3 w-3" /> PASTE.URL
+              <Link2 className="h-3 w-3" /> DÁN.URL
             </button>
             <div className="w-px bg-foreground/15" />
             <button
@@ -224,7 +224,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
                 tab === "manual" ? "bg-foreground text-black font-bold" : "text-foreground/40 hover:text-foreground/60"
               }`}
             >
-              <ImageIcon className="h-3 w-3" /> ADD.MANUALLY
+              <ImageIcon className="h-3 w-3" /> THÊM.THỦ CÔNG
             </button>
           </div>
         </div>
@@ -233,7 +233,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
         {tab === "url" && (
           <div className="p-5 space-y-4">
             <div className="space-y-2">
-              <label className="text-xs font-mono text-foreground/50 tracking-wider uppercase">PRODUCT.URL</label>
+              <label className="text-xs font-mono text-foreground/50 tracking-wider uppercase">URL SẢN PHẨM</label>
               <div className="relative flex items-center">
                 <Input
                   placeholder="https://store.com/products/..."
@@ -252,7 +252,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
               </div>
 
               <div className="flex items-center justify-between text-[11px] font-mono">
-                <span className="text-foreground/25 tracking-wider">SUPPORTED: TIKTOK · SHOPEE · AMAZON · LAZADA · TIKI</span>
+                <span className="text-foreground/25 tracking-wider">HỖ TRỢ: TIKTOK · SHOPEE · AMAZON · LAZADA · TIKI</span>
                 {urlInput && (
                   <span className="text-foreground/50 border border-foreground/15 px-1.5 py-0.5 tracking-wider">
                     {platformMeta.icon} {platformMeta.name}
@@ -264,7 +264,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
             {isCrawling && (
               <div className="p-5 border border-foreground/10 text-center space-y-2 dither-pattern">
                 <Loader2 className="h-5 w-5 text-foreground animate-spin mx-auto" />
-                <p className="text-sm font-mono text-foreground/60 tracking-wider">ANALYZING.PRODUCT.LINK...</p>
+                <p className="text-sm font-mono text-foreground/60 tracking-wider">ĐANG PHÂN TÍCH.LIÊN KẾT...</p>
               </div>
             )}
 
@@ -272,7 +272,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
               <div className="p-4 border border-foreground/15 bg-foreground/[0.02] space-y-3 animate-in fade-in">
                 <div className="flex items-center justify-between text-xs font-mono pb-2 border-b border-foreground/10">
                   <span className="text-[#35ea52] flex items-center gap-1.5 tracking-wider">
-                    <CheckCircle2 className="h-3 w-3" /> DETECTED
+                    <CheckCircle2 className="h-3 w-3" /> ĐÃ NHẬN DIỆN
                   </span>
                   <span className="text-foreground/30">{crawledData.salesVolume}</span>
                 </div>
@@ -293,17 +293,17 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
             <div className="flex items-center justify-end gap-2 pt-3 border-t border-foreground/10">
               <button type="button" onClick={() => onOpenChange(false)}
                 className="px-4 py-2 border border-foreground/20 text-xs font-mono text-foreground/40 hover:text-foreground hover:border-foreground/40 transition-all tracking-wider">
-                CANCEL
+                HỦY
               </button>
               {crawledData ? (
                 <button type="button" onClick={handleConfirmUrlImport}
                   className="px-4 py-2 bg-foreground text-black text-xs font-mono font-bold tracking-wider hover:bg-foreground/90 transition-all">
-                  SAVE.ASSET
+                  LƯU.TÀI NGUYÊN
                 </button>
               ) : (
                 <button type="button" onClick={handleImportUrl} disabled={isCrawling || !urlInput.trim()}
                   className="px-4 py-2 border-2 border-foreground text-foreground text-xs font-mono font-bold tracking-wider hover:bg-foreground hover:text-black transition-all disabled:opacity-30 disabled:cursor-not-allowed">
-                  {isCrawling ? "IMPORTING..." : "IMPORT"}
+                  {isCrawling ? "ĐANG NHẬP..." : "NHẬP"}
                 </button>
               )}
             </div>
@@ -316,7 +316,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
                 <label className="text-[11px] font-mono text-foreground/40 tracking-wider uppercase">
-                  TITLE <span className="text-[#35ea52]">*</span>
+                  TÊN SẢN PHẨM <span className="text-[#35ea52]">*</span>
                 </label>
                 <Input placeholder="Product name..." value={title} onChange={(e) => setTitle(e.target.value)}
                   className="h-9 text-sm font-mono bg-transparent border-foreground/15 text-foreground/80 placeholder:text-foreground/15 focus:border-foreground/40" required />
@@ -327,23 +327,23 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
                   className="h-9 text-sm font-mono bg-transparent border-foreground/15 text-foreground/80 placeholder:text-foreground/15 focus:border-foreground/40" />
               </div>
               <div className="space-y-1">
-                <label className="text-[11px] font-mono text-foreground/40 tracking-wider uppercase">PRICE</label>
+                <label className="text-[11px] font-mono text-foreground/40 tracking-wider uppercase">GIÁ</label>
                 <Input placeholder="189.000" value={currentPrice} onChange={(e) => setCurrentPrice(e.target.value)}
                   className="h-9 text-sm font-mono bg-transparent border-foreground/15 text-foreground/80 placeholder:text-foreground/15 focus:border-foreground/40" />
               </div>
               <div className="space-y-1">
-                <label className="text-[11px] font-mono text-foreground/40 tracking-wider uppercase">ORIG.PRICE</label>
+                <label className="text-[11px] font-mono text-foreground/40 tracking-wider uppercase">GIÁ GỐC</label>
                 <Input placeholder="260.000" value={originalPrice} onChange={(e) => setOriginalPrice(e.target.value)}
                   className="h-9 text-sm font-mono bg-transparent border-foreground/15 text-foreground/60 placeholder:text-foreground/15 focus:border-foreground/40" />
               </div>
               <div className="space-y-1">
-                <label className="text-[11px] font-mono text-foreground/40 tracking-wider uppercase">CATEGORY</label>
+                <label className="text-[11px] font-mono text-foreground/40 tracking-wider uppercase">DANH MỤC</label>
                 <Input placeholder="Beauty / Electronics" value={category} onChange={(e) => setCategory(e.target.value)}
                   className="h-9 text-sm font-mono bg-transparent border-foreground/15 text-foreground/80 placeholder:text-foreground/15 focus:border-foreground/40" />
               </div>
               <div className="space-y-1">
                 <label className="text-[11px] font-mono text-foreground/40 tracking-wider uppercase">
-                  CTA <span className="text-[#35ea52]">*</span>
+                  KÊU GỌI HÀNH ĐỘNG <span className="text-[#35ea52]">*</span>
                 </label>
                 <Input placeholder="Shop now" value={callToAction} onChange={(e) => setCallToAction(e.target.value)}
                   className="h-9 text-sm font-mono bg-transparent border-foreground/15 text-foreground/80 placeholder:text-foreground/15 focus:border-foreground/40" required />
@@ -352,7 +352,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
 
             <div className="space-y-1">
               <label className="text-[11px] font-mono text-foreground/40 tracking-wider uppercase">
-                DESCRIPTION <span className="text-[#35ea52]">*</span>
+                MÔ TẢ <span className="text-[#35ea52]">*</span>
               </label>
               <Textarea placeholder="Product benefits, features, ingredients..."
                 value={description} onChange={(e) => setDescription(e.target.value)} rows={3}
@@ -362,12 +362,12 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
             {/* Image Upload — brutalist */}
             <div className="space-y-2">
               <label className="text-[11px] font-mono text-foreground/40 tracking-wider uppercase">
-                IMAGES <span className="text-[#35ea52]">*</span>
+                HÌNH ẢNH <span className="text-[#35ea52]">*</span>
               </label>
               <label className="flex flex-col items-center justify-center w-full p-5 border border-dashed border-foreground/20 cursor-pointer bg-foreground/[0.01] hover:bg-foreground/[0.03] transition-colors">
                 <Upload className="h-5 w-5 text-foreground/30 mb-1" />
-                <p className="text-xs font-mono text-foreground/50 tracking-wider">CHOOSE.FILES</p>
-                <p className="text-[11px] font-mono text-foreground/20">PNG, JPG, WEBP — Max 15MB</p>
+                <p className="text-xs font-mono text-foreground/50 tracking-wider">CHỌN.TỆP</p>
+                <p className="text-[11px] font-mono text-foreground/20">PNG, JPG, WEBP — Tối đa 15 MB</p>
                 <input type="file" multiple accept="image/*" className="hidden" onChange={handleFileUpload} />
               </label>
 
@@ -376,7 +376,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
                   className="h-8 text-xs font-mono bg-transparent border-foreground/15 text-foreground/60 placeholder:text-foreground/15 focus:border-foreground/40" />
                 <button type="button" onClick={handleAddDirectUrl} disabled={!imageUrlInput.trim()}
                   className="h-8 px-3 border border-foreground/20 text-[11px] font-mono text-foreground/40 hover:bg-foreground hover:text-black transition-all disabled:opacity-30 tracking-wider shrink-0 flex items-center gap-1">
-                  <Plus className="h-2.5 w-2.5" /> ADD
+                  <Plus className="h-2.5 w-2.5" /> THÊM
                 </button>
               </div>
 
@@ -389,7 +389,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
                       <img src={img.url} alt="asset" className="w-full h-full object-cover" />
                       {img.isCover && (
                         <span className="absolute top-0.5 left-0.5 text-[7px] font-mono font-bold bg-foreground text-black px-1">
-                          COVER
+                          ẢNH BÌA
                         </span>
                       )}
                       <div className="absolute inset-0 bg-background/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
@@ -412,15 +412,15 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
 
             {/* Footer */}
             <div className="flex items-center justify-between pt-4 border-t border-foreground/10">
-              <span className="text-[11px] font-mono text-foreground/20 tracking-wider">VND (₫) · ACTIVE</span>
+              <span className="text-[11px] font-mono text-foreground/20 tracking-wider">VND (₫) · ĐANG HOẠT ĐỘNG</span>
               <div className="flex items-center gap-2">
                 <button type="button" onClick={() => onOpenChange(false)}
                   className="px-4 py-2 border border-foreground/20 text-xs font-mono text-foreground/40 hover:text-foreground hover:border-foreground/40 transition-all tracking-wider">
-                  CANCEL
+                  HỦY
                 </button>
                 <button type="submit"
                   className="px-4 py-2 bg-foreground text-black text-xs font-mono font-bold tracking-wider hover:bg-foreground/90 transition-all">
-                  SAVE.ASSET
+                  LƯU.TÀI NGUYÊN
                 </button>
               </div>
             </div>

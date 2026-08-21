@@ -10,7 +10,8 @@ EVIDENCE_SCHEMA = {
     "type": "object",
     "properties": {
         "basis": {"type": "string", "enum": [
-            "product_brief", "supplied_source", "general_marketing_knowledge", "assumption"
+            "product_brief", "supplied_source", "external_research",
+            "general_marketing_knowledge", "assumption"
         ]},
         "detail": {"type": "string"},
         "source_url": {

@@ -1,6 +1,7 @@
 """ModelArk client: raw specialist calls plus one Exa-only research call."""
 import json
-import re
+import logging
+import time
 from collections.abc import Callable
 from typing import Any
 import requests
@@ -9,6 +10,7 @@ from app.services.research.schema import ResearchOutputError
 DEFAULT_BASE_URL = "https://ark.ap-southeast.bytepluses.com/api/v3"
 DEFAULT_MODEL = "dola-seed-2-1-turbo-260628"
 EXA_MCP_URL = "https://mcp.exa.ai/mcp"
+logger = logging.getLogger(__name__)
 
 
 def extract_output_text(response: dict[str, Any]) -> str:
@@ -60,6 +62,11 @@ class RawModelClient:
                 "type": "json_schema", "name": "campaign_plan",
                 "schema": json_schema, "strict": True,
             }}
+        started_at = time.monotonic()
+        logger.info(
+            "research_client.request_started mode=specialist model=%s images=%d schema_constrained=%s max_output_tokens=%d",
+            self.model, len(images or []), json_schema is not None, max_output_tokens,
+        )
         response = self.post(
             f"{self.base_url}/responses",
             headers={"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"},
@@ -68,10 +75,19 @@ class RawModelClient:
         try:
             response.raise_for_status()
         except requests.HTTPError as exc:
+            logger.warning(
+                "research_client.request_failed mode=specialist status_code=%s duration_ms=%d",
+                response.status_code, round((time.monotonic() - started_at) * 1000),
+            )
             raise ResearchOutputError(
                 f"ModelArk /responses failed ({response.status_code}): {response.text[:1000]}"
             ) from exc
-        return extract_output_text(response.json())
+        text = extract_output_text(response.json())
+        logger.info(
+            "research_client.request_completed mode=specialist status_code=%s duration_ms=%d output_chars=%d",
+            response.status_code, round((time.monotonic() - started_at) * 1000), len(text),
+        )
+        return text
 
     def research_with_exa(self, *, system: str, user: str,
                           max_output_tokens: int = 3000,
@@ -79,6 +95,11 @@ class RawModelClient:
                           images: list[str] | None = None,
                           on_tool: Callable[[str], None] | None = None) -> tuple[str, list[str]]:
         """Run the only tool-enabled stage, using Exa MCP exclusively."""
+        started_at = time.monotonic()
+        logger.info(
+            "research_client.request_started mode=exa model=%s images=%d required_tool=%s max_output_tokens=%d",
+            self.model, len(images or []), required_tool or "none", max_output_tokens,
+        )
         response = self.post(
             f"{self.base_url}/responses",
             headers={
@@ -105,6 +126,10 @@ class RawModelClient:
         try:
             response.raise_for_status()
         except requests.HTTPError as exc:
+            logger.warning(
+                "research_client.request_failed mode=exa status_code=%s duration_ms=%d",
+                response.status_code, round((time.monotonic() - started_at) * 1000),
+            )
             raise ResearchOutputError(
                 f"ModelArk Exa MCP thất bại ({response.status_code}): {response.text[:1000]}"
             ) from exc
@@ -130,6 +155,7 @@ class RawModelClient:
                     name = item.get("name") or "exa"
                     if name not in tool_calls:
                         tool_calls.append(name)
+                        logger.info("research_client.tool_called mode=exa tool=%s", name)
                     if on_tool:
                         on_tool(name)
             elif event_type in {"response.failed", "response.mcp_call.failed"}:
@@ -143,6 +169,9 @@ class RawModelClient:
             raise ResearchOutputError(
                 f"Bắt buộc gọi {required_tool}, nhưng Exa chỉ gọi: {tool_calls}"
             )
-        if not re.search(r"https?://", text):
-            raise ResearchOutputError("Báo cáo Exa không chứa URL nguồn")
+        logger.info(
+            "research_client.request_completed mode=exa status_code=%s duration_ms=%d tool_calls=%d output_chars=%d",
+            response.status_code, round((time.monotonic() - started_at) * 1000),
+            len(tool_calls), len(text),
+        )
         return text, tool_calls

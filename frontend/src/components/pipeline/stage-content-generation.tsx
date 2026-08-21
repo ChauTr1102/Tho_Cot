@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { AgentLoading } from "./agent-loading";
-import { Play, AlignLeft, Sparkles, MessageSquare } from "lucide-react";
+import { Sparkles, MessageSquare } from "lucide-react";
 
 export const StageContentGeneration: React.FC = () => {
   const [isProcessing, setIsProcessing] = React.useState(true);
@@ -48,28 +48,28 @@ export const StageContentGeneration: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className="border border-foreground/10 p-5 space-y-4 bg-background">
               <div className="flex justify-between items-center border-b border-foreground/5 pb-2">
-                <span className="text-xs font-mono font-bold text-[#35ea52]">ROUTE A: Pain Point</span>
+                <span className="text-xs font-mono font-bold text-[#35ea52]">HƯỚNG A: Nỗi đau khách hàng</span>
                 <span className="text-[10px] font-mono text-foreground/40 bg-foreground/5 px-2 py-0.5">Douyin, TikTok</span>
               </div>
               <div className="space-y-3">
                 <div>
-                  <span className="text-[10px] text-foreground/40 block mb-1">HOOK IDEA</span>
+                  <span className="text-[10px] text-foreground/40 block mb-1">Ý TƯỞNG MỞ ĐẦU</span>
                   <p className="text-sm font-mono text-foreground">Cảnh báo thức dậy muộn mệt mỏi, ngay lập tức xé gói G7 pha nước nóng khói bốc lên.</p>
                 </div>
                 <div>
-                  <span className="text-[10px] text-foreground/40 block mb-1">VISUAL DIRECTION</span>
+                  <span className="text-[10px] text-foreground/40 block mb-1">ĐỊNH HƯỚNG HÌNH ẢNH</span>
                   <p className="text-sm font-mono text-foreground">Nhịp độ nhanh, màu sắc rực rỡ buổi sáng, ASMR tiếng rót nước, cận cảnh bọt cà phê.</p>
                 </div>
                 <div>
-                  <span className="text-[10px] text-foreground/40 block mb-1">MESSAGE ANGLE</span>
-                  <p className="text-sm font-mono text-foreground/70">"Đừng để sự uể oải cản bước bạn. Nạp năng lượng với G7 vị đậm Việt Nam!"</p>
+                  <span className="text-[10px] text-foreground/40 block mb-1">GÓC THÔNG ĐIỆP</span>
+                  <p className="text-sm font-mono text-foreground/70">&ldquo;Đừng để sự uể oải cản bước bạn. Nạp năng lượng với G7 vị đậm Việt Nam!&rdquo;</p>
                 </div>
               </div>
             </div>
 
             <div className="border border-foreground/10 p-5 space-y-4 bg-background">
               <div className="flex justify-between items-center border-b border-foreground/5 pb-2">
-                <span className="text-xs font-mono font-bold text-foreground/80">ROUTE B: Cultural Authority</span>
+                <span className="text-xs font-mono font-bold text-foreground/80">HƯỚNG B: Uy tín văn hóa</span>
                 <span className="text-[10px] font-mono text-foreground/40 bg-foreground/5 px-2 py-0.5">Taobao, Tmall</span>
               </div>
               <div className="space-y-3">
@@ -83,7 +83,7 @@ export const StageContentGeneration: React.FC = () => {
                 </div>
                 <div>
                   <span className="text-[10px] text-foreground/40 block mb-1">MESSAGE ANGLE</span>
-                  <p className="text-sm font-mono text-foreground/70">"Mang hương vị cà phê Robusta chuẩn Việt đến mọi nhà. Sang trọng, tiện lợi."</p>
+                  <p className="text-sm font-mono text-foreground/70">&ldquo;Mang hương vị cà phê Robusta chuẩn Việt đến mọi nhà. Sang trọng, tiện lợi.&rdquo;</p>
                 </div>
               </div>
             </div>

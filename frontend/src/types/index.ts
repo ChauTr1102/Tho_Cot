@@ -34,3 +34,4 @@ export interface UpdateItemInput {
   is_completed?: boolean;
 }
 export * from './campaign_dto';
+export * from './research';

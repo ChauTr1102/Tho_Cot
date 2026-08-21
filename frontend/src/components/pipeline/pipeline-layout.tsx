@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { CampaignStage, CAMPAIGN_STAGES, StageStatus } from "@/types/campaign";
-import { ContextPanel } from "./context-panel";
 
 interface PipelineLayoutProps {
   currentStage: CampaignStage;
@@ -17,8 +16,6 @@ interface PipelineLayoutProps {
 
 export const PipelineLayout: React.FC<PipelineLayoutProps> = ({
   currentStage,
-  stageStatuses,
-  onStageChange,
   onNext,
   onBack,
   isNextDisabled = false,
@@ -66,4 +63,3 @@ export const PipelineLayout: React.FC<PipelineLayoutProps> = ({
     </div>
   );
 };
-

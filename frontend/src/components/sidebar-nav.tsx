@@ -16,11 +16,11 @@ import {
 } from "lucide-react";
 
 const NAV_ITEMS = [
-  { id: "campaigns", label: "CAMPAIGNS", icon: Sparkles },
-  { id: "products", label: "PRODUCTS", icon: Package },
-  { id: "research", label: "RESEARCH", icon: Search },
-  { id: "deployments", label: "DEPLOYMENTS", icon: Rocket },
-  { id: "analytics", label: "ANALYTICS", icon: BarChart3 },
+  { id: "campaigns", label: "CHIẾN DỊCH", icon: Sparkles },
+  { id: "products", label: "SẢN PHẨM", icon: Package },
+  { id: "research", label: "NGHIÊN CỨU", icon: Search },
+  { id: "deployments", label: "TRIỂN KHAI", icon: Rocket },
+  { id: "analytics", label: "PHÂN TÍCH", icon: BarChart3 },
 ];
 
 export const SidebarNav: React.FC = () => {
@@ -70,7 +70,7 @@ export const SidebarNav: React.FC = () => {
             </div>
             <div className="flex items-center gap-1.5 mt-3">
               <div className="w-1 h-1 rounded-full bg-[#35ea52] animate-pulse" />
-              <span className="text-[10px] font-mono text-foreground/40 tracking-wider">SYS.ONLINE V2.0</span>
+              <span className="text-[10px] font-mono text-foreground/40 tracking-wider">HỆ THỐNG.TRỰC TUYẾN V2.0</span>
             </div>
           </div>
 
@@ -107,7 +107,7 @@ export const SidebarNav: React.FC = () => {
             <div className="px-2 py-2 border border-foreground/10 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="h-6 w-6 border border-foreground/20 bg-foreground/5 text-foreground/60 font-mono flex items-center justify-center text-xs">A</div>
-                <span className="text-xs font-mono text-foreground/50">ACCOUNT</span>
+                <span className="text-xs font-mono text-foreground/50">TÀI KHOẢN</span>
               </div>
               <ThemeToggle />
             </div>

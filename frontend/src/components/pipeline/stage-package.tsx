@@ -66,11 +66,11 @@ export const StagePackage: React.FC = () => {
           <div className="flex-1 space-y-2 text-center md:text-left">
             <h3 className="text-lg font-mono font-bold text-foreground">G7_Campaign_China99_FullPack.zip</h3>
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-xs font-mono text-foreground/50">
-              <span>Size: 34.0 MB</span>
+              <span>Dung lượng: 34.0 MB</span>
               <span>•</span>
-              <span>8 Files Included</span>
+              <span>Gồm 8 tệp</span>
               <span>•</span>
-              <span>Auto-standardized Naming</span>
+              <span>Tên tệp được chuẩn hóa tự động</span>
             </div>
           </div>
           <div className="shrink-0 w-full md:w-auto">

@@ -37,13 +37,13 @@ type AdType =
 type AspectRatioType = "1:1" | "3:2" | "2:3" | "16:9" | "9:16";
 
 const AD_TYPES: { id: AdType; title: string; desc: string; icon: string }[] = [
-  { id: "auto", title: "AUTO.SELECT", desc: "AI picks optimal high-converting angle", icon: "▣" },
-  { id: "showcase", title: "PRODUCT.SHOWCASE", desc: "Clean studio hero shot with lighting", icon: "◈" },
-  { id: "detail", title: "PRODUCT.DETAIL", desc: "Close-up macro of texture and craft", icon: "◎" },
-  { id: "ingredient", title: "STRUCTURE", desc: "Exploded view & active components", icon: "⬡" },
-  { id: "lifestyle", title: "LIFESTYLE", desc: "Real-world context in daily usage", icon: "◐" },
-  { id: "promo", title: "PROMO.AD", desc: "Bold sale banner, CTA and offer badges", icon: "⚡" },
-  { id: "specification", title: "SPEC.SIZE", desc: "Dimensions, sizing and packaging", icon: "▧" },
+  { id: "auto", title: "TỰ ĐỘNG.CHỌN", desc: "AI chọn góc tiếp cận có khả năng chuyển đổi cao", icon: "▣" },
+  { id: "showcase", title: "TRƯNG BÀY.SẢN PHẨM", desc: "Ảnh chủ đạo trong studio với ánh sáng sạch", icon: "◈" },
+  { id: "detail", title: "CHI TIẾT.SẢN PHẨM", desc: "Cận cảnh chất liệu và độ hoàn thiện", icon: "◎" },
+  { id: "ingredient", title: "CẤU TRÚC", desc: "Hình tách lớp và các thành phần chính", icon: "⬡" },
+  { id: "lifestyle", title: "PHONG CÁCH SỐNG", desc: "Bối cảnh sử dụng thực tế hằng ngày", icon: "◐" },
+  { id: "promo", title: "QUẢNG CÁO.KHUYẾN MÃI", desc: "Banner ưu đãi nổi bật, CTA và nhãn khuyến mãi", icon: "⚡" },
+  { id: "specification", title: "KÍCH THƯỚC.THÔNG SỐ", desc: "Kích thước và quy cách đóng gói", icon: "▧" },
 ];
 
 export const GenerateAdsView: React.FC<GenerateAdsViewProps> = ({
@@ -71,7 +71,7 @@ export const GenerateAdsView: React.FC<GenerateAdsViewProps> = ({
 
   const handleGenerate = () => {
     if (!selectedProduct) {
-      toast.error("Choose or add a product first.");
+      toast.error("Hãy chọn hoặc thêm sản phẩm trước.");
       return;
     }
     setIsGenerating(true);
@@ -110,7 +110,7 @@ export const GenerateAdsView: React.FC<GenerateAdsViewProps> = ({
       }
       setGeneratedResults(newOutputs);
       setIsGenerating(false);
-      toast.success(`Generated ${newOutputs.length} ad creatives.`);
+      toast.success(`Đã tạo ${newOutputs.length} mẫu quảng cáo.`);
     }, 2400);
   };
 
@@ -134,10 +134,10 @@ export const GenerateAdsView: React.FC<GenerateAdsViewProps> = ({
       {/* 4 Workflow Tabs — terminal buttons */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
         {([
-          { id: "image_create" as const, label: "IMG.CREATE", icon: ImageIcon },
-          { id: "image_clone" as const, label: "IMG.CLONE", icon: Layers },
-          { id: "video_create" as const, label: "VID.CREATE", icon: Clapperboard },
-          { id: "video_clone" as const, label: "VID.CLONE", icon: Wand2 },
+          { id: "image_create" as const, label: "TẠO.ẢNH", icon: ImageIcon },
+          { id: "image_clone" as const, label: "NHÂN BẢN.ẢNH", icon: Layers },
+          { id: "video_create" as const, label: "TẠO.VIDEO", icon: Clapperboard },
+          { id: "video_clone" as const, label: "NHÂN BẢN.VIDEO", icon: Wand2 },
         ]).map((tab) => {
           const Icon = tab.icon;
           return (
@@ -192,8 +192,8 @@ export const GenerateAdsView: React.FC<GenerateAdsViewProps> = ({
                   01
                 </span>
                 <div>
-                  <p className="text-sm font-mono font-bold text-foreground/80 tracking-wider">CHOOSE.PRODUCT</p>
-                  <p className="text-[11px] text-foreground/25 font-mono">Select a product asset for generation.</p>
+                  <p className="text-sm font-mono font-bold text-foreground/80 tracking-wider">CHỌN.SẢN PHẨM</p>
+                  <p className="text-[11px] text-foreground/25 font-mono">Chọn tài nguyên sản phẩm để tạo nội dung.</p>
                 </div>
               </div>
               <button
@@ -208,8 +208,8 @@ export const GenerateAdsView: React.FC<GenerateAdsViewProps> = ({
             <div className="p-4">
               {products.length === 0 ? (
                 <div className="p-6 border border-dashed border-foreground/15 text-center space-y-2">
-                  <p className="text-sm font-mono text-foreground/50">NO_PRODUCT_ASSETS</p>
-                  <p className="text-xs text-foreground/25 font-mono">Import via URL or add manually.</p>
+                  <p className="text-sm font-mono text-foreground/50">CHƯA CÓ TÀI NGUYÊN SẢN PHẨM</p>
+                  <p className="text-xs text-foreground/25 font-mono">Nhập bằng URL hoặc thêm thủ công.</p>
                   <button
                     type="button"
                     onClick={onOpenAddModal}
@@ -266,8 +266,8 @@ export const GenerateAdsView: React.FC<GenerateAdsViewProps> = ({
                 02
               </span>
               <div>
-                <p className="text-sm font-mono font-bold text-foreground/80 tracking-wider">IMAGE.SETTINGS</p>
-                <p className="text-[11px] text-foreground/25 font-mono">Size, quantity, and visual style.</p>
+                <p className="text-sm font-mono font-bold text-foreground/80 tracking-wider">CÀI ĐẶT.HÌNH ẢNH</p>
+                <p className="text-[11px] text-foreground/25 font-mono">Kích thước, số lượng và phong cách hình ảnh.</p>
               </div>
             </div>
 
@@ -275,7 +275,7 @@ export const GenerateAdsView: React.FC<GenerateAdsViewProps> = ({
               {/* Aspect Ratio */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-mono text-foreground/50 tracking-wider uppercase">ASPECT.RATIO</label>
+                  <label className="text-xs font-mono text-foreground/50 tracking-wider uppercase">TỶ LỆ KHUNG HÌNH</label>
                   <span className="text-xs font-mono text-foreground/30">{aspectRatio}</span>
                 </div>
                 <div className="grid grid-cols-5 gap-2">
@@ -306,19 +306,19 @@ export const GenerateAdsView: React.FC<GenerateAdsViewProps> = ({
               {/* Number & Language */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-mono text-foreground/50 tracking-wider uppercase">NUM.IMAGES</label>
+                  <label className="text-xs font-mono text-foreground/50 tracking-wider uppercase">SỐ LƯỢNG ẢNH</label>
                   <select
                     value={numImages}
                     onChange={(e) => setNumImages(Number(e.target.value))}
                     className="w-full h-9 border border-foreground/15 bg-background px-3 text-sm font-mono text-foreground/70 focus-visible:outline-none"
                   >
                     <option value={1}>1</option>
-                    <option value={2}>2 (default)</option>
+                    <option value={2}>2 (mặc định)</option>
                     <option value={4}>4</option>
                   </select>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-mono text-foreground/50 tracking-wider uppercase">LANGUAGE</label>
+                  <label className="text-xs font-mono text-foreground/50 tracking-wider uppercase">NGÔN NGỮ</label>
                   <select
                     value={language}
                     onChange={(e) => setLanguage(e.target.value)}
@@ -333,7 +333,7 @@ export const GenerateAdsView: React.FC<GenerateAdsViewProps> = ({
 
               {/* Ad Type Grid */}
               <div className="space-y-2">
-                <label className="text-xs font-mono text-foreground/50 tracking-wider uppercase">AD.TYPE</label>
+                <label className="text-xs font-mono text-foreground/50 tracking-wider uppercase">LOẠI QUẢNG CÁO</label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                   {AD_TYPES.map((type) => (
                     <button
@@ -364,10 +364,10 @@ export const GenerateAdsView: React.FC<GenerateAdsViewProps> = ({
               {/* Custom Instructions */}
               <div className="space-y-1.5">
                 <label className="text-xs font-mono text-foreground/50 tracking-wider uppercase">
-                  INSTRUCTIONS <span className="text-foreground/20">(optional)</span>
+                  HƯỚNG DẪN <span className="text-foreground/20">(không bắt buộc)</span>
                 </label>
                 <Textarea
-                  placeholder="Describe scene, style, headline or requirements..."
+                  placeholder="Mô tả bối cảnh, phong cách, tiêu đề hoặc yêu cầu..."
                   value={customInstructions}
                   onChange={(e) => setCustomInstructions(e.target.value)}
                   rows={2}
@@ -385,12 +385,12 @@ export const GenerateAdsView: React.FC<GenerateAdsViewProps> = ({
                 {isGenerating ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>GENERATING...</span>
+                    <span>ĐANG TẠO...</span>
                   </>
                 ) : (
                   <>
                     <Sparkles className="h-4 w-4" />
-                    <span>GENERATE.CREATIVE</span>
+                    <span>TẠO.NỘI DUNG</span>
                   </>
                 )}
               </button>
@@ -448,7 +448,7 @@ export const GenerateAdsView: React.FC<GenerateAdsViewProps> = ({
                     <ImageIcon className="h-5 w-5 text-foreground/30" />
                   </div>
                   <div className="space-y-1">
-                    <p className="text-sm font-mono text-foreground/50 tracking-wider">NO_IMAGES_GENERATED</p>
+                    <p className="text-sm font-mono text-foreground/50 tracking-wider">CHƯA CÓ HÌNH ẢNH ĐƯỢC TẠO</p>
                     <p className="text-xs font-mono text-foreground/25 max-w-xs mx-auto">
                       Complete settings and start generation. Results will appear here.
                     </p>
