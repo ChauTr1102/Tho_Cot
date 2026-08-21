@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -6,6 +7,14 @@ from app.api.v1.api import api_router
 from app.core.config import settings
 from app.core.exceptions import register_exception_handlers
 from app.db.init_db import init_db
+
+# Uvicorn configures its own loggers but leaves application namespaces at the
+# inherited WARNING level in some launch modes. Keep research lifecycle and
+# agent-progress INFO events visible in the server terminal.
+application_logger = logging.getLogger("app")
+application_logger.setLevel(logging.INFO)
+application_logger.handlers = logging.getLogger("uvicorn").handlers
+application_logger.propagate = False
 
 
 @asynccontextmanager

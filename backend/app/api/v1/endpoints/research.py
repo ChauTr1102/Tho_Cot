@@ -109,6 +109,11 @@ async def run_research(
             research_input=payload.model_dump(mode="json"),
             visual_assets=visual_assets,
             evidence=evidence,
+            on_progress=lambda message: logger.info(
+                "research_api.agent_progress campaign_id=%s message=%s",
+                campaign_id,
+                message,
+            ),
         )
     except BadRequestException as exc:
         logger.warning(

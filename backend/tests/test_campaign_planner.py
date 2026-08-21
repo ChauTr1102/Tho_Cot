@@ -52,13 +52,10 @@ def test_raw_client_sends_no_tools():
 def test_research_service_runs_exa_then_four_specialists_and_structured_editor():
     calls = []
     outputs = iter([
-        "MARKET https://example.com/market",
+        "MARKET SOCIAL https://example.com/market",
         "SCIENCE https://example.com/science",
-        "SOCIAL https://example.com/social",
         "NGHIÊN CỨU https://example.com",
-        "POSITIONING RESEARCH https://example.com/positioning-research",
         "POSITIONING https://example.com/positioning",
-        "CREATIVE RESEARCH https://example.com/creative-research",
         "CREATIVE https://example.com/creative",
         "AUDIT RESEARCH https://example.com/audit-research",
         "AUDIT https://example.com/audit",
@@ -67,45 +64,38 @@ def test_research_service_runs_exa_then_four_specialists_and_structured_editor()
     def fake_post(url, **kwargs):
         calls.append(kwargs["json"]); return FakeResponse(next(outputs))
     result = ResearchService(RawModelClient("test-key", post=fake_post)).run(
-        "A premium tea", evidence="Source: customer survey"
+        "A premium tea", evidence="Source: customer survey",
     )
     assert result["engine"] == "exa_specialists"
     assert result["plan"]["schema_version"] == "1.0"
     assert calls[0]["tools"][0]["server_url"] == EXA_MCP_URL
-    tool_indices = [0, 1, 2, 3, 4, 6, 8]
+    tool_indices = [0, 1, 2, 5]
     assert all(calls[index]["tools"][0]["server_url"] == EXA_MCP_URL for index in tool_indices)
-    assert all("tools" not in calls[index] for index in [5, 7, 9, 10])
+    assert all("tools" not in calls[index] for index in [3, 4, 6, 7])
     assert result["research_tool_calls"] == [
-        "web_search_exa", "web_search_exa", "web_search_exa", "web_fetch_exa",
-        "web_search_exa", "web_search_exa", "web_search_exa",
+        "web_search_exa", "web_search_exa", "web_fetch_exa", "web_search_exa",
     ]
     assert [call["input"][0]["content"] for call in calls] == [
-        RESEARCH_DISCOVERY_SYSTEM, RESEARCH_DISCOVERY_SYSTEM, RESEARCH_DISCOVERY_SYSTEM,
-        RESEARCH_SYSTEM, FOLLOWUP_SEARCH_SYSTEM, POSITIONING_SYSTEM,
-        FOLLOWUP_SEARCH_SYSTEM, CREATIVE_SYSTEM, FOLLOWUP_SEARCH_SYSTEM,
+        RESEARCH_DISCOVERY_SYSTEM, RESEARCH_DISCOVERY_SYSTEM, RESEARCH_SYSTEM,
+        POSITIONING_SYSTEM, CREATIVE_SYSTEM, FOLLOWUP_SEARCH_SYSTEM,
         EVIDENCE_AUDITOR_SYSTEM, EDITOR_SYSTEM]
-    assert "MARKET" in calls[3]["input"][1]["content"]
-    assert "SCIENCE" in calls[3]["input"][1]["content"]
-    assert "SOCIAL" in calls[3]["input"][1]["content"]
-    assert "NGHIÊN CỨU" in calls[4]["input"][1]["content"]
-    assert "POSITIONING RESEARCH" in calls[5]["input"][1]["content"]
-    assert "POSITIONING" in calls[6]["input"][1]["content"]
-    assert "CREATIVE RESEARCH" in calls[7]["input"][1]["content"]
-    assert "CREATIVE" in calls[8]["input"][1]["content"]
-    assert "AUDIT RESEARCH" in calls[9]["input"][1]["content"]
-    assert "AUDIT" in calls[10]["input"][1]["content"]
-    assert calls[10]["text"]["format"]["schema"] == CAMPAIGN_PLAN_SCHEMA
-    assert calls[10]["text"]["format"]["strict"] is True
-    assert calls[10]["max_output_tokens"] == 9000
+    assert "MARKET SOCIAL" in calls[2]["input"][1]["content"]
+    assert "SCIENCE" in calls[2]["input"][1]["content"]
+    assert "NGHIÊN CỨU" in calls[3]["input"][1]["content"]
+    assert "POSITIONING" in calls[4]["input"][1]["content"]
+    assert "CREATIVE" in calls[5]["input"][1]["content"]
+    assert "AUDIT RESEARCH" in calls[6]["input"][1]["content"]
+    assert "AUDIT" in calls[7]["input"][1]["content"]
+    assert calls[7]["text"]["format"]["schema"] == CAMPAIGN_PLAN_SCHEMA
+    assert calls[7]["text"]["format"]["strict"] is True
+    assert calls[7]["max_output_tokens"] == 9000
 
 
 def test_missing_sources_are_disclosed():
     prompts = []
     outputs = iter([
-        "Market https://example.com/market", "Science https://example.com/science",
-        "Social https://example.com/social", "Nghiên cứu https://example.com/research",
-        "Positioning research https://example.com/positioning-research", "positioning",
-        "Creative research https://example.com/creative-research", "creative",
+        "Market social https://example.com/market", "Science https://example.com/science",
+        "Nghiên cứu https://example.com/research", "positioning", "creative",
         "Audit research https://example.com/audit-research", "audit", json.dumps(sample_plan()),
     ])
     def fake_post(url, **kwargs):
@@ -181,10 +171,8 @@ def test_g7_structured_input_sends_all_three_images_to_every_specialist():
     )
     calls = []
     outputs = iter([
-        "Market https://example.com/market", "Science https://example.com/science",
-        "Social https://example.com/social", "Nghiên cứu https://example.com/research",
-        "Positioning research https://example.com/positioning-research", "positioning",
-        "Creative research https://example.com/creative-research", "creative",
+        "Market social https://example.com/market", "Science https://example.com/science",
+        "Nghiên cứu https://example.com/research", "positioning", "creative",
         "Audit research https://example.com/audit-research", "audit", json.dumps(sample_plan()),
     ])
     def fake_post(url, **kwargs):
@@ -216,3 +204,22 @@ def test_schema_supports_external_research_evidence():
     assert "external_research" in CAMPAIGN_PLAN_SCHEMA["properties"]["product_positioning"][
         "properties"
     ]["main_campaign_angle"]["properties"]["evidence"]["items"]["properties"]["basis"]["enum"]
+
+
+def test_search_budget_is_fixed_to_two_discovery_and_one_audit_followup():
+    calls = []
+    outputs = iter([
+        "Market social", "Science official", "Nghiên cứu đã đọc",
+        "positioning", "creative", "Audit research", "audit", json.dumps(sample_plan()),
+    ])
+
+    def fake_post(url, **kwargs):
+        calls.append(kwargs["json"])
+        return FakeResponse(next(outputs))
+
+    result = ResearchService(RawModelClient("test-key", post=fake_post)).run("A product")
+
+    assert result["plan"]["schema_version"] == "1.0"
+    assert len(calls) == 8
+    assert ["tools" in call for call in calls] == [True, True, True, False, False, True, False, False]
+    assert "MARKET + SOCIAL/CONSUMER" in calls[0]["input"][1]["content"]
