@@ -75,7 +75,7 @@ export function TiktokPdpPreview({
           <div className="mt-3 flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-[#FE2C55]" /><span>Đổi ý miễn phí · Hoàn tiền đảm bảo</span></div>
         </section>
         <section className="border-b-8 border-[#f5f5f5] bg-white p-4"><div className="flex items-center justify-between"><b className="text-xs">Chọn phân loại</b><ChevronRight className="h-4 w-4 text-neutral-400" /></div><div className="mt-2 flex gap-2 overflow-hidden">{variantChips.slice(0, 2).map((chip, index) => <span key={chip} className={`max-w-[48%] truncate rounded-sm border px-2.5 py-1.5 text-[9px] ${index === 0 ? "border-[#FE2C55] bg-[#fff4f6] text-[#FE2C55]" : "border-neutral-200"}`}>{chip}</span>)}</div></section>
-        <section className="bg-white p-4"><h2 className="text-xs font-semibold">Chi tiết sản phẩm</h2><p className="mt-2 text-[10px] leading-5 text-neutral-600">{description}</p></section>
+        <section className="bg-white p-4"><h2 className="text-xs font-semibold">Chi tiết sản phẩm</h2><p className="mt-2 text-[10px] leading-5 text-neutral-600">{description}</p>{bullets.length ? <ul className="mt-3 space-y-2 border-t border-neutral-100 pt-3">{bullets.map((bullet) => <li key={bullet} className="flex gap-2 text-[10px] leading-4 text-neutral-700"><span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[#FE2C55]" />{bullet}</li>)}</ul> : null}</section>
       </IphonePreviewFrame>
     );
   }
