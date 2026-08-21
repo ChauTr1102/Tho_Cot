@@ -445,7 +445,8 @@ def run_directed(spec, draft_, plan: CampaignPlan,
             continue
         shots = []
         for i, clip_id in enumerate(value.get("clips", ())):
-            r = results.get(clip_id)
+            raw = results.get(clip_id)
+            r = raw.get("shot") if isinstance(raw, dict) else raw
             if r is None:
                 continue
             shots.append(ShotAsset(
@@ -521,7 +522,8 @@ def run_studio(plan: CampaignPlan, campaign_input: CampaignInput | None = None,
             continue
         shots = []
         for i, clip_id in enumerate(value.get("clips", ())):
-            r = results.get(clip_id)
+            raw = results.get(clip_id)
+            r = raw.get("shot") if isinstance(raw, dict) else raw
             if r is None:
                 continue
             shots.append(ShotAsset(

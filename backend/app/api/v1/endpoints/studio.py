@@ -191,8 +191,12 @@ def _event_payload(event: GraphEvent) -> dict[str, Any]:
 
     payload: dict[str, Any] = {}
     for key, raw in (event.payload or {}).items():
-        if key == "image" or is_dataclass(raw):
-            continue          # the object itself never crosses the wire
+        # The objects themselves never cross the wire — only the paths and text
+        # pulled out of them. A node that returns an object and nothing else
+        # arrives as an empty payload, which is how five of twelve nodes ended
+        # up with no preview.
+        if is_dataclass(raw) or key in {"image", "hero", "keyframe", "shot"}:
+            continue
         payload[key] = _to_url(raw) if key in {"url", "path"} else raw
 
     return {

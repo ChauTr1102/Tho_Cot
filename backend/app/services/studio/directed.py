@@ -112,15 +112,20 @@ def build_nodes(spec: director.GraphSpec, draft: director.Draft,
                 # every later image inherits, and text on it would only be
                 # re-rendered differently on each of them.
                 item = _stub(_n, texts=[])
-                return render.render_hero(item, spine, photo, label_text, out_dir)
+                img = render.render_hero(item, spine, photo, label_text, out_dir)
+                # Return a dict, not the dataclass. The event layer strips
+                # dataclasses so an object result reaches the canvas as an empty
+                # payload — which is why the hero, the keyframes and the clips
+                # showed no picture at all while the stills did.
+                return {"hero": img, "url": img.local_path, "prompt": img.prompt,
+                        "origin": img.origin.value}
 
             nodes.append(Node(id=spec_node.id, kind="image", deps=list(spec_node.deps),
                               run=_hero, concurrency_group="image"))
 
         elif kind in {"image", "poster"}:
             def _still(ctx: dict[str, Any], _n=spec_node, _poster=(kind == "poster")) -> Any:
-                hero = ctx.get(hero_id) if hero_id else None
-                hero_path = getattr(hero, "local_path", None)
+                hero_path = _path_of(ctx.get(hero_id) if hero_id else None)
                 if _poster:
                     img = render.render_poster(
                         _n.id, _n.prompt, spine, _n.texts, label_text,
@@ -139,28 +144,33 @@ def build_nodes(spec: director.GraphSpec, draft: director.Draft,
 
         elif kind == "keyframe":
             def _kf(ctx: dict[str, Any], _n=spec_node) -> Any:
-                hero = ctx.get(hero_id) if hero_id else None
                 img = render.render_item(
                     _stub(_n), spine, photo,
-                    getattr(hero, "local_path", None), label_text, out_dir,
+                    _path_of(ctx.get(hero_id) if hero_id else None), label_text, out_dir,
                     for_video=True)
                 _qa_later(img, [t for _, t in _n.texts], _n.id)
-                return img
+                # `keyframe`, not `image`: a shot's first frame is scaffolding
+                # for the video, not a deliverable, and run_directed maps every
+                # dict carrying `image` into the kit.
+                return {"keyframe": img, "url": img.local_path, "prompt": img.prompt,
+                        "ratio": _n.ratio}
 
             nodes.append(Node(id=spec_node.id, kind="image", deps=list(spec_node.deps),
                               run=_kf, concurrency_group="image"))
 
         elif kind == "clip":
             def _clip(ctx: dict[str, Any], _n=spec_node) -> Any:
-                keyframe = next((ctx[d] for d in _n.deps if d in ctx), None)
-                path = getattr(keyframe, "local_path", None)
+                path = _path_of(next((ctx[d] for d in _n.deps if d in ctx), None))
                 if not path:
                     return degraded(None, note="không có keyframe")
                 shot = _Shot(index=_index_of(_n.id), role=_n.role or "product",
                              scene=_n.prompt, onscreen_text=_first_text(_n),
                              vo_text="", seconds=_n.seconds)
-                return motion.render_shot(shot, path, spine,
-                                          seed=1000 + _index_of(_n.id), out_dir=out_dir)
+                result = motion.render_shot(shot, path, spine,
+                                            seed=1000 + _index_of(_n.id), out_dir=out_dir)
+                return {"shot": result, "url": result.clip_path, "prompt": _n.prompt,
+                        "ratio": _n.ratio, "role": _n.role,
+                        "note": result.fallback_reason if result.used_fallback else None}
 
             nodes.append(Node(id=spec_node.id, kind="video", deps=list(spec_node.deps),
                               run=_clip, concurrency_group="video"))
@@ -187,8 +197,9 @@ def build_nodes(spec: director.GraphSpec, draft: director.Draft,
                     value = ctx.get(dep)
                     if value is None:
                         continue
-                    if getattr(value, "clip_path", None):
-                        clips.append(value.clip_path)
+                    shot = value.get("shot") if isinstance(value, dict) else value
+                    if getattr(shot, "clip_path", None):
+                        clips.append(shot.clip_path)
                     elif getattr(value, "mp3_path", None):
                         vo = value
                 if not clips:
@@ -223,6 +234,24 @@ def build_nodes(spec: director.GraphSpec, draft: director.Draft,
 # ---------------------------------------------------------------------------
 # small helpers
 # ---------------------------------------------------------------------------
+
+def _path_of(value: Any) -> str | None:
+    """The file behind a node result, whether it came back as a dict or an object.
+
+    Node results are dicts now so their previews reach the canvas, but the
+    renderers still hand back dataclasses internally. One unwrapper beats
+    remembering which is which at nine call sites.
+    """
+    if value is None:
+        return None
+    if isinstance(value, dict):
+        for key in ("hero", "keyframe", "image"):
+            inner = value.get(key)
+            if getattr(inner, "local_path", None):
+                return inner.local_path
+        return value.get("url")
+    return getattr(value, "local_path", None)
+
 
 class _Shot:
     """The shape `motion.render_shot` reads. Deliberately duck-typed: `direct.ShotPlan`
