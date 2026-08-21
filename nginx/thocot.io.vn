@@ -102,4 +102,41 @@ server {
         proxy_send_timeout    1000s;
         proxy_read_timeout    1000s;
     }
+
+    # Static pitch deck (presentation-package/ at the repo root — see its own
+    # DEPLOY.txt). Not part of the Docker app: this is a self-contained static
+    # HTML bundle, served straight from disk rather than proxied to either
+    # container. Deploy by copying the folder's contents to
+    # /var/www/thocot-slide/ on the VPS (keep assets-gen/ and frontend/
+    # subfolders intact, exactly as DEPLOY.txt requires — presentation.html
+    # references them by relative path, e.g. "frontend/public/sponsors/...",
+    # "assets-gen/.../master_15s.mp4", so they resolve under
+    # /slide/frontend/... and /slide/assets-gen/... once nginx serves this
+    # whole directory at /slide/).
+    #
+    #   sudo mkdir -p /var/www/thocot-slide
+    #   sudo cp -r presentation-package/. /var/www/thocot-slide/
+    #   sudo chown -R www-data:www-data /var/www/thocot-slide
+    #
+    # Deliberately not /root/temp/: /root is 700 by default (root-only
+    # traversal), and nginx's worker runs as www-data/nginx, not root — every
+    # request under /root/temp/ would 403 until that directory's permissions
+    # were loosened by hand. /var/www/ is the standard, no-fuss location for
+    # static content nginx already expects to read.
+    location /slide/ {
+        alias /var/www/thocot-slide/;
+        index presentation.html;
+
+        # DEPLOY.txt: "Support byte-range requests for smooth MP4 seeking" —
+        # on by default for static files, named here so it's not accidentally
+        # turned off if this block is ever wrapped in a proxy-style location.
+        aio threads;
+        sendfile on;
+    }
+
+    # /slide (no trailing slash) -> /slide/, so the bare URL the deck is meant
+    # to be shared as also resolves instead of 404ing on a missing slash.
+    location = /slide {
+        return 301 /slide/;
+    }
 }
