@@ -44,10 +44,23 @@ server {
         proxy_cache_bypass $http_upgrade;
     }
 
+    # FastAPI backend Swagger UI / ReDoc (docs_url="/docs", redoc_url="/redoc"
+    # in app/main.py — these are NOT under the /api prefix, unlike the rest
+    # of the API). Proxied to the same backend container as /api/ below.
+    location ~ ^/(docs|redoc)$ {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
     # FastAPI backend (docker-compose service "backend", published on host
     # port 8000 — see BACKEND_PORT in .env). The app itself is mounted under
     # the "/api" prefix (see API_V1_STR in backend/.env), so the prefix is
     # forwarded as-is — no trailing slash on proxy_pass, no path stripping.
+    # This also covers /api/openapi.json, which Swagger UI at /docs fetches.
     location /api/ {
         proxy_pass http://127.0.0.1:8000;
         proxy_http_version 1.1;
