@@ -35,3 +35,4 @@ export interface UpdateItemInput {
 }
 export * from './campaign_dto';
 export * from './research';
+export * from './extractor';

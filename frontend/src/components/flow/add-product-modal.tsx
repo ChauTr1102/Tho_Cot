@@ -6,6 +6,7 @@ import {
   ProductImageItem,
   CrawlSimulationResult,
 } from "@/types/campaign";
+import { api } from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -67,63 +68,45 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
 
   const platformMeta = React.useMemo(() => getPlatformMeta(urlInput), [urlInput]);
 
-  const handleImportUrl = () => {
+  const handleImportUrl = async () => {
     if (!urlInput.trim()) { toast.error("Hãy nhập URL sản phẩm hợp lệ."); return; }
     setIsCrawling(true);
     setCrawledData(null);
-    setTimeout(() => {
-      let result: CrawlSimulationResult;
-      const lower = urlInput.toLowerCase();
-      if (lower.includes("tiktok")) {
-        result = {
-          title: "Lumiére Glow Lip Tint Ultra Hydrating 24h & Long Lasting",
-          brand: "Lumiére Beauty", category: "Beauty & Personal Care",
-          price: "189.000", originalPrice: "260.000", currency: "₫",
-          images: [
-            "https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=600&q=80",
-            "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=600&q=80",
-          ],
-          description: "Vegan glass-finish lip tint with organic shea butter.",
-          usps: ["Glass skin finish", "24h hydration", "100% vegan"],
-          platform: "tiktok", rating: 4.9, reviewsCount: 14200, salesVolume: "48.5K+ sold",
-          suggestedTone: "Gen Z Trendy", suggestedGoal: "Increase conversions",
-          suggestedTargetAudience: { gender: "female", ageGroup: ["18-24", "25-34"], painPoints: ["Dry lips"], interests: ["Skincare"] },
-        };
-      } else if (lower.includes("shopee")) {
-        result = {
-          title: "MechStorm Tri-Mode Wireless Mechanical Keyboard RGB Gasket Mount",
-          brand: "MechStorm", category: "Electronics & Gaming",
-          price: "850.000", originalPrice: "1.250.000", currency: "₫",
-          images: [
-            "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=600&q=80",
-            "https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?auto=format&fit=crop&w=600&q=80",
-          ],
-          description: "75% mechanical keyboard with Bluetooth 5.2, 2.4G and Type-C.",
-          usps: ["Tri-mode connectivity", "Gasket Mount dampening", "4000mAh battery"],
-          platform: "shopee", rating: 4.8, reviewsCount: 3890, salesVolume: "12.3K+ sold",
-          suggestedTone: "Tech Reviewer", suggestedGoal: "Increase conversions",
-          suggestedTargetAudience: { gender: "all", ageGroup: ["18-24", "25-34"], painPoints: ["Noisy keyboards"], interests: ["Gaming"] },
-        };
-      } else {
-        result = {
-          title: "AuraSound Hybrid ANC Wireless Headphones",
-          brand: "AuraSound", category: "Electronics & Audio",
-          price: "1.490.000", originalPrice: "2.100.000", currency: "₫",
-          images: [
-            "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80",
-            "https://images.unsplash.com/photo-1484704849700-f032a568e944?auto=format&fit=crop&w=600&q=80",
-          ],
-          description: "Over-ear with 38dB Hybrid ANC and 65h battery.",
-          usps: ["38dB Hybrid ANC", "Hi-Res Audio", "65h battery"],
-          platform: "amazon", rating: 4.9, reviewsCount: 8920, salesVolume: "25K+ sold",
-          suggestedTone: "Luxury Lifestyle", suggestedGoal: "Video Ads",
-          suggestedTargetAudience: { gender: "all", ageGroup: ["25-34"], painPoints: ["Noise"], interests: ["Audio"] },
-        };
-      }
+    try {
+      const resData = await api.extractProduct({ url: urlInput.trim(), render: true });
+      const payload = resData.data;
+
+      const result: CrawlSimulationResult = {
+        title: payload.product_brief?.product_name || "Sản phẩm không tên",
+        brand: "N/A",
+        category: payload.product_brief?.category || "General",
+        price: payload.product_brief?.price_or_promotion?.price?.toString() || "0",
+        originalPrice: undefined,
+        currency: payload.product_brief?.price_or_promotion?.currency || "₫",
+        images: payload.brand_kit?.product_photos?.length ? payload.brand_kit.product_photos : [],
+        description: (payload.product_brief?.key_selling_points || []).join("\\n"),
+        usps: payload.product_brief?.key_selling_points || [],
+        platform: getPlatformMeta(urlInput).name.toLowerCase() as any || "tiktok",
+        rating: 0,
+        reviewsCount: 0,
+        salesVolume: payload.past_campaign_data?.sales_results?.units_sold ? `${payload.past_campaign_data.sales_results.units_sold} sold` : "0 sold",
+        suggestedTone: payload.brand_kit?.tone_of_voice?.description || "Neutral",
+        suggestedGoal: payload.market_signal?.campaign_objective || "Conversions",
+        suggestedTargetAudience: {
+          gender: "all",
+          ageGroup: [],
+          painPoints: payload.market_signal?.consumer_pain_point ? [payload.market_signal.consumer_pain_point] : [],
+          interests: []
+        }
+      };
+      
       setCrawledData(result);
-      setIsCrawling(false);
       toast.success("Đã nhập sản phẩm.");
-    }, 1200);
+    } catch (error: any) {
+      toast.error(error.message || "Đã có lỗi xảy ra");
+    } finally {
+      setIsCrawling(false);
+    }
   };
 
   const handleConfirmUrlImport = () => {

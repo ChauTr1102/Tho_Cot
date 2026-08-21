@@ -1,9 +1,9 @@
-import { CreateItemInput, HealthStatus, Item, StandardResponse, UpdateItemInput } from "@/types";
+import { CreateItemInput, HealthStatus, Item, StandardResponse, UpdateItemInput, ExtractRequest, ExtractResponse } from "@/types";
 import { parseResearchCampaignPlan, validateResearchSubmission, type ResearchCampaignPlan, type ResearchSubmission } from "@/types/research";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
-class ApiError extends Error {
+export class ApiError extends Error {
   status: number;
   data?: unknown;
 
@@ -32,7 +32,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     const json = await res.json().catch(() => null);
 
     if (!res.ok) {
-      const errorMsg = json?.message || `Request failed with status ${res.status}`;
+      const errorMsg = json?.detail || json?.message || `Request failed with status ${res.status}`;
       throw new ApiError(errorMsg, res.status, json);
     }
 
@@ -69,6 +69,35 @@ export const api = {
     request<{ id: number }>(`/items/${id}`, {
       method: "DELETE",
     }),
+
+  // Extractor
+  extractProduct: async (input: ExtractRequest): Promise<ExtractResponse> => {
+    const response = await fetch(`${API_BASE_URL}/extractor/extract`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        url: input.url,
+        render: input.render ?? true,
+        ...(input.model ? { model: input.model } : {}),
+      }),
+    });
+
+    const json: unknown = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      const payload = json as { detail?: string; message?: string } | null;
+      throw new ApiError(
+        payload?.detail || payload?.message || `Lỗi khi trích xuất dữ liệu từ URL (${response.status})`,
+        response.status,
+        json
+      );
+    }
+
+    return json as ExtractResponse;
+  },
+
   runResearch: async ({ input, files, evidence }: ResearchSubmission): Promise<ResearchCampaignPlan> => {
     const validationErrors = validateResearchSubmission({ input, files, evidence });
     if (validationErrors.length) throw new ApiError(validationErrors[0], 0, validationErrors);
@@ -99,3 +128,4 @@ export const api = {
     }
   },
 };
+
