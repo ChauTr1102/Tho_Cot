@@ -1,13 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { Maximize, Pause, Play, RotateCcw, Volume2, VolumeX } from "lucide-react";
+import { Bookmark, Heart, Maximize, MessageCircle, Music2, Pause, Play, RotateCcw, Share2, Volume2, VolumeX } from "lucide-react";
 
 interface PlatformVideoPlayerProps {
   src: string;
   poster?: string;
   title: string;
   platform: "tiktok" | "shopee";
+  fit?: "contain" | "cover";
 }
 
 function formatTime(seconds: number) {
@@ -16,7 +17,7 @@ function formatTime(seconds: number) {
   return `${minutes}:${Math.floor(seconds % 60).toString().padStart(2, "0")}`;
 }
 
-export function PlatformVideoPlayer({ src, poster, title, platform }: PlatformVideoPlayerProps) {
+export function PlatformVideoPlayer({ src, poster, title, platform, fit = "contain" }: PlatformVideoPlayerProps) {
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = React.useState(false);
   const [muted, setMuted] = React.useState(false);
@@ -24,6 +25,8 @@ export function PlatformVideoPlayer({ src, poster, title, platform }: PlatformVi
   const [duration, setDuration] = React.useState(0);
   const [ended, setEnded] = React.useState(false);
   const [error, setError] = React.useState(false);
+  const [liked, setLiked] = React.useState(false);
+  const [saved, setSaved] = React.useState(false);
   const accent = platform === "tiktok" ? "#fe2c55" : "#ee4d2d";
 
   const togglePlayback = async () => {
@@ -58,7 +61,7 @@ export function PlatformVideoPlayer({ src, poster, title, platform }: PlatformVi
       playsInline
       preload="metadata"
       aria-label={`Video sản phẩm ${title}`}
-      className="h-full w-full object-contain"
+      className={`h-full w-full ${fit === "cover" ? "object-cover" : "object-contain"}`}
       onClick={() => void togglePlayback()}
       onPlay={() => { setPlaying(true); setEnded(false); }}
       onPause={() => setPlaying(false)}
@@ -74,6 +77,21 @@ export function PlatformVideoPlayer({ src, poster, title, platform }: PlatformVi
     </button>
 
     {error ? <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 bg-black/75 px-3 py-2 text-center text-[11px]">Không thể phát video. Hãy kiểm tra kết nối tới máy chủ media.</div> : null}
+
+    {platform === "tiktok" ? <>
+      <div className="absolute bottom-24 right-2.5 z-30 flex flex-col items-center gap-3 text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
+        <div className="mb-1 flex h-9 w-9 items-center justify-center rounded-full border-2 border-white bg-neutral-800 text-xs font-bold">{title.trim().charAt(0).toUpperCase() || "P"}</div>
+        <button type="button" onClick={() => setLiked((value) => !value)} aria-label={liked ? "Bỏ thích" : "Thích video"} aria-pressed={liked} className="flex h-9 w-9 items-center justify-center rounded-full bg-black/25 transition-transform hover:scale-105"><Heart className={`h-6 w-6 ${liked ? "fill-[#fe2c55] text-[#fe2c55]" : "fill-white text-white"}`} /></button>
+        <button type="button" aria-label="Xem bình luận" className="flex h-9 w-9 items-center justify-center rounded-full bg-black/25 transition-transform hover:scale-105"><MessageCircle className="h-6 w-6 fill-white text-white" /></button>
+        <button type="button" onClick={() => setSaved((value) => !value)} aria-label={saved ? "Bỏ lưu" : "Lưu video"} aria-pressed={saved} className="flex h-9 w-9 items-center justify-center rounded-full bg-black/25 transition-transform hover:scale-105"><Bookmark className={`h-6 w-6 ${saved ? "fill-[#face15] text-[#face15]" : "fill-white text-white"}`} /></button>
+        <button type="button" aria-label="Chia sẻ video" className="flex h-9 w-9 items-center justify-center rounded-full bg-black/25 transition-transform hover:scale-105"><Share2 className="h-6 w-6 fill-white text-white" /></button>
+      </div>
+      <div className="pointer-events-none absolute inset-x-0 bottom-14 z-20 bg-gradient-to-t from-black/80 to-transparent px-3 pb-3 pr-14 pt-12 text-left text-white">
+        <p className="truncate text-[11px] font-bold">@tiktokshop</p>
+        <p className="mt-1 line-clamp-2 text-[10px] leading-4">{title}</p>
+        <p className="mt-2 flex items-center gap-1.5 truncate text-[9px] text-white/90"><Music2 className="h-3 w-3 shrink-0" /> Âm thanh gốc · TikTok Shop</p>
+      </div>
+    </> : null}
 
     <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/90 via-black/55 to-transparent px-3 pb-2.5 pt-8 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
       <input
