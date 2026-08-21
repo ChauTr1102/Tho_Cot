@@ -224,3 +224,85 @@ export function mediaUrl(path: string): string {
   if (/^https?:/i.test(path)) return path;
   return `${API_BASE_URL.replace(/\/api\/?$/, "")}${path}`;
 }
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * Headless run — autopilot
+ * ────────────────────────────────────────────────────────────────────────── */
+
+/** `GET /studio/{campaign_id}/assets`, in the DTO shapes described in
+ * @/types/studio's `StudioAssetDTOResponse`. Duplicated from `api.ts`'s
+ * client rather than imported from it, so this module (used by both the
+ * studio screen and the headless autopilot runner) has no dependency on the
+ * StandardResponse request wrapper. */
+async function fetchStudioAssets(campaignId: string) {
+  const res = await fetch(
+    `${API_BASE_URL}/studio/${encodeURIComponent(campaignId)}/assets`
+  );
+  if (res.status === 404) return null; // run not finished (or failed before producing a bundle) yet
+  if (!res.ok) throw new Error(`GET /studio/${campaignId}/assets trả về HTTP ${res.status}`);
+  const body = await res.json().catch(() => null);
+  return body?.data ?? null;
+}
+
+export interface AutopilotStudioRunResult {
+  campaignId: string;
+  productCollectionImageSet: Record<string, unknown> | null;
+  shortFormVideoAsset: Record<string, unknown> | null;
+  commerceCopy: Record<string, unknown> | null;
+}
+
+/**
+ * Drive a real studio run end-to-end with no human in the loop: propose,
+ * auto-approve the proposal unedited, then poll until the bundle exists.
+ *
+ * This is the same real generation the manual pipeline runs
+ * (`AssetStudio.handlePropose` + `handleApprove` + `useStudioStream`), just
+ * without the draft-review UI — autopilot has nobody to show the draft to,
+ * so approving it unedited is the equivalent of a user clicking "Duyệt"
+ * immediately. `researchCampaignId` is the campaign research already
+ * finished for (what `requestDraft({ campaign_id })` expects); the studio
+ * mints its own new run id internally, returned here as `campaignId`.
+ *
+ * Polls `/assets` (rather than opening an EventSource, which needs a
+ * component lifecycle to own the connection) every `pollIntervalMs` until
+ * either asset field is ready or `timeoutMs` elapses. Throws on a genuine
+ * failure (bad request, network error) but not on "still running" — a
+ * timeout returns null fields rather than throwing, so a slow render
+ * degrades to "no real assets yet" instead of failing the whole autopilot
+ * run.
+ */
+export async function runStudioForAutopilot(
+  researchCampaignId: string,
+  {
+    direction = "",
+    pollIntervalMs = 5000,
+    timeoutMs = 10 * 60 * 1000,
+  }: { direction?: string; pollIntervalMs?: number; timeoutMs?: number } = {}
+): Promise<AutopilotStudioRunResult> {
+  const { campaignId, draft } = await requestDraft({
+    campaign_id: researchCampaignId,
+    direction,
+    with_video: true,
+  });
+
+  await approveDraft(campaignId, { draft, withVideo: true });
+
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const assets = await fetchStudioAssets(campaignId);
+    if (assets && (assets.product_collection_image_set || assets.short_form_video_asset)) {
+      return {
+        campaignId,
+        productCollectionImageSet: assets.product_collection_image_set ?? null,
+        shortFormVideoAsset: assets.short_form_video_asset ?? null,
+        commerceCopy: assets.commerce_copy ?? null,
+      };
+    }
+    await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
+  }
+
+  // Timed out — the run may still finish later, but the autopilot flow can't
+  // wait indefinitely. Caller falls back to mock data for the report rather
+  // than blocking the pipeline forever.
+  return { campaignId, productCollectionImageSet: null, shortFormVideoAsset: null, commerceCopy: null };
+}
