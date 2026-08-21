@@ -1,10 +1,14 @@
 "use client";
 import * as React from "react";
 import {
+  ArrowDown,
+  Bot,
   Briefcase,
+  CheckCircle2,
   ExternalLink,
   FileText,
   ImageIcon,
+  Layers,
   Link2,
   Loader2,
   Palette,
@@ -378,16 +382,85 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange }) => {
         </div>
       )}
 
-      {/* DETAILED FORM SECTIONS */}
-      <div className="flex-1 space-y-6 overflow-y-auto pr-2 pb-8">
-        <Section icon={Briefcase} title="1. Thông tin sản phẩm">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field label="Campaign ID *">
-              <Input
-                className={inputClass}
-                value={data.campaign_id}
-                onChange={(e) => setInput({ ...data, campaign_id: e.target.value })}
-              />
+      {/* WAITING / LOADING STATES IN LINK MODE BEFORE EXTRACTION */}
+      {inputMode === "link" && !extractedSuccess && (
+        <div className="flex-1 flex flex-col justify-center py-4">
+          {isExtracting ? (
+            <div className="p-8 border border-[#35ea52]/40 bg-[#35ea52]/[0.02] flex flex-col items-center justify-center text-center space-y-4 animate-in fade-in duration-300">
+              <div className="w-14 h-14 rounded-full border border-[#35ea52] bg-[#35ea52]/10 flex items-center justify-center text-[#35ea52] shadow-[0_0_20px_rgba(53,234,82,0.2)]">
+                <Loader2 className="h-7 w-7 animate-spin" />
+              </div>
+              <div className="space-y-1.5 max-w-md">
+                <h4 className="text-sm font-mono font-bold tracking-wider text-[#35ea52] uppercase">
+                  AI ĐANG CÀO & PHÂN TÍCH DỮ LIỆU SẢN PHẨM...
+                </h4>
+                <p className="text-xs font-mono text-foreground/50">
+                  Playwright đang tải trang & Gemini AI đang đọc thông số, hình ảnh, phân khúc khách hàng. Dữ liệu sẽ tự động bắn xuống form ngay sau khi hoàn tất.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="p-8 border border-dashed border-foreground/20 bg-foreground/[0.01] flex flex-col items-center justify-center text-center space-y-4 my-auto animate-in fade-in duration-300">
+              <div className="w-14 h-14 rounded-full border border-[#35ea52]/30 bg-[#35ea52]/5 flex items-center justify-center text-[#35ea52]">
+                <Bot className="h-7 w-7" />
+              </div>
+              <div className="space-y-1.5 max-w-md">
+                <h4 className="text-sm font-mono font-bold tracking-wider text-foreground uppercase">
+                  SẴN SÀNG TIẾP NHẬN LINK TIKTOK SHOP
+                </h4>
+                <p className="text-xs font-mono text-foreground/45">
+                  Dán URL sản phẩm vào thanh tìm kiếm phía trên và bấm{" "}
+                  <span className="text-[#35ea52] font-bold">TRÍCH XUẤT & ĐIỀN FORM</span>. Toàn bộ hồ sơ nghiên cứu sản phẩm sẽ được AI tự động phân tích và bắn xuống form chi tiết.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setInputMode("manual")}
+                  className="px-3.5 py-1.5 border border-foreground/20 text-xs font-mono text-foreground/60 hover:text-foreground hover:border-foreground/40 transition-all flex items-center gap-1.5"
+                >
+                  <PenLine className="h-3.5 w-3.5" />
+                  Hoặc chuyển sang chế độ tự điền thủ công
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* DETAILED FORM SECTIONS: RENDERED ONLY WHEN MANUAL OR AFTER EXTRACTION */}
+      {(inputMode === "manual" || extractedSuccess) && (
+        <div className="flex-1 space-y-6 overflow-y-auto pr-2 pb-8 animate-in fade-in slide-in-from-top-3 duration-300">
+          {inputMode === "link" && extractedSuccess && (
+            <div className="p-3 border border-[#35ea52]/40 bg-[#35ea52]/[0.05] flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-[#35ea52]" />
+                <span className="text-xs font-mono font-bold text-foreground">
+                  ĐÃ NẠP DỮ LIỆU TỪ LINK:{" "}
+                  <span className="text-[#35ea52]">{data.product_brief.product_name || "Sản phẩm"}</span>
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setExtractedSuccess(false);
+                  setTiktokUrl("");
+                }}
+                className="h-7 px-3 border border-foreground/20 text-[11px] font-mono text-foreground/60 hover:text-foreground transition-all"
+              >
+                Trích xuất link khác
+              </button>
+            </div>
+          )}
+
+          <Section icon={Briefcase} title="1. Thông tin sản phẩm">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Campaign ID *">
+                <Input
+                  className={inputClass}
+                  value={data.campaign_id}
+                  onChange={(e) => setInput({ ...data, campaign_id: e.target.value })}
+                />
             </Field>
             <Field label="Product name *">
               <Input
@@ -834,6 +907,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange }) => {
         <fieldset className="space-y-2"><legend className="text-[10px] font-mono text-foreground/50 uppercase tracking-wider">Campaign objectives *</legend><div className="flex flex-wrap gap-4">{CAMPAIGN_OBJECTIVES.map((objective) => <label key={objective} className="flex items-center gap-2 text-xs font-mono text-foreground/60"><input type="checkbox" className="accent-[#35ea52]" checked={data.market_signal.campaign_objectives.includes(objective)} onChange={(e) => market({ campaign_objectives: e.target.checked ? [...data.market_signal.campaign_objectives, objective] : data.market_signal.campaign_objectives.filter((item: CampaignObjective) => item !== objective) })} />{objective}</label>)}</div></fieldset>
       </Section>
     </div>
+    )}
   </div>
   );
 };
