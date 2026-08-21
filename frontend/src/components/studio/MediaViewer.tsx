@@ -84,7 +84,7 @@ export function MediaViewer({ node, onClose }: MediaViewerProps) {
               </DialogDescription>
             </DialogHeader>
 
-            <div className="grid max-h-[72vh] min-h-[min(60vh,420px)] place-items-center overflow-hidden rounded-lg bg-black/45">
+            <div className="grid max-h-[72vh] min-h-[min(60vh,420px)] place-items-center overflow-hidden rounded-none bg-black/45">
               {isVideoUrl(url) ? (
                 // Muted autoplay so the clip is *moving* the instant it opens —
                 // a still frame behind a play button is what the node already
@@ -123,7 +123,7 @@ export function MediaViewer({ node, onClose }: MediaViewerProps) {
 
             {typeof node.payload.prompt === "string" &&
             node.payload.prompt.length > 0 ? (
-              <p className="max-h-24 overflow-y-auto rounded-md border border-border bg-muted/40 px-3 py-2 text-[12px] leading-relaxed text-muted-foreground">
+              <p className="max-h-24 overflow-y-auto rounded-none border border-border bg-muted/40 px-3 py-2 text-[12px] leading-relaxed text-muted-foreground">
                 {node.payload.prompt}
               </p>
             ) : null}

@@ -147,7 +147,7 @@ export const GenerateAdsView: React.FC<GenerateAdsViewProps> = ({
               onClick={() => setWorkflowTab(tab.id)}
               className={`flex items-center justify-center gap-2 py-2.5 px-3 text-sm font-mono tracking-wider border transition-all ${
                 workflowTab === tab.id
-                  ? "bg-foreground text-black border-foreground font-bold"
+                  ? "bg-foreground text-white border-foreground font-bold"
                   : "bg-transparent text-foreground/40 border-foreground/15 hover:border-foreground/40 hover:text-foreground/70"
               }`}
             >
@@ -188,7 +188,7 @@ export const GenerateAdsView: React.FC<GenerateAdsViewProps> = ({
 
             <div className="p-4 border-b border-foreground/10 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <span className="text-xs font-mono font-bold text-black bg-foreground px-1.5 py-0.5 tracking-wider">
+                <span className="text-xs font-mono font-bold text-white bg-foreground px-1.5 py-0.5 tracking-wider">
                   01
                 </span>
                 <div>
@@ -213,7 +213,7 @@ export const GenerateAdsView: React.FC<GenerateAdsViewProps> = ({
                   <button
                     type="button"
                     onClick={onOpenAddModal}
-                    className="text-xs font-mono border border-foreground/30 px-3 py-1.5 text-foreground/60 hover:bg-foreground hover:text-black transition-all tracking-wider"
+                    className="text-xs font-mono border border-foreground/30 px-3 py-1.5 text-foreground/60 hover:bg-foreground hover:text-white transition-all tracking-wider"
                   >
                     + ADD.PRODUCT
                   </button>
@@ -262,7 +262,7 @@ export const GenerateAdsView: React.FC<GenerateAdsViewProps> = ({
             <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-foreground/25" />
 
             <div className="p-4 border-b border-foreground/10 flex items-center gap-2.5">
-              <span className="text-xs font-mono font-bold text-black bg-foreground px-1.5 py-0.5 tracking-wider">
+              <span className="text-xs font-mono font-bold text-white bg-foreground px-1.5 py-0.5 tracking-wider">
                 02
               </span>
               <div>
@@ -292,7 +292,7 @@ export const GenerateAdsView: React.FC<GenerateAdsViewProps> = ({
                       onClick={() => setAspectRatio(item.id)}
                       className={`flex flex-col items-center justify-center p-3 border text-center transition-all ${
                         aspectRatio === item.id
-                          ? "bg-foreground text-black border-foreground"
+                          ? "bg-foreground text-white border-foreground"
                           : "bg-transparent text-foreground/40 border-foreground/10 hover:border-foreground/30"
                       }`}
                     >
@@ -380,7 +380,7 @@ export const GenerateAdsView: React.FC<GenerateAdsViewProps> = ({
                 type="button"
                 onClick={handleGenerate}
                 disabled={isGenerating || !selectedProduct}
-                className="w-full h-11 border-2 border-foreground text-foreground font-mono text-sm tracking-widest uppercase flex items-center justify-center gap-2 hover:bg-foreground hover:text-black transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                className="w-full h-11 border-2 border-foreground text-foreground font-mono text-sm tracking-widest uppercase flex items-center justify-center gap-2 hover:bg-foreground hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 {isGenerating ? (
                   <>
@@ -468,7 +468,7 @@ export const GenerateAdsView: React.FC<GenerateAdsViewProps> = ({
                               navigator.clipboard.writeText(result.prompt);
                               toast.success("Prompt copied.");
                             }}
-                            className="p-2 border border-foreground/50 text-foreground hover:bg-foreground hover:text-black transition-all"
+                            className="p-2 border border-foreground/50 text-foreground hover:bg-foreground hover:text-white transition-all"
                             title="Copy prompt"
                           >
                             <Copy className="h-3.5 w-3.5" />
@@ -477,7 +477,7 @@ export const GenerateAdsView: React.FC<GenerateAdsViewProps> = ({
                             href={result.url}
                             target="_blank"
                             rel="noreferrer"
-                            className="p-2 bg-foreground text-black hover:bg-foreground/80 transition-all"
+                            className="p-2 bg-foreground text-white hover:bg-foreground/80 transition-all"
                             title="Download"
                           >
                             <Download className="h-3.5 w-3.5" />

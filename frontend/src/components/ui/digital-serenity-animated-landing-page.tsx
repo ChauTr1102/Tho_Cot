@@ -93,7 +93,7 @@ export const DigitalSerenity: React.FC<DigitalSerenityProps> = ({
     const wordElements = document.querySelectorAll<HTMLElement>(".word-animate");
     const handleMouseEnter = (e: Event) => {
       const target = e.target as HTMLElement;
-      if (target) target.style.textShadow = "0 0 25px rgba(53, 234, 82, 0.7)";
+      if (target) target.style.textShadow = "0 0 20px rgba(40, 200, 64, 0.45)";
     };
     const handleMouseLeave = (e: Event) => {
       const target = e.target as HTMLElement;
@@ -138,7 +138,7 @@ export const DigitalSerenity: React.FC<DigitalSerenityProps> = ({
       position: fixed;
       pointer-events: none;
       border-radius: 9999px;
-      background-image: radial-gradient(circle, rgba(53, 234, 82, 0.15), rgba(53, 234, 82, 0.08), rgba(0, 23, 8, 0.04), transparent 70%);
+      background-image: radial-gradient(circle, rgba(40, 200, 64, 0.10), rgba(40, 200, 64, 0.06), rgba(200, 195, 180, 0.04), transparent 70%);
       transform: translate(-50%, -50%);
       will-change: left, top, opacity;
       transition: left 70ms linear, top 70ms linear, opacity 300ms ease-out;
@@ -155,8 +155,8 @@ export const DigitalSerenity: React.FC<DigitalSerenityProps> = ({
       100% { stroke-dashoffset: 0; opacity: 0.4; }
     }
     @keyframes pulse-glow {
-      0%, 100% { opacity: 0.2; transform: scale(1); }
-      50% { opacity: 0.6; transform: scale(1.2); }
+      0%, 100% { opacity: 0.15; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.15); }
     }
     .word-animate {
       display: inline-block;
@@ -165,11 +165,11 @@ export const DigitalSerenity: React.FC<DigitalSerenityProps> = ({
       transition: color 0.3s ease, transform 0.3s ease;
     }
     .word-animate:hover {
-      color: #35ea52;
+      color: #28C840;
       transform: translateY(-2px);
     }
     .grid-line {
-      stroke: rgba(53, 234, 82, 0.2);
+      stroke: rgba(13, 17, 23, 0.25);
       stroke-width: 0.5;
       opacity: 0;
       stroke-dasharray: 6 6;
@@ -177,7 +177,7 @@ export const DigitalSerenity: React.FC<DigitalSerenityProps> = ({
       animation: grid-draw 2s ease-out forwards;
     }
     .detail-dot {
-      fill: #35ea52;
+      fill: #28C840;
       opacity: 0;
       animation: pulse-glow 3s ease-in-out infinite;
     }
@@ -185,7 +185,7 @@ export const DigitalSerenity: React.FC<DigitalSerenityProps> = ({
       position: absolute;
       width: 44px;
       height: 44px;
-      border: 1px solid rgba(53, 234, 82, 0.2);
+      border: 1px solid rgba(13, 17, 23, 0.10);
       opacity: 0;
       animation: word-appear 1s ease-out forwards;
     }
@@ -199,7 +199,7 @@ export const DigitalSerenity: React.FC<DigitalSerenityProps> = ({
       left: 0;
       width: 0;
       height: 2px;
-      background: linear-gradient(90deg, transparent, #35ea52, #7ef962, #a8ff96, transparent);
+      background: linear-gradient(90deg, transparent, #28C840, #5BD66A, #8DE69A, transparent);
       animation: underline-grow 2s ease-out forwards;
       animation-delay: 1.8s;
     }
@@ -210,17 +210,17 @@ export const DigitalSerenity: React.FC<DigitalSerenityProps> = ({
       position: absolute;
       width: 3px;
       height: 3px;
-      background: #35ea52;
+      background: #28C840;
       border-radius: 50%;
       opacity: 0;
       animation: float 4s ease-in-out infinite;
       animation-play-state: paused;
     }
     @keyframes float {
-      0%, 100% { transform: translateY(0) translateX(0); opacity: 0.2; }
-      25% { transform: translateY(-12px) translateX(6px); opacity: 0.6; }
-      50% { transform: translateY(-6px) translateX(-4px); opacity: 0.4; }
-      75% { transform: translateY(-18px) translateX(8px); opacity: 0.7; }
+      0%, 100% { transform: translateY(0) translateX(0); opacity: 0.15; }
+      25% { transform: translateY(-12px) translateX(6px); opacity: 0.5; }
+      50% { transform: translateY(-6px) translateX(-4px); opacity: 0.3; }
+      75% { transform: translateY(-18px) translateX(8px); opacity: 0.6; }
     }
     @keyframes marquee-scroll {
       0% { transform: translateX(0%); }
@@ -238,7 +238,7 @@ export const DigitalSerenity: React.FC<DigitalSerenityProps> = ({
       position: fixed;
       width: 6px;
       height: 6px;
-      background: rgba(53, 234, 82, 0.6);
+      background: rgba(40, 200, 64, 0.5);
       border-radius: 50%;
       transform: translate(-50%, -50%);
       pointer-events: none;
@@ -250,7 +250,7 @@ export const DigitalSerenity: React.FC<DigitalSerenityProps> = ({
   return (
     <>
       <style>{pageStyles}</style>
-      <div className="min-h-screen bg-gradient-to-br from-[#001708] via-[#001f0c] to-[#001206] text-[#f4faf5] font-mono overflow-hidden relative selection:bg-[#35ea52] selection:text-black">
+      <div className="min-h-screen bg-gradient-to-br from-[#FAF8F5] via-[#F5F3EF] to-[#EFECe6] text-[#0D1117] font-mono overflow-hidden relative selection:bg-[#28C840] selection:text-white">
         {/* Cyberpunk Grid Background */}
         <svg
           className="absolute inset-0 w-full h-full pointer-events-none opacity-80"
@@ -259,7 +259,7 @@ export const DigitalSerenity: React.FC<DigitalSerenityProps> = ({
         >
           <defs>
             <pattern id="gridDarkMatrix" width="60" height="60" patternUnits="userSpaceOnUse">
-              <path d="M 60 0 L 0 0 0 60" fill="none" stroke="rgba(53, 234, 82, 0.08)" strokeWidth="0.5" />
+              <path d="M 60 0 L 0 0 0 60" fill="none" stroke="rgba(13, 17, 23, 0.15)" strokeWidth="0.5" />
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="url(#gridDarkMatrix)" />
@@ -278,16 +278,16 @@ export const DigitalSerenity: React.FC<DigitalSerenityProps> = ({
 
         {/* Responsive Corner Elements */}
         <div className="corner-element-animate top-4 left-4 sm:top-6 sm:left-6 md:top-8 md:left-8" style={{ animationDelay: "1s" }}>
-          <div className="absolute top-0 left-0 w-2 h-2 bg-[#35ea52] opacity-70 rounded-full"></div>
+          <div className="absolute top-0 left-0 w-2 h-2 bg-[#28C840] opacity-50 rounded-full"></div>
         </div>
         <div className="corner-element-animate top-4 right-4 sm:top-6 sm:right-6 md:top-8 md:right-8" style={{ animationDelay: "1.2s" }}>
-          <div className="absolute top-0 right-0 w-2 h-2 bg-[#35ea52] opacity-70 rounded-full"></div>
+          <div className="absolute top-0 right-0 w-2 h-2 bg-[#28C840] opacity-50 rounded-full"></div>
         </div>
         <div className="corner-element-animate bottom-4 left-4 sm:bottom-6 sm:left-6 md:bottom-8 md:left-8" style={{ animationDelay: "1.4s" }}>
-          <div className="absolute bottom-0 left-0 w-2 h-2 bg-[#35ea52] opacity-70 rounded-full"></div>
+          <div className="absolute bottom-0 left-0 w-2 h-2 bg-[#28C840] opacity-50 rounded-full"></div>
         </div>
         <div className="corner-element-animate bottom-4 right-4 sm:bottom-6 sm:right-6 md:bottom-8 md:right-8" style={{ animationDelay: "1.6s" }}>
-          <div className="absolute bottom-0 right-0 w-2 h-2 bg-[#35ea52] opacity-70 rounded-full"></div>
+          <div className="absolute bottom-0 right-0 w-2 h-2 bg-[#28C840] opacity-50 rounded-full"></div>
         </div>
 
         {/* Floating particles */}
@@ -304,34 +304,34 @@ export const DigitalSerenity: React.FC<DigitalSerenityProps> = ({
             <img
               src="/brand/logo-header.png"
               alt="CAIBS Brand Logo"
-              className="h-10 sm:h-14 w-auto object-contain drop-shadow-[0_0_15px_rgba(53,234,82,0.4)] hover:scale-105 transition-transform"
+              className="h-10 sm:h-14 w-auto object-contain hover:scale-105 transition-transform"
             />
-            <div className="mt-3 w-20 sm:w-32 h-[2px] bg-gradient-to-r from-transparent via-[#35ea52] to-transparent mx-auto"></div>
+            <div className="mt-3 w-20 sm:w-32 h-[2px] bg-gradient-to-r from-transparent via-[#28C840] to-transparent mx-auto"></div>
           </div>
 
           {/* Center Hero Heading & Slogan */}
           <div className="flex-1 flex flex-col items-center justify-center text-center max-w-5xl mx-auto w-full py-4 sm:py-8 my-auto">
             <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold leading-[1.15] tracking-tight text-decoration-animate flex flex-wrap items-center justify-center gap-x-3 sm:gap-x-4 gap-y-1.5 max-w-4xl mx-auto">
-              <span className="text-white flex items-center gap-2">
+              <span className="text-[#0D1117] flex items-center gap-2">
                 <span className="word-animate" data-delay="300">Từ</span>
                 <span className="word-animate" data-delay="420">Dữ</span>
                 <span className="word-animate" data-delay="540">Liệu</span>
               </span>
-              <span className="text-white flex items-center gap-2">
+              <span className="text-[#0D1117] flex items-center gap-2">
                 <span className="word-animate" data-delay="660">Đến</span>
               </span>
-              <span className="text-[#35ea52] drop-shadow-[0_0_25px_rgba(53,234,82,0.4)] flex items-center gap-2">
+              <span className="text-[#28C840] drop-shadow-[0_0_18px_rgba(40,200,64,0.25)] flex items-center gap-2">
                 <span className="word-animate font-black" data-delay="780">Chiến</span>
                 <span className="word-animate font-black" data-delay="900">Dịch</span>
               </span>
-              <span className="text-[#35ea52] drop-shadow-[0_0_25px_rgba(53,234,82,0.4)] flex items-center gap-2">
+              <span className="text-[#28C840] drop-shadow-[0_0_18px_rgba(40,200,64,0.25)] flex items-center gap-2">
                 <span className="word-animate font-black" data-delay="1020">Bùng</span>
                 <span className="word-animate font-black" data-delay="1140">Nổ</span>
               </span>
             </h1>
 
             {/* Slogan Subtitle */}
-            <p className="text-sm sm:text-base md:text-lg lg:text-xl font-normal text-[#a1c1a7] leading-relaxed max-w-2xl mx-auto mt-5 sm:mt-6 font-sans">
+            <p className="text-sm sm:text-base md:text-lg lg:text-xl font-normal text-[#4B5563] leading-relaxed max-w-2xl mx-auto mt-5 sm:mt-6 font-sans">
               <span className="word-animate" data-delay="1300">
                 {subHeading}
               </span>
@@ -350,38 +350,38 @@ export const DigitalSerenity: React.FC<DigitalSerenityProps> = ({
                     <img
                       src="/brand/logo-horizontal.png"
                       alt="CAIBS"
-                      className="h-7 sm:h-8 w-auto object-contain mr-2 drop-shadow-[0_0_10px_rgba(53,234,82,0.3)]"
+                      className="h-7 sm:h-8 w-auto object-contain mr-2"
                     />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/dnes.png" alt="DNES" className="h-7 sm:h-8 w-auto object-contain opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/dnes.png" alt="DNES" className="h-7 sm:h-8 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/ecomdy.png" alt="Ecomdy" className="h-6 sm:h-7 w-auto object-contain opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/ecomdy.png" alt="Ecomdy" className="h-6 sm:h-7 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/byteplus.png" alt="BytePlus" className="h-5 sm:h-6 w-auto object-contain opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/byteplus.png" alt="BytePlus" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/printway.png" alt="Printway" className="h-5 sm:h-6 w-auto object-contain opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/printway.png" alt="Printway" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/burgerprints.png" alt="BurgerPrints" className="h-5 sm:h-6 w-auto object-contain opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/burgerprints.png" alt="BurgerPrints" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/kalodata.png" alt="Kalodata" className="h-6 sm:h-7 w-auto object-contain opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/kalodata.png" alt="Kalodata" className="h-6 sm:h-7 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/wealify.png" alt="Wealify" className="h-5 sm:h-6 w-auto object-contain opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/wealify.png" alt="Wealify" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/gke-logistics.png" alt="GKE Logistics" className="h-5 sm:h-6 w-auto object-contain opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/gke-logistics.png" alt="GKE Logistics" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/pgprints.png" alt="PG Prints" className="h-5 sm:h-6 w-auto object-contain opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/pgprints.png" alt="PG Prints" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/fristify.png" alt="Fristify" className="h-5 sm:h-6 w-auto object-contain opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/fristify.png" alt="Fristify" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/innovark.png" alt="Innovark" className="h-5 sm:h-6 w-auto object-contain opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/innovark.png" alt="Innovark" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/lianlian.png" alt="LianLian Global" className="h-5 sm:h-6 w-auto object-contain opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/lianlian.png" alt="LianLian Global" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/partner-swissep.png" alt="Swiss EP" className="h-5 sm:h-6 w-auto object-contain opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/partner-swissep.png" alt="Swiss EP" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/partner-genaifund.png" alt="GenAI Fund" className="h-5 sm:h-6 w-auto object-contain opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/partner-genaifund.png" alt="GenAI Fund" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/partner-dsa.png" alt="DSA" className="h-5 sm:h-6 w-auto object-contain opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/partner-dsa.png" alt="DSA" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
                   </div>
 
                   {/* Set 2 (Seamless loop copy) */}
@@ -390,38 +390,38 @@ export const DigitalSerenity: React.FC<DigitalSerenityProps> = ({
                     <img
                       src="/brand/logo-horizontal.png"
                       alt="CAIBS"
-                      className="h-7 sm:h-8 w-auto object-contain mr-2 drop-shadow-[0_0_10px_rgba(53,234,82,0.3)]"
+                      className="h-7 sm:h-8 w-auto object-contain mr-2"
                     />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/dnes.png" alt="DNES" className="h-7 sm:h-8 w-auto object-contain opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/dnes.png" alt="DNES" className="h-7 sm:h-8 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/ecomdy.png" alt="Ecomdy" className="h-6 sm:h-7 w-auto object-contain opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/ecomdy.png" alt="Ecomdy" className="h-6 sm:h-7 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/byteplus.png" alt="BytePlus" className="h-5 sm:h-6 w-auto object-contain opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/byteplus.png" alt="BytePlus" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/printway.png" alt="Printway" className="h-5 sm:h-6 w-auto object-contain opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/printway.png" alt="Printway" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/burgerprints.png" alt="BurgerPrints" className="h-5 sm:h-6 w-auto object-contain opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/burgerprints.png" alt="BurgerPrints" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/kalodata.png" alt="Kalodata" className="h-6 sm:h-7 w-auto object-contain opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/kalodata.png" alt="Kalodata" className="h-6 sm:h-7 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/wealify.png" alt="Wealify" className="h-5 sm:h-6 w-auto object-contain opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/wealify.png" alt="Wealify" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/gke-logistics.png" alt="GKE Logistics" className="h-5 sm:h-6 w-auto object-contain opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/gke-logistics.png" alt="GKE Logistics" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/pgprints.png" alt="PG Prints" className="h-5 sm:h-6 w-auto object-contain opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/pgprints.png" alt="PG Prints" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/fristify.png" alt="Fristify" className="h-5 sm:h-6 w-auto object-contain opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/fristify.png" alt="Fristify" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/innovark.png" alt="Innovark" className="h-5 sm:h-6 w-auto object-contain opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/innovark.png" alt="Innovark" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/lianlian.png" alt="LianLian Global" className="h-5 sm:h-6 w-auto object-contain opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/lianlian.png" alt="LianLian Global" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/partner-swissep.png" alt="Swiss EP" className="h-5 sm:h-6 w-auto object-contain opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/partner-swissep.png" alt="Swiss EP" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/partner-genaifund.png" alt="GenAI Fund" className="h-5 sm:h-6 w-auto object-contain opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/partner-genaifund.png" alt="GenAI Fund" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/sponsors/partner-dsa.png" alt="DSA" className="h-5 sm:h-6 w-auto object-contain opacity-70 hover:opacity-100 transition-all hover:scale-105" />
+                    <img src="/sponsors/partner-dsa.png" alt="DSA" className="h-5 sm:h-6 w-auto object-contain invert brightness-90 opacity-70 hover:opacity-100 transition-all hover:scale-105" />
                   </div>
                 </div>
               </div>
@@ -431,7 +431,7 @@ export const DigitalSerenity: React.FC<DigitalSerenityProps> = ({
             <div className="flex items-center justify-center mt-4 sm:mt-6 opacity-0" style={{ animation: "word-appear 0.8s ease-out forwards", animationDelay: "1.8s" }}>
               <Link
                 href={ctaHref}
-                className="px-8 sm:px-10 py-3.5 sm:py-4 bg-[#35ea52] text-black font-bold text-xs sm:text-sm font-mono tracking-wider hover:bg-[#35ea52]/90 transition-all flex items-center justify-center gap-2.5 shadow-[0_0_25px_rgba(53,234,82,0.35)] hover:scale-105 rounded-sm"
+                className="px-8 sm:px-10 py-3.5 sm:py-4 bg-[#28C840] text-white font-bold text-xs sm:text-sm font-mono tracking-wider hover:bg-[#22B038] transition-all flex items-center justify-center gap-2.5 shadow-[0_0_20px_rgba(40,200,64,0.25)] hover:scale-105 rounded-sm"
               >
                 <span>{ctaText}</span>
                 <ArrowRight className="h-4 w-4" />
@@ -439,19 +439,19 @@ export const DigitalSerenity: React.FC<DigitalSerenityProps> = ({
             </div>
             {/* Responsive Detail Lines */}
             <div
-              className="absolute -left-6 sm:-left-8 top-1/2 transform -translate-y-1/2 w-4 sm:w-6 h-px bg-[#35ea52] opacity-0"
+              className="absolute -left-6 sm:-left-8 top-1/2 transform -translate-y-1/2 w-4 sm:w-6 h-px bg-[#28C840] opacity-0"
               style={{ animation: "word-appear 1s ease-out forwards", animationDelay: "2s" }}
             ></div>
             <div
-              className="absolute -right-6 sm:-right-8 top-1/2 transform -translate-y-1/2 w-4 sm:w-6 h-px bg-[#35ea52] opacity-0"
+              className="absolute -right-6 sm:-right-8 top-1/2 transform -translate-y-1/2 w-4 sm:w-6 h-px bg-[#28C840] opacity-0"
               style={{ animation: "word-appear 1s ease-out forwards", animationDelay: "2.2s" }}
             ></div>
           </div>
 
           {/* Bottom Footer Section */}
           <div className="text-center space-y-2">
-            <div className="mb-3 w-20 sm:w-32 h-[2px] bg-gradient-to-r from-transparent via-[#35ea52] to-transparent mx-auto"></div>
-            <p className="text-xs sm:text-sm font-mono font-light text-slate-400 uppercase tracking-[0.15em] opacity-80">
+            <div className="mb-3 w-20 sm:w-32 h-[2px] bg-gradient-to-r from-transparent via-[#28C840] to-transparent mx-auto"></div>
+            <p className="text-xs sm:text-sm font-mono font-light text-[#6B7280] uppercase tracking-[0.15em] opacity-80">
               <span className="word-animate" data-delay="2400">
                 {bottomTagline}
               </span>
@@ -460,9 +460,9 @@ export const DigitalSerenity: React.FC<DigitalSerenityProps> = ({
               className="mt-4 flex justify-center space-x-3 opacity-0"
               style={{ animation: "word-appear 1s ease-out forwards", animationDelay: "2.7s" }}
             >
-              <div className="w-1.5 h-1.5 bg-[#35ea52] rounded-full opacity-50"></div>
-              <div className="w-1.5 h-1.5 bg-[#35ea52] rounded-full opacity-90"></div>
-              <div className="w-1.5 h-1.5 bg-[#35ea52] rounded-full opacity-50"></div>
+              <div className="w-1.5 h-1.5 bg-[#28C840] rounded-full opacity-50"></div>
+              <div className="w-1.5 h-1.5 bg-[#28C840] rounded-full opacity-80"></div>
+              <div className="w-1.5 h-1.5 bg-[#28C840] rounded-full opacity-50"></div>
             </div>
           </div>
         </div>

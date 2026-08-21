@@ -173,7 +173,7 @@ export function BriefPanel({
                   onClick={() => onCampaignChange(campaign.id)}
                   data-selected={active}
                   className={cn(
-                    "studio-option grid grid-cols-[auto_minmax(0,1fr)] items-start gap-2.5 rounded-lg px-2.5 py-2 text-left",
+                    "studio-option grid grid-cols-[auto_minmax(0,1fr)] items-start gap-2.5 rounded-none px-2.5 py-2 text-left",
                     campaignPinned
                       ? "cursor-default"
                       : ready
@@ -185,7 +185,7 @@ export function BriefPanel({
                   <span
                     aria-hidden
                     className={cn(
-                      "mt-[3px] grid size-4 shrink-0 place-items-center rounded-full border",
+                      "mt-[3px] grid size-4 shrink-0 place-items-center rounded-none border",
                       active
                         ? "border-primary bg-primary text-primary-foreground"
                         : "border-border"
@@ -258,7 +258,7 @@ export function BriefPanel({
                   // edge. `minmax(0, 1fr)` states outright that the middle
                   // track may shrink to nothing, so the row cannot outgrow the
                   // panel no matter what its contents measure.
-                  "studio-option grid cursor-pointer grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2.5 rounded-lg px-2.5 py-2",
+                  "studio-option grid cursor-pointer grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2.5 rounded-none px-2.5 py-2",
                   locked && "cursor-not-allowed"
                 )}
               >
@@ -272,7 +272,7 @@ export function BriefPanel({
                 <span
                   aria-hidden
                   className={cn(
-                    "grid size-8 shrink-0 place-items-center rounded-[9px] transition-colors",
+                    "grid size-8 shrink-0 place-items-center rounded-none transition-colors",
                     selected
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted text-muted-foreground"
@@ -303,7 +303,7 @@ export function BriefPanel({
                 <span
                   aria-hidden
                   className={cn(
-                    "grid size-4 shrink-0 place-items-center rounded-[5px] border",
+                    "grid size-4 shrink-0 place-items-center rounded-none border",
                     selected
                       ? "border-primary bg-primary text-primary-foreground"
                       : "border-border"
@@ -356,7 +356,7 @@ export function BriefPanel({
             disabled={locked}
             onChange={(event) => onDirectionChange(event.target.value)}
             placeholder="dễ thương, pastel · điện ảnh tối giản · sale tưng bừng chữ to…"
-            className="border-border/70 bg-background/50 placeholder:text-muted-foreground/45 focus:border-primary/60 focus:ring-primary/20 w-full resize-none rounded-md border px-2.5 py-2 text-[13px] leading-relaxed outline-none focus:ring-2 disabled:opacity-50"
+            className="border-border/70 bg-background/50 placeholder:text-muted-foreground/45 focus:border-primary/60 focus:ring-primary/20 w-full resize-none rounded-none border px-2.5 py-2 text-[13px] leading-relaxed outline-none focus:ring-2 disabled:opacity-50"
           />
           <div className="mt-1.5 flex flex-wrap gap-1.5">
             {DIRECTION_PRESETS.map((preset) => (
@@ -365,7 +365,7 @@ export function BriefPanel({
                 type="button"
                 disabled={locked}
                 onClick={() => onDirectionChange(preset.value)}
-                className="border-border/60 text-muted-foreground hover:border-primary/50 hover:text-foreground rounded-full border px-2.5 py-1 text-[11.5px] transition-colors disabled:opacity-50"
+                className="border-border/60 text-muted-foreground hover:border-primary/50 hover:text-foreground rounded-none border px-2.5 py-1 text-[11.5px] transition-colors disabled:opacity-50"
               >
                 {preset.label}
               </button>
@@ -381,7 +381,7 @@ export function BriefPanel({
           // `.btn-cta` paints the coral gradient over the primary fill; the
           // default variant's near-black `text-primary-foreground` is kept on
           // purpose — white on this orange only reaches 2.8:1.
-          className="btn-cta mt-3 h-11 w-full gap-2 text-[15px] disabled:shadow-none"
+          className="btn-cta mt-3 h-11 w-full gap-2 text-[15px] rounded-none disabled:shadow-none"
         >
           {locked ? (
             <>

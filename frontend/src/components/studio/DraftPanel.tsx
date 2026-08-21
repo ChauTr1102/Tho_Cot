@@ -63,7 +63,7 @@ export function DraftPanel({
 
   return (
     <section
-      className="border-border/70 bg-card/60 flex flex-col gap-5 rounded-xl border p-5"
+      className="border-border/70 bg-card/60 flex flex-col gap-5 rounded-none border p-5"
       aria-label="Đề xuất chiến dịch"
     >
       <header className="flex items-start justify-between gap-4">
@@ -88,7 +88,7 @@ export function DraftPanel({
 
       {/* The register. The one thing on this screen that repays reading closely,
           so it gets the most room and the only edit affordance. */}
-      <div className="border-border/60 bg-muted/30 rounded-lg border p-4">
+      <div className="border-border/60 bg-muted/30 rounded-none border p-4">
         <div className="mb-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Sparkles className="text-primary size-3.5" aria-hidden />
@@ -171,11 +171,11 @@ export function DraftPanel({
         <Button
           onClick={handleApprove}
           disabled={approving}
-          className="bg-cta hover:bg-cta/90 text-cta-foreground h-10 flex-1 rounded-full font-medium"
+          className="bg-cta hover:bg-cta/90 text-cta-foreground h-10 flex-1 rounded-none font-medium"
         >
           {approving ? (
             <>
-              <span className="size-1.5 animate-pulse rounded-full bg-current" />
+              <span className="size-1.5 animate-pulse rounded-none bg-current" />
               Đang bắt đầu…
             </>
           ) : (
@@ -189,7 +189,7 @@ export function DraftPanel({
           variant="ghost"
           onClick={onDiscard}
           disabled={approving}
-          className="h-10 rounded-full px-3"
+          className="h-10 rounded-none px-3"
           title="Bỏ đề xuất này và mô tả lại"
         >
           <RotateCcw className="size-4" aria-hidden />
@@ -233,7 +233,7 @@ function RegisterField({
         value={value}
         rows={rows}
         onChange={(event) => onChange(event.target.value)}
-        className="border-border/70 bg-background/60 focus:border-primary/60 focus:ring-primary/20 resize-none rounded-md border px-2.5 py-1.5 text-[12.5px] leading-relaxed outline-none focus:ring-2"
+        className="border-border/70 bg-background/60 focus:border-primary/60 focus:ring-primary/20 resize-none rounded-none border px-2.5 py-1.5 text-[12.5px] leading-relaxed outline-none focus:ring-2"
       />
     </label>
   );

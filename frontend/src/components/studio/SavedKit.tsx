@@ -55,7 +55,7 @@ export function SavedKit({
   );
 
   return (
-    <div className="studio-panel flex h-[clamp(520px,72vh,1180px)] flex-col overflow-hidden">
+    <div className="studio-panel flex h-full min-h-[560px] flex-1 flex-col overflow-hidden">
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-3.5">
         <div className="min-w-0">
           <h2 className="font-display truncate text-[15px] font-semibold tracking-tight">
@@ -69,7 +69,7 @@ export function SavedKit({
         <div className="flex shrink-0 items-center gap-2">
           <a
             href={mediaUrl(`/api/studio/${encodeURIComponent(result.campaign_id)}/zip`)}
-            className="border-border/70 text-muted-foreground hover:border-primary/50 hover:text-foreground inline-flex h-9 items-center gap-1.5 rounded-md border px-3 text-[13px] transition-colors"
+            className="border-border/70 text-muted-foreground hover:border-primary/50 hover:text-foreground inline-flex h-9 items-center gap-1.5 rounded-none border px-3 text-[13px] transition-colors"
           >
             <Download aria-hidden className="size-3.5" />
             Tải .zip
@@ -80,7 +80,7 @@ export function SavedKit({
             type="button"
             variant="outline"
             onClick={onRebuild}
-            className="h-9 gap-1.5 text-[13px]"
+            className="h-9 gap-1.5 text-[13px] rounded-none"
           >
             <RefreshCw aria-hidden className="size-3.5" />
             Dựng lại
@@ -91,7 +91,7 @@ export function SavedKit({
       {/* The graph, not a contact sheet. Every picture here came from a named
           step with named inputs, and that structure is the product's argument —
           a grid of thumbnails is what any folder viewer would show. */}
-      <div className="min-h-0 flex-1">
+      <div className="min-h-0 flex-1 flex flex-col h-full w-full">
         <GraphCanvas
           nodes={nodes}
           platforms={platforms}

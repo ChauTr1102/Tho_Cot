@@ -42,12 +42,10 @@ export const StageContentGeneration: React.FC<StageContentGenerationProps> = ({
   onAssetsReady,
 }) => {
   return (
-    <div className="flex flex-col animate-in fade-in duration-500">
+    <div className="flex-1 flex flex-col animate-in fade-in duration-500">
       {/* No heading. The pipeline rail already names this stage, and a title
           plus a subtitle repeating it cost the graph the top of the fold. */}
-      <div>
-        <AssetStudio campaignId={campaignId} embedded onAssetsReady={onAssetsReady} />
-      </div>
+      <AssetStudio campaignId={campaignId} embedded onAssetsReady={onAssetsReady} />
     </div>
   );
 };

@@ -152,7 +152,7 @@ export function ThinkingPanel({ direction, campaignName }: ThinkingPanelProps) {
                 <span
                   aria-hidden
                   className={cn(
-                    "mt-[3px] grid size-[18px] shrink-0 place-items-center rounded-full border transition-colors",
+                    "mt-[3px] grid size-[18px] shrink-0 place-items-center rounded-none border transition-colors",
                     done && "border-primary bg-primary text-primary-foreground",
                     running && "border-primary text-primary",
                     waiting && "border-border"
