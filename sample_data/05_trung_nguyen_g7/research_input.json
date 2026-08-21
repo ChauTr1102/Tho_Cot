@@ -1,0 +1,113 @@
+{
+  "schema_version": "1.0",
+  "campaign_id": "trung-nguyen-g7-cross-border-9-9",
+  "product_brief": {
+    "product_name": "Cà phê hòa tan Trung Nguyên G7 3in1 — túi 50 gói x 16 g (800 g)",
+    "category": "F&B / cà phê hòa tan",
+    "key_selling_points": [
+      "Robusta Buôn Ma Thuột, Đắk Lắk, với vị đậm và mạnh đặc trưng cà phê Việt",
+      "Công thức 3in1 gồm cà phê, đường và kem; pha nhanh, tiện mang theo",
+      "Thương hiệu Việt Nam đã xuất khẩu tới hơn 100 quốc gia",
+      "Thông điệp năng lượng cho ngày mới với tinh thần tỉnh táo và bứt tốc"
+    ],
+    "price": {
+      "amount": 120000,
+      "currency": "VND",
+      "unit": "túi 800 g (50 gói)",
+      "note": "Giá bán lẻ tham khảo trong brief; cần xác nhận trước khi xuất bản."
+    },
+    "promotion": "Chiến dịch cross-border China 9.9: mua 3 túi tặng 1 và miễn phí vận chuyển; cần xác nhận điều kiện áp dụng trước khi xuất bản.",
+    "target_market": [
+      "Trung Quốc",
+      "Hoa Kỳ",
+      "Hàn Quốc",
+      "Đông Nam Á"
+    ],
+    "required_claims": [
+      "cà phê hòa tan 3in1",
+      "cà phê Robusta Việt Nam / Buôn Ma Thuột"
+    ],
+    "restricted_claims": [
+      "Không so sánh hạ bệ hoặc tuyên bố ngon hơn Starbucks, Nescafé hay đối thủ khác khi chưa có bằng chứng.",
+      "Không sử dụng claim sức khỏe hoặc chữa bệnh như giảm cân hay tốt cho tim.",
+      "Không sử dụng claim tuyệt đối hoặc superlative như ngon nhất thế giới."
+    ]
+  },
+  "brand_kit": {
+    "logo": "sample_data/05_trung_nguyen_g7/assets/logo.png",
+    "brand_colors": [
+      {
+        "name": "đỏ",
+        "hex": null,
+        "verification_status": "estimated"
+      },
+      {
+        "name": "đen",
+        "hex": null,
+        "verification_status": "estimated"
+      },
+      {
+        "name": "vàng đồng",
+        "hex": null,
+        "verification_status": "estimated"
+      }
+    ],
+    "tone_of_voice": [
+      "tự hào Việt Nam",
+      "mạnh mẽ",
+      "năng lượng",
+      "di sản cà phê"
+    ],
+    "product_photos": [
+      "sample_data/05_trung_nguyen_g7/assets/product_01.jpg",
+      "sample_data/05_trung_nguyen_g7/assets/product_02.jpg"
+    ],
+    "existing_product_visuals": []
+  },
+  "audience_brief": {
+    "target_customer": [
+      "Khách hàng quốc tế yêu thích cà phê Việt vị đậm",
+      "Dân văn phòng",
+      "Sinh viên",
+      "Khách mua quà mang về"
+    ],
+    "languages": [
+      "vi",
+      "en",
+      "zh-CN"
+    ],
+    "platforms": [
+      "TikTok Shop",
+      "Douyin",
+      "Shopee",
+      "Livestream commerce",
+      "Taobao"
+    ],
+    "markets": [
+      "Trung Quốc",
+      "Hoa Kỳ",
+      "Hàn Quốc",
+      "Đông Nam Á"
+    ]
+  },
+  "market_signal": {
+    "trends": [
+      "Cà phê Việt như cà phê muối và cà phê sữa đá đang được chú ý trên mạng xã hội quốc tế.",
+      "Livestream thương mại điện tử xuyên biên giới đang phát triển."
+    ],
+    "seasonal_moments": [
+      "China 9.9 shopping campaign"
+    ],
+    "consumer_pain_points": [],
+    "search_keywords": [],
+    "competitor_angles": [
+      "Nescafé",
+      "Vinacafé",
+      "Cà phê Ông Bầu"
+    ],
+    "campaign_objectives": [
+      "awareness",
+      "conversion"
+    ]
+  }
+}

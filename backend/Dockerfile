@@ -1,6 +1,7 @@
 # backend/Dockerfile
-# FastAPI backend (Python 3.12) — campaign pipeline uses JSON file storage
-# under /app/data instead of a deployed database (see app/storage/campaign_store.py).
+# FastAPI backend (Python 3.12). The BP-01 QA compliance pipeline itself lives
+# in QA_checklist.py at the repo root and is run standalone, not through this
+# API service.
 
 FROM python:3.12-slim AS base
 
@@ -30,7 +31,7 @@ RUN useradd --create-home --uid 1000 appuser \
     && chown -R appuser:appuser /app
 USER appuser
 
-# JSON file-storage volume mount point (see app/storage/campaign_store.py DATA_ROOT)
+# Data volume mount point (used by the Items demo feature)
 VOLUME ["/app/data"]
 
 EXPOSE 8000

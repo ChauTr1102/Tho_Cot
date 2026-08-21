@@ -1,0 +1,210 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tho-cot.local/schemas/research-agent-input.schema.json",
+  "title": "Research Agent Input",
+  "description": "Normalized campaign input consumed by the research agent. Unknown optional values must be null or an empty array; they must not be inferred during intake.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "campaign_id",
+    "product_brief",
+    "brand_kit",
+    "audience_brief",
+    "market_signal"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "campaign_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "product_brief": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "product_name",
+        "category",
+        "key_selling_points",
+        "price",
+        "promotion",
+        "target_market",
+        "required_claims",
+        "restricted_claims"
+      ],
+      "properties": {
+        "product_name": { "type": "string", "minLength": 1 },
+        "category": { "type": "string", "minLength": 1 },
+        "key_selling_points": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "price": {
+          "anyOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["amount", "currency", "unit", "note"],
+              "properties": {
+                "amount": { "type": "number", "minimum": 0 },
+                "currency": { "type": "string", "minLength": 3 },
+                "unit": { "type": "string", "minLength": 1 },
+                "note": { "type": ["string", "null"] }
+              }
+            }
+          ]
+        },
+        "promotion": { "type": ["string", "null"] },
+        "target_market": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "required_claims": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "restricted_claims": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        }
+      }
+    },
+    "brand_kit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "logo",
+        "brand_colors",
+        "tone_of_voice",
+        "product_photos",
+        "existing_product_visuals"
+      ],
+      "properties": {
+        "logo": { "$ref": "#/$defs/assetPath" },
+        "brand_colors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "hex", "verification_status"],
+            "properties": {
+              "name": { "type": "string", "minLength": 1 },
+              "hex": {
+                "type": ["string", "null"],
+                "pattern": "^#[0-9A-Fa-f]{6}$"
+              },
+              "verification_status": {
+                "type": "string",
+                "enum": ["verified", "estimated", "unknown"]
+              }
+            }
+          },
+          "minItems": 1
+        },
+        "tone_of_voice": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "product_photos": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/assetPath" },
+          "uniqueItems": true
+        },
+        "existing_product_visuals": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/assetPath" },
+          "uniqueItems": true
+        }
+      }
+    },
+    "audience_brief": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["target_customer", "languages", "platforms", "markets"],
+      "properties": {
+        "target_customer": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "languages": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 2 },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "platforms": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "markets": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      }
+    },
+    "market_signal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "trends",
+        "seasonal_moments",
+        "consumer_pain_points",
+        "search_keywords",
+        "competitor_angles",
+        "campaign_objectives"
+      ],
+      "properties": {
+        "trends": { "$ref": "#/$defs/stringList" },
+        "seasonal_moments": { "$ref": "#/$defs/stringList" },
+        "consumer_pain_points": { "$ref": "#/$defs/stringList" },
+        "search_keywords": { "$ref": "#/$defs/stringList" },
+        "competitor_angles": { "$ref": "#/$defs/stringList" },
+        "campaign_objectives": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "awareness",
+              "consideration",
+              "conversion",
+              "retention",
+              "engagement",
+              "lead_generation"
+            ]
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      }
+    }
+  },
+  "$defs": {
+    "assetPath": {
+      "type": "string",
+      "description": "Workspace-relative path or an HTTP(S) URL.",
+      "pattern": "^(https?://|[^/].*)"
+    },
+    "stringList": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    }
+  }
+}
