@@ -1,6 +1,6 @@
 # Host nginx config (installed at /etc/nginx/sites-enabled/thocot.io.vn on the VPS).
 # Terminates TLS and reverse-proxies to the Docker containers started by
-# docker-compose.yml (backend on host port 8000, frontend on host port 3001).
+# docker-compose.yml (backend on host port 8000, frontend on host port 3002).
 #
 # Deploy with:
 #   sudo cp nginx/thocot.io.vn /etc/nginx/sites-enabled/thocot.io.vn
@@ -31,9 +31,9 @@ server {
     client_max_body_size 20M;
 
     # Next.js frontend (docker-compose service "frontend", published on
-    # host port 3001 — see FRONTEND_PORT in .env).
+    # host port 3002 — see FRONTEND_PORT in .env).
     location / {
-        proxy_pass http://127.0.0.1:3001;
+        proxy_pass http://127.0.0.1:3002;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
