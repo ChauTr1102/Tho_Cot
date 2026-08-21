@@ -275,7 +275,8 @@ def build_nodes(plan: CampaignPlan, campaign_input: CampaignInput | None,
                         lambda hint: render.render_item(
                             stub, ws.spine, photos[0] if photos else None,
                             hero.local_path if hero else None,
-                            ws.label_text, out_dir, extra_instruction=hint),
+                            ws.label_text, out_dir, extra_instruction=hint,
+                            for_video=True),
                         [shot.onscreen_text] if shot.onscreen_text else [],
                         ws.label_text, forbidden, gate=gate,
                         node_id=f"keyframe_{route_id}_{_pid}_{_i}", on_event=on_event)
@@ -432,6 +433,7 @@ def run_studio(plan: CampaignPlan, campaign_input: CampaignInput | None = None,
                 clip_path=getattr(r, "clip_path", None),
                 duration_sec=float(getattr(r, "duration_sec", 0.0) or 0.0),
                 used_fallback=bool(getattr(r, "used_fallback", False)),
+                fallback_reason=getattr(r, "fallback_reason", None),
             ))
         videos.append(VideoAsset(
             url=value["path"], duration_sec=float(value.get("duration") or 0.0),

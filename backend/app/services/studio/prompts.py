@@ -76,6 +76,16 @@ visible in the frame, no flat colour band, border or panel across the photograph
 nothing broken, cracked, dented or spilled in a way that reads as damage."""
 
 
+# Appended to a keyframe's NEGATIVE block. Seedance rejects a first frame it
+# believes shows a real person and does so at submit time, so the shot falls back
+# to a Ken Burns move over the still and nothing announces it. Product frames
+# rarely need a figure, so forbidding one outright costs almost nothing.
+NO_PEOPLE_CLAUSE = (
+    " Absolutely no people: no person, no face, no hand, no arm, no fingers, "
+    "no silhouette, no reflection of a person, and no portrait or photograph of "
+    "a person anywhere in the frame."
+)
+
 # A bullet in the TEXT block. The phrase "reading exactly" is load-bearing: it is
 # the wording that was verified to produce character-perfect Vietnamese.
 TEXT_LINE = '  · {role} text reading exactly "{value}"'
@@ -368,6 +378,7 @@ def build_image_prompt(
     label_text: Sequence[str],
     ratio: str,
     rule: str | None = None,
+    for_video: bool = False,
 ) -> str:
     """Assemble the six-block prompt for one still image (Seedream 5.0 Pro).
 
@@ -384,11 +395,20 @@ def build_image_prompt(
     ratio       the frame shape, e.g. "1:1" or "9:16".
     rule        a marketplace rule id that outranks the art direction, e.g.
                 "pure_white_bg".
+    for_video   True when this image will be fed to Seedance as a first frame.
+                Seedance refuses any reference image it believes contains a real
+                person - `InputImageSensitiveContentDetected.PrivacyInformation`
+                - and it refuses at submit time, so the shot silently degrades to
+                a Ken Burns move over the still. Measured on a real run: the hook
+                keyframe drew a figure at the table nobody asked for, and that one
+                shot lost its motion while the other three kept theirs. The clause
+                this flag adds is cheap; discovering the fallback by comparing
+                file sizes is not.
 
     Returns a prompt with no unresolved placeholder in it.
     """
     palette = ", ".join(p for p in spine.palette if str(p).strip()) or DEFAULT_PALETTE
-    return IMAGE_PROMPT.format(
+    prompt = IMAGE_PROMPT.format(
         scene=resolve_scene(scene, spine),
         text_lines=_text_lines(texts, label_text),
         lens=spine.lens,
@@ -398,6 +418,7 @@ def build_image_prompt(
         ratio=ratio,
         rule_clause=_rule_clause(rule),
     )
+    return prompt + (NO_PEOPLE_CLAUSE if for_video else "")
 
 
 def build_video_prompt(

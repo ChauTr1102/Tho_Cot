@@ -181,8 +181,14 @@ class ShotAsset(BaseModel):
     duration_sec: float = 5.0
     onscreen_text: str = ""
     vo_text: str = ""
-    used_fallback: bool = False  # clip missed its deadline; a Ken Burns move
-                                 # over the keyframe was used so the shot still exists
+    used_fallback: bool = False  # clip missed its deadline or was refused; a Ken
+                                 # Burns move over the keyframe was used so the
+                                 # shot still exists
+    fallback_reason: Optional[str] = None  # why. Without it a silent degradation
+                                 # is only findable by comparing file sizes, which
+                                 # is how one was found: Seedance refused a keyframe
+                                 # for InputImageSensitiveContentDetected and the
+                                 # shot quietly lost its motion.
 
 
 class VideoCutdown(BaseModel):

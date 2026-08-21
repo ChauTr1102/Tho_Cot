@@ -136,7 +136,7 @@ def render_hero(item, spine, product_photo: str, label_text: Sequence[str],
 
 def render_item(item, spine, product_photo: str | None, hero_path: str | None,
                 label_text: Sequence[str], out_dir: str | Path,
-                extra_instruction: str = "") -> RenderedImage:
+                extra_instruction: str = "", for_video: bool = False) -> RenderedImage:
     """Render a kit image anchored to both the product and the hero.
 
     Reference 1 is the product, reference 2 is the hero. Order is contractual:
@@ -152,6 +152,7 @@ def render_item(item, spine, product_photo: str | None, hero_path: str | None,
     prompt = prompts.build_image_prompt(
         scene=item.scene, spine=spine, texts=item.texts,
         label_text=label_text, ratio=item.ratio, rule=item.rule,
+        for_video=for_video,
     )
     if extra_instruction:
         prompt = f"{prompt}\n\n{extra_instruction}"
