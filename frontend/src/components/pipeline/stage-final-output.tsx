@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/
 import { StagePackage } from "./stage-package";
 import { StageDeploy } from "./stage-deploy";
 import { ProductPdpPreview } from "./product-pdp-preview";
+import { FinalOutputWorkspace } from "./final-output-workspace";
 
 interface Props {
   plan?: ResearchCampaignPlan | null;
@@ -199,9 +200,7 @@ export const StageFinalOutput: React.FC<Props> = ({ plan, input, campaignOutput,
 
     <section className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-foreground/10 border border-foreground/10" aria-label="Tóm tắt campaign brief"><div className="p-3.5 bg-background"><p className="text-[9px] font-mono text-foreground/30">SẢN PHẨM / NGÀNH HÀNG</p><p className="text-xs text-foreground/65 mt-1.5">{input?.product_brief.category || "F&B · Cà phê hòa tan"}</p></div><div className="p-3.5 bg-background"><p className="text-[9px] font-mono text-foreground/30">THỊ TRƯỜNG</p><p className="text-xs text-foreground/65 mt-1.5">{input?.product_brief.target_market.slice(0, 3).join(" · ") || "Trung Quốc · Đông Nam Á"}</p></div><div className="p-3.5 bg-background"><p className="text-[9px] font-mono text-foreground/30">ƯU ĐÃI</p><p className="text-xs text-foreground/65 mt-1.5">{input?.product_brief.promotion || "Không có ưu đãi"}</p></div><div className="p-3.5 bg-background"><p className="text-[9px] font-mono text-foreground/30">MỤC TIÊU</p><p className="text-xs text-foreground/65 mt-1.5">{input?.market_signal.campaign_objectives.join(" · ") || "Nhận biết · Chuyển đổi"}</p></div></section>
 
-    {qaResult && (
-      <QaNotificationBubble qaResult={qaResult} />
-    )}
+    {qaResult ? null : null}
 
     <div className="grid grid-cols-1 xl:grid-cols-[230px_minmax(0,1fr)] gap-6 items-start">
       <aside className="xl:sticky xl:top-0 border border-foreground/10 bg-background p-4 space-y-4"><div><p className="text-xs font-mono font-bold tracking-wider text-foreground">KIỂM TRA NHANH</p><p className="text-[10px] text-foreground/30 mt-1">Đối chiếu yêu cầu đầu bài</p></div><nav className="space-y-1">{deliverables.map(([id, label, count], index) => <a key={id} href={`#final-${id}`} className="group flex items-center gap-2.5 p-2 hover:bg-foreground/[0.04]"><span className="h-5 w-5 rounded-full bg-[#35ea52]/10 border border-[#35ea52]/25 flex items-center justify-center"><Check className="h-3 w-3 text-[#35ea52]" /></span><span className="min-w-0 flex-1"><span className="block text-[11px] text-foreground/65 group-hover:text-foreground">{index + 1}. {label}</span><span className="block text-[9px] text-foreground/30 truncate">{count}</span></span></a>)}</nav><button type="button" onClick={() => void copyAll()} className="w-full inline-flex items-center justify-center gap-2 px-3 py-2.5 border border-foreground/20 text-[10px] font-mono text-foreground/60 hover:border-[#35ea52]/40 hover:text-[#35ea52]"><Copy className="h-3.5 w-3.5" /> SAO CHÉP NỘI DUNG CHÍNH</button></aside>
@@ -284,3 +283,7 @@ export const StageFinalOutput: React.FC<Props> = ({ plan, input, campaignOutput,
     </div>
   </div>;
 };
+
+void LegacyStageFinalOutput;
+
+export const StageFinalOutput: React.FC<Props> = (props) => <FinalOutputWorkspace {...props} />;
