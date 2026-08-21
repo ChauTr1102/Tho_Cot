@@ -448,7 +448,7 @@ export const GenerateAdsView: React.FC<GenerateAdsViewProps> = ({
                     <ImageIcon className="h-5 w-5 text-foreground/30" />
                   </div>
                   <div className="space-y-1">
-                    <p className="text-sm font-mono text-foreground/50 tracking-wider">NO_IMAGES_GENERATED</p>
+                    <p className="text-sm font-mono text-foreground/50 tracking-wider">CHƯA CÓ HÌNH ẢNH ĐƯỢC TẠO</p>
                     <p className="text-xs font-mono text-foreground/25 max-w-xs mx-auto">
                       Complete settings and start generation. Results will appear here.
                     </p>

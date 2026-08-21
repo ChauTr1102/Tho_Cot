@@ -93,13 +93,13 @@ export const StagePositioning: React.FC = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="border border-[#35ea52]/30 bg-[#35ea52]/[0.02] p-4 relative">
-              <div className="absolute top-0 right-0 px-2 py-0.5 bg-[#35ea52] text-black text-[10px] font-mono font-bold tracking-widest">ROUTE A</div>
+              <div className="absolute top-0 right-0 px-2 py-0.5 bg-[#35ea52] text-black text-[10px] font-mono font-bold tracking-widest">HƯỚNG A</div>
               <p className="text-sm font-mono text-foreground font-bold mb-1">Mở đầu &quot;Nỗi đau&quot; (Tiện lợi + Năng lượng)</p>
               <p className="text-xs font-mono text-foreground/50 mb-3">Tập trung vào sự mệt mỏi buổi sáng, giải quyết bằng việc pha nhanh một ly cà phê đậm vị.</p>
             </div>
 
             <div className="border border-foreground/20 bg-foreground/[0.02] p-4 relative">
-              <div className="absolute top-0 right-0 px-2 py-0.5 bg-foreground text-black text-[10px] font-mono font-bold tracking-widest">ROUTE B</div>
+              <div className="absolute top-0 right-0 px-2 py-0.5 bg-foreground text-black text-[10px] font-mono font-bold tracking-widest">HƯỚNG B</div>
               <p className="text-sm font-mono text-foreground font-bold mb-1">Mở đầu &quot;Uy tín & Đặc sản&quot;</p>
               <p className="text-xs font-mono text-foreground/50 mb-3">Chỉ tập trung vào hình ảnh túi 50 gói lớn, nhấn mạnh giá trị văn hóa cà phê Việt Nam uy tín toàn cầu.</p>
             </div>
@@ -107,15 +107,15 @@ export const StagePositioning: React.FC = () => {
           
           <div className="bg-background/50 p-4 border border-foreground/10 flex flex-col md:flex-row gap-6">
             <div className="flex-1">
-              <span className="text-[11px] font-mono text-foreground/50 block mb-1">WHAT TO TEST</span>
+              <span className="text-[11px] font-mono text-foreground/50 block mb-1">NỘI DUNG CẦN THỬ NGHIỆM</span>
               <p className="text-sm font-mono text-foreground">Hiệu quả của thông điệp &ldquo;Tiện lợi cá nhân&rdquo; (A) so với &ldquo;Quà tặng đặc sản&rdquo; (B).</p>
             </div>
             <div className="flex-1">
-              <span className="text-[11px] font-mono text-foreground/50 block mb-1">SUGGESTED SUCCESS METRICS</span>
+              <span className="text-[11px] font-mono text-foreground/50 block mb-1">CHỈ SỐ THÀNH CÔNG ĐỀ XUẤT</span>
               <p className="text-sm font-mono text-foreground">View Retention (3s), CTR, Add-to-cart (ATC) Rate.</p>
             </div>
             <div className="flex-1">
-              <span className="text-[11px] font-mono text-foreground/50 block mb-1">EXPECTED LEARNING</span>
+              <span className="text-[11px] font-mono text-foreground/50 block mb-1">KẾT QUẢ MONG ĐỢI</span>
               <p className="text-sm font-mono text-foreground">Xác định xem khách hàng mua G7 chủ yếu để tự dùng (A) hay làm quà tặng (B) trong sự kiện 9.9.</p>
             </div>
           </div>
@@ -129,26 +129,26 @@ export const StagePositioning: React.FC = () => {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="border border-[#35ea52]/20 bg-[#35ea52]/[0.02] p-4">
-              <span className="text-[10px] font-mono text-[#35ea52] font-bold block mb-2 flex items-center gap-1"><CheckCircle2 className="h-3 w-3" /> WHAT TO KEEP</span>
+              <span className="text-[10px] font-mono text-[#35ea52] font-bold block mb-2 flex items-center gap-1"><CheckCircle2 className="h-3 w-3" /> NÊN GIỮ</span>
               <ul className="text-xs font-mono text-foreground/80 list-disc list-inside space-y-1">
                 <li>Video ASMR pha cà phê</li>
                 <li>Gói lớn 50 gói</li>
               </ul>
             </div>
             <div className="border border-yellow-500/20 bg-yellow-500/[0.02] p-4">
-              <span className="text-[10px] font-mono text-yellow-500 font-bold block mb-2 flex items-center gap-1"><RefreshCcw className="h-3 w-3" /> WHAT TO CHANGE</span>
+              <span className="text-[10px] font-mono text-yellow-500 font-bold block mb-2 flex items-center gap-1"><RefreshCcw className="h-3 w-3" /> NÊN THAY ĐỔI</span>
               <ul className="text-xs font-mono text-foreground/80 list-disc list-inside space-y-1">
                 <li>Tối ưu phí ship để giảm tỷ lệ bỏ giỏ hàng</li>
               </ul>
             </div>
             <div className="border border-red-500/20 bg-red-500/[0.02] p-4">
-              <span className="text-[10px] font-mono text-red-500 font-bold block mb-2 flex items-center gap-1"><TrendingDown className="h-3 w-3" /> WHAT TO STOP</span>
+              <span className="text-[10px] font-mono text-red-500 font-bold block mb-2 flex items-center gap-1"><TrendingDown className="h-3 w-3" /> NÊN DỪNG</span>
               <ul className="text-xs font-mono text-foreground/80 list-disc list-inside space-y-1">
                 <li>Dừng chạy ads vào buổi tối muộn</li>
               </ul>
             </div>
             <div className="border border-foreground/20 bg-foreground/[0.02] p-4">
-              <span className="text-[10px] font-mono text-foreground/60 font-bold block mb-2 flex items-center gap-1"><Target className="h-3 w-3" /> WHAT TO TEST NEXT</span>
+              <span className="text-[10px] font-mono text-foreground/60 font-bold block mb-2 flex items-center gap-1"><Target className="h-3 w-3" /> THỬ NGHIỆM TIẾP THEO</span>
               <ul className="text-xs font-mono text-foreground/80 list-disc list-inside space-y-1">
                 <li>Bundle Mua 3 tặng 1</li>
                 <li>Livestream chốt deal</li>

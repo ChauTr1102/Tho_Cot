@@ -202,7 +202,7 @@ export default function HeroAsciiOne() {
       <div className="absolute left-0 right-0 z-20 border-t border-foreground/20 bg-background/40 backdrop-blur-sm" style={{ bottom: '5vh' }}>
         <div className="container mx-auto px-4 lg:px-8 py-2 lg:py-3 flex items-center justify-between">
           <div className="flex items-center gap-3 lg:gap-6 text-[10px] lg:text-[11px] font-mono text-foreground/50">
-            <span className="hidden lg:inline">SYSTEM.ACTIVE</span>
+            <span className="hidden lg:inline">HỆ THỐNG.HOẠT ĐỘNG</span>
             <span className="lg:hidden">SYS.ACT</span>
             <span>V1.0.0</span>
           </div>
@@ -213,7 +213,7 @@ export default function HeroAsciiOne() {
               <div className="w-1 h-1 bg-foreground/40 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
               <div className="w-1 h-1 bg-foreground/20 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
             </div>
-            <span className="hidden lg:inline">FRAME: ∞</span>
+            <span className="hidden lg:inline">KHUNG: ∞</span>
           </div>
         </div>
       </div>
