@@ -250,7 +250,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
       // the packaging.
       toast.warning(
         `Đã trích xuất từ ${sourceLabel}, nhưng không lấy được ảnh sản phẩm nào. ` +
-          "Hãy tải ảnh lên — không có ảnh thật thì hệ thống sẽ tự vẽ bao bì.",
+        "Hãy tải ảnh lên — không có ảnh thật thì hệ thống sẽ tự vẽ bao bì.",
         { duration: 8000 }
       );
     }
@@ -329,8 +329,8 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
             type="button"
             onClick={() => setInputMode("link")}
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-mono tracking-wider transition-all ${inputMode === "link"
-                ? "bg-[#28C840] text-white font-bold shadow-md"
-                : "text-foreground/60 hover:text-foreground hover:bg-foreground/[0.05]"
+              ? "bg-[#28C840] text-white font-bold shadow-md"
+              : "text-foreground/60 hover:text-foreground hover:bg-foreground/[0.05]"
               }`}
           >
             <Link2 className="h-3.5 w-3.5" />
@@ -341,8 +341,8 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInp
             type="button"
             onClick={() => setInputMode("manual")}
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-mono tracking-wider transition-all ${inputMode === "manual"
-                ? "bg-[#28C840] text-white font-bold shadow-md"
-                : "text-foreground/60 hover:text-foreground hover:bg-foreground/[0.05]"
+              ? "bg-[#28C840] text-white font-bold shadow-md"
+              : "text-foreground/60 hover:text-foreground hover:bg-foreground/[0.05]"
               }`}
           >
             <PenLine className="h-3.5 w-3.5" />

@@ -57,81 +57,81 @@
    ═══════════════════════════════════════════════════ */
 
 :root {
-  --background: #f4f4f0;
-  --foreground: #000000;
-  --card: #f4f4f0;
-  --card-foreground: #000000;
-  --popover: #f4f4f0;
-  --popover-foreground: #000000;
+  --background: #EAE6DF;
+  --foreground: #181A1F;
+  --card: #F4F1EA;
+  --card-foreground: #181A1F;
+  --popover: #F4F1EA;
+  --popover-foreground: #181A1F;
 
-  --primary: #000000;
-  --primary-foreground: #ffffff;
+  --primary: #181A1F;
+  --primary-foreground: #F4F1EA;
 
-  --secondary: #e5e5e5;
-  --secondary-foreground: #000000;
-  --muted: #e5e5e5;
-  --muted-foreground: #666666;
+  --secondary: #DDD8CE;
+  --secondary-foreground: #181A1F;
+  --muted: #DFDBD2;
+  --muted-foreground: #606773;
 
-  --accent: #35ea52;
-  --accent-foreground: #000000;
+  --accent: #16a34a;
+  --accent-foreground: #ffffff;
 
-  --cta: #fe6e00;
-  --gold: #fcbb00;
-  --danger: #fd393f;
+  --cta: #ea580c;
+  --gold: #d97706;
+  --danger: #dc2626;
 
-  --destructive: #ff3333;
-  --border: rgba(0, 0, 0, 0.15);
-  --input: rgba(0, 0, 0, 0.15);
-  --ring: #000000;
+  --destructive: #dc2626;
+  --border: rgba(24, 26, 31, 0.10);
+  --input: rgba(24, 26, 31, 0.10);
+  --ring: #16a34a;
 
   --radius: 0.125rem;
 
-  --sidebar: #f4f4f0;
-  --sidebar-foreground: #000000;
-  --sidebar-primary: #35ea52;
-  --sidebar-primary-foreground: #000000;
-  --sidebar-accent: #e5e5e5;
-  --sidebar-accent-foreground: #000000;
-  --sidebar-border: rgba(0, 0, 0, 0.15);
-  --sidebar-ring: #000000;
+  --sidebar: #E2DDD4;
+  --sidebar-foreground: #181A1F;
+  --sidebar-primary: #16a34a;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #D7D1C6;
+  --sidebar-accent-foreground: #181A1F;
+  --sidebar-border: rgba(24, 26, 31, 0.10);
+  --sidebar-ring: #16a34a;
 }
 
 /* ═══════════════════════════════════════════════════
-   DARK MODE — Warm Ivory Light Theme
-   Green accent preserved from logo brand identity
+   WARM MUTED GREY / SLATE SAND THEME
+   Soft on eyes, elevated cards, non-glare contrast
    ═══════════════════════════════════════════════════ */
 .dark {
-  --background: #F5F3EF;
-  --foreground: #0D1117;
-  --card: #F5F3EF;
-  --card-foreground: #0D1117;
-  --popover: #F5F3EF;
-  --popover-foreground: #0D1117;
-  --primary: #0D1117;
-  --primary-foreground: #FFFFFF;
-  --secondary: #EBE8E2;
-  --secondary-foreground: #0D1117;
-  --muted: #E8E5DF;
-  --muted-foreground: #6B7280;
-  --accent: #28C840;
-  --accent-foreground: #0D1117;
+  --background: #EAE6DF;
+  --foreground: #181A1F;
+  --card: #F4F1EA;
+  --card-foreground: #181A1F;
+  --popover: #F4F1EA;
+  --popover-foreground: #181A1F;
+  --primary: #181A1F;
+  --primary-foreground: #F4F1EA;
+  --secondary: #DDD8CE;
+  --secondary-foreground: #181A1F;
+  --muted: #DFDBD2;
+  --muted-foreground: #606773;
+  --accent: #16a34a;
+  --accent-foreground: #ffffff;
 
-  --cta: #fe6e00;
-  --gold: #fcbb00;
-  --danger: #fd393f;
+  --cta: #ea580c;
+  --gold: #d97706;
+  --danger: #dc2626;
 
-  --destructive: #ff3333;
-  --border: rgba(13, 17, 23, 0.12);
-  --input: rgba(13, 17, 23, 0.12);
-  --ring: #28C840;
-  --sidebar: #FAF8F5;
-  --sidebar-foreground: #0D1117;
-  --sidebar-primary: #28C840;
-  --sidebar-primary-foreground: #0D1117;
-  --sidebar-accent: #F0EDE7;
-  --sidebar-accent-foreground: #0D1117;
-  --sidebar-border: rgba(13, 17, 23, 0.10);
-  --sidebar-ring: #28C840;
+  --destructive: #dc2626;
+  --border: rgba(24, 26, 31, 0.10);
+  --input: rgba(24, 26, 31, 0.10);
+  --ring: #16a34a;
+  --sidebar: #E2DDD4;
+  --sidebar-foreground: #181A1F;
+  --sidebar-primary: #16a34a;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #D7D1C6;
+  --sidebar-accent-foreground: #181A1F;
+  --sidebar-border: rgba(24, 26, 31, 0.10);
+  --sidebar-ring: #16a34a;
 }
 
 @layer base {
@@ -203,23 +203,23 @@
   background-size: 16px 16px;
 }
 
-/* Custom scrollbar — warm ivory editorial */
+/* Custom scrollbar — warm muted slate */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #F5F3EF;
+  background: #EAE6DF;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #C8C3B9;
-  border: 1px solid #DDD9D0;
+  background: #C4BFB5;
+  border: 1px solid #D6D1C7;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #A8A295;
+  background: #A6A094;
 }
 
 /* Stars background for mobile fallback — soft dots on light bg */

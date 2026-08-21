@@ -101,7 +101,7 @@ export const StageQAGate: React.FC<Props> = ({ campaignInput, campaignOutput, it
           // result instead so the stage always looks alive while loading.
           <div className="space-y-6 animate-in fade-in duration-300">
             <div className="border-l-2 border-foreground/10 bg-foreground/[0.02] p-4 flex items-start gap-4">
-              <RefreshCw className="h-6 w-6 text-[#35ea52] animate-spin shrink-0" />
+              <RefreshCw className="h-6 w-6 text-[#28C840] animate-spin shrink-0" />
               <div className="space-y-2 flex-1">
                 <Skeleton className="h-4 w-56" />
                 <Skeleton className="h-3 w-full max-w-md" />
@@ -137,7 +137,7 @@ export const StageQAGate: React.FC<Props> = ({ campaignInput, campaignOutput, it
               <p className="text-sm font-mono text-foreground/70">{error}</p>
               <button
                 onClick={runVerify}
-                className="mt-2 px-4 py-2 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-mono transition-colors flex items-center gap-2"
+                className="mt-2 px-4 py-2 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-mono transition-colors flex items-center gap-2 rounded-sm"
               >
                 <RefreshCw className="h-3 w-3" /> THỬ LẠI
               </button>
@@ -148,10 +148,10 @@ export const StageQAGate: React.FC<Props> = ({ campaignInput, campaignOutput, it
         {state === "done" && result && (
           <>
             {result.issues.length === 0 ? (
-              <div className="border-l-2 border-[#35ea52] bg-[#35ea52]/[0.05] p-4 flex items-start gap-4">
-                <CheckCircle2 className="h-6 w-6 text-[#35ea52] shrink-0" />
+              <div className="border-l-2 border-[#28C840] bg-[#28C840]/[0.05] p-4 flex items-start gap-4">
+                <CheckCircle2 className="h-6 w-6 text-[#28C840] shrink-0" />
                 <div>
-                  <h3 className="text-[15px] font-mono font-bold text-[#35ea52]">MỌI THỨ ĐỀU ỔN</h3>
+                  <h3 className="text-[15px] font-mono font-bold text-[#28C840]">MỌI THỨ ĐỀU ỔN</h3>
                   <p className="text-sm font-mono text-foreground/70">
                     AI không thấy điểm nào cần lưu ý thêm trên campaign này (lần kiểm tra {result.iteration}). Bạn có thể yên tâm tiếp tục.
                   </p>
@@ -170,7 +170,7 @@ export const StageQAGate: React.FC<Props> = ({ campaignInput, campaignOutput, it
                   </p>
                   <button
                     onClick={runVerify}
-                    className="mt-2 px-4 py-2 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-mono transition-colors flex items-center gap-2"
+                    className="mt-2 px-4 py-2 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-mono transition-colors flex items-center gap-2 rounded-sm"
                   >
                     <RefreshCw className="h-3 w-3" /> KIỂM TRA LẠI
                   </button>
@@ -181,13 +181,13 @@ export const StageQAGate: React.FC<Props> = ({ campaignInput, campaignOutput, it
             {result.issues.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {Array.from(groups.entries()).map(([target, issues]) => (
-                  <div key={target} className="border border-foreground/10 bg-background p-4 space-y-3">
+                  <div key={target} className="border border-foreground/10 bg-background p-4 space-y-3 rounded-sm">
                     <span className="text-xs font-mono text-foreground/50 tracking-widest uppercase block border-b border-foreground/5 pb-2">
                       REGENERATE: {REGENERATE_LABEL[target] ?? target.toUpperCase()}
                     </span>
                     <ul className="space-y-3">
-                      {issues.map((issue) => (
-                        <li key={issue.rule_id} className="space-y-1">
+                      {issues.map((issue, idx) => (
+                        <li key={`${target}-${issue.rule_id}-${issue.field}-${idx}`} className="space-y-1">
                           <div className="flex items-start gap-2">
                             <AlertTriangle className="h-3.5 w-3.5 text-amber-400 shrink-0 mt-0.5" />
                             <span className="text-sm font-mono text-foreground/80 font-bold">{humanizeRuleId(issue.rule_id)}</span>
