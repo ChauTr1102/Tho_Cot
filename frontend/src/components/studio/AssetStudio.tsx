@@ -169,6 +169,17 @@ export function AssetStudio({
     };
   }, [selectedCampaign]);
 
+  // Named by whoever opened this screen? Then this studio is for that campaign
+  // and no other. Offering the rest is only useful on a bare visit to /studio.
+  const campaignPinned = Boolean(requestedCampaign);
+  const visibleCampaigns = useMemo(
+    () =>
+      campaignPinned
+        ? campaigns.filter((row) => row.id === requestedCampaign)
+        : campaigns,
+    [campaignPinned, campaigns, requestedCampaign]
+  );
+
   const stream = useStudioStream(campaignId);
   const elapsedSec = useRunClock(startedAt, stoppedAt);
 
@@ -323,9 +334,10 @@ export function AssetStudio({
               platforms={platforms}
               onPlatformsChange={setPlatforms}
               onRun={handlePropose}
-              campaigns={campaigns}
+              campaigns={visibleCampaigns}
               selectedCampaign={selectedCampaign}
               onCampaignChange={setSelectedCampaign}
+              campaignPinned={campaignPinned}
               direction={direction}
               onDirectionChange={setDirection}
               running={running}
