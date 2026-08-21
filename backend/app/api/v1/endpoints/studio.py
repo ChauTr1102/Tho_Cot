@@ -509,8 +509,25 @@ def propose(req: DraftRequest):
                          + ", ".join(handoff["photos_missing"])
                          + " — những ô cần ảnh thật sẽ phải dựng mới.")
         if handoff.get("platforms_unsupported"):
-            extra.append("Chưa có kit cho: "
-                         + ", ".join(handoff["platforms_unsupported"]))
+            unsupported = ", ".join(handoff["platforms_unsupported"])
+            orphaned = handoff.get("routes_without_kit") or []
+            # Naming the route matters: a marketplace the studio cannot serve is
+            # survivable, a creative route left with nowhere to run is a route
+            # that silently produces nothing.
+            if orphaned:
+                extra.append(
+                    f"Chưa có kit cho: {unsupported}. Route "
+                    + ", ".join(orphaned)
+                    + " chỉ nhắm vào những sàn đó nên sẽ không có sản phẩm nào.")
+            else:
+                extra.append(f"Chưa có kit cho: {unsupported}")
+        if handoff.get("preserve_packaging"):
+            extra.append("Research yêu cầu giữ nguyên bao bì — mọi ảnh đều "
+                         "khoá theo ảnh sản phẩm thật, không vẽ lại nhãn.")
+        # Repairs the adapter had to make. Silent repair is how a plan with no
+        # A/B block turns into a kit nobody knows is untestable.
+        for warning in (handoff.get("warnings") or [])[:3]:
+            extra.append(warning)
         payload["notes"] = extra + list(payload.get("notes", []))
         payload["source_campaign"] = handoff.get("name")
 

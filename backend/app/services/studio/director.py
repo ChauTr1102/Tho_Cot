@@ -36,7 +36,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from app.schemas.studio import CampaignInput, CampaignPlan, Platform
-from app.services.studio import ark
+from app.services.studio import ark, wording
 
 # The closed vocabulary. Each maps to a node builder in `pipeline`.
 NODE_KINDS: dict[str, str] = {
@@ -636,8 +636,15 @@ def _headline(route: Any, plan: CampaignPlan) -> str:
     Upstream writes `hook_idea` as a shot description — "Cận cảnh bàn tay lật
     gói G7, đổ bột vào cốc… Dòng chữ nhảy ra: 'Mệt buổi sáng?'" — so taking it
     whole prints the director's stage direction onto the artwork. The slogan is
-    usually inside the quotation marks; failing that, the positioning line is a
-    real sentence written to be read.
+    usually inside the quotation marks.
+
+    A long quoted line is shortened, never abandoned. Falling back to the
+    positioning line because the route's own hook ran past a character count is
+    what collapsed the A/B test on the real G7 plan: route A's nineteen-word
+    hook was dropped and replaced by the same "C\u00e0 ph\u00ea \u0111\u1eadm v\u1ecb Robusta Bu\u00f4n Ma
+    Thu\u1ed9t" that route B already carried, so two deliberately different creative
+    routes came back saying one thing. The positioning line is the fallback for
+    a route with no hook at all, not for a route whose hook is wordy.
     """
     hook = (getattr(route, "hook_idea", "") or "").strip()
     for opener, closer in (("'", "'"), ("\u2018", "\u2019"), ("\u201c", "\u201d"), ('"', '"')):
@@ -645,12 +652,12 @@ def _headline(route: Any, plan: CampaignPlan) -> str:
         end = hook.find(closer, start + 1)
         if start != -1 and end > start + 1:
             quoted = hook[start + 1:end].strip()
-            if 3 < len(quoted) <= _MAX_HEADLINE * 2:
-                return _trim(quoted, _MAX_HEADLINE)
+            if len(quoted) > 3:
+                return wording.shorten(quoted, _MAX_HEADLINE)
 
-    if hook and len(hook) <= _MAX_HEADLINE:
-        return hook
-    return _trim(plan.positioning.key_selling_message or hook, _MAX_HEADLINE)
+    if hook:
+        return wording.shorten(hook, _MAX_HEADLINE)
+    return wording.shorten(plan.positioning.key_selling_message, _MAX_HEADLINE)
 
 
 def _badge(campaign_input: CampaignInput | None) -> str:
@@ -659,64 +666,28 @@ def _badge(campaign_input: CampaignInput | None) -> str:
     "Cross-border 9.9: mua 3 tặng 1 và miễn phí vận chuyển" is the offer; the
     badge wants "MUA 3 TẶNG 1". Pull the strongest fragment rather than
     truncating, because a truncated offer is worse than a short one.
-    """
-    import re
 
+    A brief with a price but no promotion falls back to the price, which is a
+    legitimate badge on a marketplace listing — but to a *whole* price.
+    Character truncation produced `135.000Đ / TÚI 50 GÓI ·` here: a badge that
+    ends on its own separator and promises nothing.
+    """
     raw = (campaign_input.product_brief.price_or_promotion if campaign_input else "") or ""
-    if not raw.strip():
-        return ""
-    # Vietnamese character classes are a trap: [ăa] does not match "ặ", because
-    # ă and ặ are different characters, not the same letter with a mark. Match
-    # whole words and let \w carry the diacritics.
-    for pattern in (
-        r"(mua\s*\d+\s*\w+\s*\d+)",          # mua 3 tặng 1
-        r"(\w+\s*đến\s*\d+\s*%)",             # giảm đến 50%
-        r"(\w+\s*\d+\s*%)",                    # giảm 25%
-        r"(\d+\s*%\s*off)",
-        r"(miễn\s*phí\s*vận\s*chuyển)",
-        r"(freeship)",
-    ):
-        found = re.search(pattern, raw, re.IGNORECASE)
-        if found:
-            return _trim(found.group(1).strip().upper(), _MAX_BADGE)
-    first = re.split(r"[·:;,\u2013\u2014]", raw)[0].strip()
-    return _trim(first.upper(), _MAX_BADGE)
+    return (wording.offer_badge(raw, _MAX_BADGE)
+            or wording.shorten(raw, _MAX_BADGE).upper())
 
 
-# Planning output writes its own field names into its values — "Thông điệp bán
-# hàng cốt lõi: Cà phê đậm…", "Góc chiến dịch chính: …". Taken whole, the label
-# is what lands on the poster: a real render came back reading "Thông điệp bán
-# hàng cốt lõi: Cà phê đậm" in display type.
-_LABEL_RE = re.compile(r"^([^:：]{4,48})[:：]\s+(?=\S)")
-
-
-def _strip_label(text: str) -> str:
-    """Drop a leading `Field name:` prefix, but only when it reads as one.
-
-    Two things must not be stripped. A hook can open with a question —
-    "Mệt buổi sáng? Pha nhanh…" — and an offer can open with a date —
-    "11.11: giảm 25%", where the prefix carries the whole point. So a prefix is
-    only a label when it is several words, has no digits, and ends no sentence.
-    """
-    match = _LABEL_RE.match(text.strip())
-    if not match:
-        return text.strip()
-    prefix = match.group(1).strip()
-    if any(ch.isdigit() for ch in prefix):
-        return text.strip()
-    if any(ch in prefix for ch in ".?!"):
-        return text.strip()
-    if len(prefix.split()) < 2:
-        return text.strip()
-    return text.strip()[match.end():].strip()
+# Both helpers moved to `wording.py`. They existed here and, in a second and
+# subtly different form, in `direct.py` — which is how the same G7 offer became
+# "MUA 3 TẶNG 1" on the approval screen and "135.000Đ / TÚI 50 GÓI ·" on the
+# worksheet. One implementation, imported by both.
+_strip_label = wording.strip_label
 
 
 def _trim(text: str, limit: int) -> str:
-    text = " ".join(_strip_label(text or "").split())
-    if len(text) <= limit:
-        return text
-    cut = text[:limit].rsplit(" ", 1)[0]
-    return cut or text[:limit]
+    """Shorten copy to fit a frame. Kept as a name because callers read better
+    for it; the behaviour is `wording.shorten`."""
+    return wording.shorten(text, limit)
 
 
 def _shot_scene(role: str, plan: CampaignPlan,

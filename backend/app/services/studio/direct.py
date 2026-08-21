@@ -49,6 +49,7 @@ from app.schemas.studio import (
     Platform,
     ProductBrief,
 )
+from app.services.studio import wording
 from app.services.studio.config import studio_settings
 from app.services.studio.looks import LOOKS, pick_looks
 from app.services.studio.platforms import KITS, SlotSpec
@@ -258,12 +259,15 @@ def _clause(text: str | None) -> str:
 
 
 def _shorten(text: str, limit: int) -> str:
-    """Trim free-form copy to `limit` characters at a word boundary."""
-    text = _clean(text)
-    if len(text) <= limit:
-        return text
-    cut = text[:limit].rsplit(" ", 1)[0].rstrip(" ,;:.-")
-    return cut or text[:limit]
+    """Reduce free-form copy to fit a frame, by dropping clauses.
+
+    Cutting at a character count is what produced `"Báo thức vừa reo, pha nhanh
+    chỉ trong vài giây có ly cà` on a poster — a stray opening quote, and the
+    last word sliced in half. `wording.shorten` drops whole clauses instead, and
+    removes the quotation marks upstream wraps its copy in along with any field
+    name it glued to the front.
+    """
+    return wording.shorten(text, limit)
 
 
 def _first_compliant(candidates: Sequence[str | None], forbidden: Sequence[str]) -> str:
@@ -356,6 +360,12 @@ def _offer_badge(promotion: str) -> str:
     percent = _PERCENT_RE.search(promotion)
     if percent:
         return f"GIẢM {percent.group(1)}%"
+    # "Mua 3 tặng 1" is an offer this function used to miss entirely, because it
+    # carries no percentage and no freeship: the G7 line fell through to the
+    # truncation below and badged the *price*, `135.000Đ / TÚI 50 GÓI ·`.
+    offer = wording.offer_badge(promotion, 24)
+    if offer:
+        return offer
     if "freeship" in promotion.casefold() or "free ship" in promotion.casefold():
         return "FREESHIP"
     return _shorten(promotion, 24).upper()

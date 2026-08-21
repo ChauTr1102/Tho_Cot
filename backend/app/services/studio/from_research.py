@@ -301,17 +301,47 @@ def load_pair(campaign_id: str, db_path: str | Path | None = None
         (research_input.get("audience_brief", {}) or {}).get("platforms", []))
 
     campaign_input = build_input(research_input, campaign_id, photos)
-    plan = upstream.load_plan(plan_raw, campaign_id)
+
+    # `parse_plan`, not `load_plan`: the adapter already works out which kho
+    # photos each route named, whether upstream forbade redrawing the packaging,
+    # which marketplaces it asked for per route, and what it had to repair on the
+    # way. `load_plan` throws all of that away and returns the contract alone,
+    # which meant the studio recomputed some of it worse and never surfaced the
+    # rest — the real G7 plan points route B at Tmall and Taobao, and nothing
+    # told the user those have no kit.
+    parsed = upstream.parse_plan(plan_raw, campaign_id)
+
+    route_platforms = {
+        h.route_id: [p.value for p in h.platforms] for h in parsed.hints
+    }
+    unsupported = list(unknown_platforms)
+    for name in parsed.unsupported_platforms:
+        if name not in unsupported:
+            unsupported.append(name)
 
     notes: dict[str, Any] = {
         "name": record.get("name"),
         "status": record.get("status"),
         "photos_found": photos,
         "photos_missing": missing,
-        "platforms_unsupported": unknown_platforms,
+        "platforms_unsupported": unsupported,
         "sources": (research_result.get("sources") or [])[:8],
+        # From the plan itself, per route.
+        "route_platforms": route_platforms,
+        "routes_without_kit": [
+            h.route_id for h in parsed.hints if not h.platforms
+        ],
+        "preserve_packaging": any(h.preserve_packaging for h in parsed.hints),
+        "art_direction_notes": [
+            note for h in parsed.hints for note in h.art_direction_notes
+        ],
+        "reference_photos": [
+            name for h in parsed.hints for name in h.reference_photos
+        ],
+        "stripped_placeholders": parsed.stripped_placeholders,
+        "warnings": parsed.warnings,
     }
-    return plan, campaign_input, notes
+    return parsed.plan, campaign_input, notes
 
 
 def list_campaigns(db_path: str | Path | None = None) -> list[dict[str, Any]]:
