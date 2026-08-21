@@ -71,3 +71,26 @@ def load_visual_assets(payload: dict[str, Any], workspace_root: pathlib.Path) ->
         image_urls.append(f"data:{mime_type};base64,{encoded}")
         manifest.append({"label": label, "source": value, "mime_type": mime_type, "bytes": size, "transport": "base64_data_url"})
     return image_urls, manifest
+
+
+def encode_uploaded_visual_assets(
+    assets: list[tuple[str, str, str | None, bytes]],
+) -> tuple[list[str], list[dict[str, Any]]]:
+    """Validate uploaded image bytes and encode them for ModelArk input_image."""
+    image_urls: list[str] = []
+    manifest: list[dict[str, Any]] = []
+    for label, filename, supplied_type, content in assets:
+        mime_type = supplied_type or mimetypes.guess_type(filename)[0]
+        if mime_type not in _ALLOWED_IMAGE_TYPES:
+            raise ResearchOutputError(f"Định dạng ảnh tải lên không hỗ trợ: {filename} ({mime_type})")
+        if not content:
+            raise ResearchOutputError(f"Ảnh tải lên rỗng: {filename}")
+        if len(content) > _MAX_IMAGE_BYTES:
+            raise ResearchOutputError(f"Ảnh tải lên vượt quá 20 MB: {filename}")
+        encoded = base64.b64encode(content).decode("ascii")
+        image_urls.append(f"data:{mime_type};base64,{encoded}")
+        manifest.append({
+            "label": label, "source": filename, "mime_type": mime_type,
+            "bytes": len(content), "transport": "base64_data_url",
+        })
+    return image_urls, manifest
