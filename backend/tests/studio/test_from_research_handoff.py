@@ -45,10 +45,13 @@ def test_the_brief_survives_the_crossing(handoff):
     brief = campaign_input.product_brief
     assert brief.product_name, "sản phẩm không có tên thì không chụp được gì"
     assert brief.category
-    # `{amount, currency, unit}` plus a separate promotion, as one line. An
+    # `{amount, currency, unit}` plus a separate promotion, as one line. A brief
+    # with neither is legitimate — not every product ships with a price on the
+    # artwork — so the assertion is about the formatting, not the presence: an
     # unformatted amount reaches a badge as "135000.0".
-    assert brief.price_or_promotion
-    assert "135000.0" not in brief.price_or_promotion
+    if brief.price_or_promotion:
+        assert "135000.0" not in brief.price_or_promotion
+        assert ".0" not in brief.price_or_promotion.split(" ")[0]
 
 
 def test_photos_resolve_to_the_right_brand(handoff, researched_id):

@@ -146,6 +146,13 @@ export const StageFinalOutput: React.FC<Props> = ({ plan, input, campaignOutput,
 
   // Prefer real generated commerce copy from the content-generation stage
   // (CampaignOutputDTO shape) when available; fall back to the static mock.
+  // The posters the studio rendered per creative route, keyed "A" / "B". Empty
+  // for a campaign built before the studio varied artwork by route — the two
+  // hypotheses then sit above one set of images, which is what this section
+  // existed to stop.
+  const abVariants = (campaignOutput?.ab_variants ?? {}) as Record<string, string>;
+  const mediaBase = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api").replace(/\/api\/?$/, "");
+
   const dtoCommerceCopy = campaignOutput?.commerce_copy as
     | { product_title?: string; product_description?: string; listing_bullet_points?: string[]; ad_caption?: string; promotion_copy?: string; short_hook_lines?: string[] }
     | undefined;
@@ -232,6 +239,25 @@ export const StageFinalOutput: React.FC<Props> = ({ plan, input, campaignOutput,
               {index === 1 && <div className="hidden lg:flex items-center justify-center"><span className="h-10 w-10 rounded-full border border-foreground/20 bg-background flex items-center justify-center text-[10px] font-mono font-bold text-foreground/50">VS</span></div>}
               <article className={`p-4 border space-y-4 ${index === 0 ? "border-[#35ea52]/30 bg-[#35ea52]/[0.035]" : "border-blue-400/20 bg-blue-400/[0.025]"}`}>
                 <div className="flex items-center justify-between"><span className={`px-2 py-1 text-[9px] font-mono font-bold ${index === 0 ? "bg-[#35ea52] text-black" : "bg-blue-400 text-black"}`}>PHƯƠNG ÁN {index === 0 ? "A" : "B"}</span><span className="text-[9px] font-mono text-foreground/30">{routes[index]?.route_name || `ROUTE ${index === 0 ? "A" : "B"}`}</span></div>
+                {abVariants[index === 0 ? "A" : "B"] ? (
+                  // The artwork, not a description of it. Two hypotheses over
+                  // one image is a plan; two hypotheses over two images is a
+                  // test somebody can actually run on Monday.
+                  <a
+                    href={`${mediaBase}${abVariants[index === 0 ? "A" : "B"]}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block overflow-hidden border border-foreground/10"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={`${mediaBase}${abVariants[index === 0 ? "A" : "B"]}`}
+                      alt={`Poster phương án ${index === 0 ? "A" : "B"}`}
+                      loading="lazy"
+                      className="aspect-[4/5] w-full bg-foreground/5 object-cover"
+                    />
+                  </a>
+                ) : null}
                 <div><p className="text-[9px] font-mono text-foreground/30">MỤC TIÊU CẦN XÁC NHẬN</p><p className="text-sm font-semibold text-foreground/75 leading-relaxed mt-1">{routes[index]?.test_objective || "Đo mức độ phản hồi của khách hàng với góc truyền thông này."}</p></div>
                 <div className="p-3 border border-foreground/10 bg-background/60"><p className="text-[9px] font-mono text-[#35ea52]">TEST GÌ · CHẠY NHƯ THẾ NÀO · ĐO GÌ</p><p className="text-xs text-foreground/55 leading-relaxed mt-2">{routes[index]?.testing_plan || "Chỉ thay đổi hook và góc thông điệp; giữ cùng ngân sách, tệp khách hàng và ưu đãi; so sánh CTR và CVR."}</p></div>
               </article>

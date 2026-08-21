@@ -234,6 +234,27 @@ def _pick(assets: list[dict[str, Any]], needles: tuple[str, ...], used: set[str]
     return None
 
 
+#: Rendered filename -> which creative route it argues for. `plan_graph` names
+#: the pair `ab_poster_a` / `ab_poster_b`, so the route survives into the file.
+_AB_PREFIX = "ab_poster_"
+
+
+def ab_pair(campaign_id: str) -> dict[str, str]:
+    """The A/B posters, keyed by route id, or {} when the run predates them.
+
+    The whole point of researching two creative routes is the comparison, and
+    until the studio rendered a poster per route there was nothing to compare —
+    the final report showed two hypotheses above one set of artwork. This is
+    what lets it show the pair.
+    """
+    found: dict[str, str] = {}
+    for asset in list_assets(campaign_id, include_intermediate=True):
+        stem = Path(asset["name"]).stem.casefold()
+        if stem.startswith(_AB_PREFIX):
+            found[stem[len(_AB_PREFIX):].upper()] = asset["url"]
+    return found
+
+
 def to_dto(campaign_id: str) -> dict[str, Any]:
     """A finished kit in the DTO shapes `CampaignOutputDTO` is assembled from.
 
@@ -277,4 +298,5 @@ def to_dto(campaign_id: str) -> dict[str, Any]:
         "status": "done" if assets else "empty",
         "product_collection_image_set": image_set,
         "short_form_video_asset": video_asset,
+        "ab_variants": ab_pair(campaign_id),
     }

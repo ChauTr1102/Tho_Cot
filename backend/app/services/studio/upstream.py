@@ -735,6 +735,16 @@ def _route_hints(route: dict[str, Any], index: int) -> RouteHints:
     visual, visual_removed = strip_placeholders(visual_raw)
     angle, angle_removed = strip_placeholders(angle_raw)
 
+    # Bracket-stripping only catches notes upstream marked up. This catches the
+    # ones it wrote as plain prose: a real route came back with "…nêu rõ thông
+    # tin chung về thương hiệu nếu sử dụng kèm lưu ý chưa xác nhận cho dòng sản
+    # phẩm này cụ thể" — an instruction to the marketing team, sitting in the
+    # field that feeds the prompt. Seedream renders whatever string it is given.
+    hook, hook_dropped = drop_editorial_clauses(hook)
+    angle, angle_dropped = drop_editorial_clauses(angle)
+    hook_removed = [*hook_removed, *hook_dropped]
+    angle_removed = [*angle_removed, *angle_dropped]
+
     onscreen = extract_onscreen_text(hook)
     packaging = [span for span in extract_quoted(visual) if span not in onscreen]
     notes, preserve = extract_art_direction(visual)
@@ -773,6 +783,10 @@ def _creative_route(route: dict[str, Any], hints: RouteHints) -> CreativeRoute:
         _scalar(_first(route, "visual_direction", "visual", "art_direction"))
     )
     angle, _ = strip_placeholders(_scalar(_first(route, "message_angle", "message", "angle")))
+    # Same cleaning as `_route_hints`, or the contract object and the hints
+    # disagree about what this route says.
+    hook, _ = drop_editorial_clauses(hook)
+    angle, _ = drop_editorial_clauses(angle)
 
     return CreativeRoute(
         route_id=hints.route_id,

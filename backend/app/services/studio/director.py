@@ -130,6 +130,9 @@ class NodeSpec:
     texts: list[tuple[str, str]] = field(default_factory=list)
     role: str = ""
     seconds: int = 5
+    #: Which creative route this node argues for. Empty for everything the two
+    #: routes share — the product photograph does not have an opinion.
+    route: str = ""
 
 
 @dataclass
@@ -576,6 +579,31 @@ def plan_graph(draft_: Draft, plan: CampaignPlan,
             texts=node_texts,
         ))
 
+    # ── The A/B pair ──────────────────────────────────────────────────────
+    # Two routes were researched, each with its own hypothesis and its own way
+    # of measuring it, and until now the studio rendered one set of artwork from
+    # route A. A test you cannot run is not a test, so each route gets a poster
+    # of its own: same register, same product, same offer — only the headline
+    # differs, which is the variable the routes actually disagree about.
+    #
+    # One poster per route rather than a second full kit. The comparison needs a
+    # pair a person can hold side by side, not twice the render bill.
+    ab_routes = [r.route_id for r in plan.creative_routes[:2] if r.route_id]
+    if len(ab_routes) >= 2:
+        ab_platform = (draft_.platforms or ["shopee"])[0]
+        for route_id in ab_routes:
+            variant = _campaign_texts(plan, campaign_input, route_id)
+            nodes.append(NodeSpec(
+                id=f"ab_poster_{route_id.lower()}",
+                kind="poster",
+                deps=["hero"],
+                ratio="4:5",
+                platform=ab_platform,
+                prompt=_route_scene(plan, route_id),
+                texts=variant,
+                route=route_id,
+            ))
+
     if with_video:
         roles = ["hook", "product", "benefit", "cta"]
         clip_ids: list[str] = []
@@ -602,9 +630,32 @@ def plan_graph(draft_: Draft, plan: CampaignPlan,
                      repaired=[])
 
 
+def _route_scene(plan: CampaignPlan, route_id: str) -> str:
+    """Staging for one route's poster, taken from what that route asked for.
+
+    Upstream writes `visual_direction` per route and the two routes stage the
+    product differently on purpose. Using the same scene for both would make the
+    pair differ only in lettering, which tests typography rather than the idea.
+    """
+    route = next((r for r in plan.creative_routes if r.route_id == route_id), None)
+    if route is None:
+        return "the product, staged for a marketplace poster"
+    scene = wording.shorten(getattr(route, "visual_direction", "") or "", 220, slack=60)
+    return scene or "the product, staged for a marketplace poster"
+
+
 def _campaign_texts(plan: CampaignPlan,
-                    campaign_input: CampaignInput | None) -> list[tuple[str, str]]:
-    """The strings this campaign puts on screen, filtered for forbidden claims."""
+                    campaign_input: CampaignInput | None,
+                    route_id: str = "") -> list[tuple[str, str]]:
+    """The strings this campaign puts on screen, filtered for forbidden claims.
+
+    `route_id` selects which creative route's headline to set. Without it this
+    always used `creative_routes[0]`, which is why a plan with two deliberately
+    different routes produced one set of artwork: the A/B test existed on paper
+    and there was nothing to run it with. The offer and the call to action are
+    the same either way — they are facts about the campaign, not about the
+    argument being tested.
+    """
     banned = [c.casefold() for c in (campaign_input.product_brief.forbidden_claims
                                      if campaign_input else []) if c.strip()]
 
@@ -612,7 +663,8 @@ def _campaign_texts(plan: CampaignPlan,
         low = (value or "").casefold()
         return bool(value.strip()) and not any(b in low for b in banned)
 
-    route = plan.creative_routes[0] if plan.creative_routes else None
+    route = next((r for r in plan.creative_routes if r.route_id == route_id),
+                 plan.creative_routes[0] if plan.creative_routes else None)
     out: list[tuple[str, str]] = []
     for role, value in (
         ("headline", _headline(route, plan)),

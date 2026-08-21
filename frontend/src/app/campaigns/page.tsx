@@ -55,11 +55,39 @@ export default function CampaignsPage() {
   const [campaignsLoading, setCampaignsLoading] = React.useState(true);
   const [campaignsError, setCampaignsError] = React.useState<string | null>(null);
   const [openingCampaignId, setOpeningCampaignId] = React.useState<string | null>(null);
+  // Which campaigns already have a rendered kit, and how big it is. Three
+  // campaigns for the same product carry the same name and the same status
+  // badge, so the list gave no way to tell the one that has been built from the
+  // two that have not — and opening the wrong one looks like a broken feature.
+  const [builtKits, setBuiltKits] = React.useState<Record<string, string>>({});
   // Which campaign the pipeline is currently walking through. Set when one is
   // opened from the list; the handoff to the studio needs it by id.
   const [activeCampaignId, setActiveCampaignId] = React.useState<string | null>(null);
   const readyCampaigns = campaigns.filter((campaign) => campaign.has_research_result).length;
   const activeCampaigns = campaigns.filter((campaign) => campaign.status === "researching").length;
+
+  // Asked per campaign rather than added to the list endpoint, which belongs to
+  // the research stage and should not learn about rendered files.
+  const loadBuiltKits = React.useCallback(async (rows: CampaignListItem[]) => {
+    const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+    const entries = await Promise.all(
+      rows.map(async (row) => {
+        try {
+          const res = await fetch(`${base}/studio/${encodeURIComponent(row.id)}/saved`);
+          if (!res.ok) return [row.id, ""] as const;
+          const body = await res.json();
+          const kit = body?.data;
+          return [
+            row.id,
+            kit?.built ? `${kit.images} ảnh · ${kit.videos} video` : "",
+          ] as const;
+        } catch {
+          return [row.id, ""] as const;
+        }
+      })
+    );
+    setBuiltKits(Object.fromEntries(entries.filter(([, v]) => v)));
+  }, []);
 
   const loadCampaigns = React.useCallback(async () => {
     setCampaignsLoading(true);
@@ -67,18 +95,21 @@ export default function CampaignsPage() {
     try {
       const response = await api.getCampaigns();
       setCampaigns(response.data ?? []);
+      void loadBuiltKits(response.data ?? []);
     } catch (error) {
       setCampaignsError(error instanceof Error ? error.message : "Không thể tải danh sách chiến dịch.");
     } finally {
       setCampaignsLoading(false);
     }
-  }, []);
+  }, [loadBuiltKits]);
 
   React.useEffect(() => {
     let cancelled = false;
     api.getCampaigns()
       .then((response) => {
-        if (!cancelled) setCampaigns(response.data ?? []);
+        if (cancelled) return;
+        setCampaigns(response.data ?? []);
+        void loadBuiltKits(response.data ?? []);
       })
       .catch((error: unknown) => {
         if (!cancelled) setCampaignsError(error instanceof Error ? error.message : "Không thể tải danh sách chiến dịch.");
@@ -165,6 +196,11 @@ export default function CampaignsPage() {
           input: campaignData.research_input as unknown as ResearchSubmission["input"],
         }));
       }
+      // Which campaign the pipeline is now walking. Every stage downstream is
+      // handed this: stage 03 opens the studio on it instead of offering a
+      // picker, and with three campaigns sharing one product name a picker is
+      // a coin toss the user has to win.
+      setActiveCampaignId(campaign.id);
       setResearchError(null);
 
       // Opening a campaign jumps straight to the final report, so stage 03 —
@@ -369,8 +405,24 @@ export default function CampaignsPage() {
                       <article key={campaign.id} className="group min-h-44 p-5 border border-foreground/10 bg-foreground/[0.02] hover:border-foreground/30 transition-colors flex flex-col justify-between gap-6">
                         <div className="space-y-3">
                           <div className="flex items-start justify-between gap-3">
-                            <span className={`px-2 py-1 border text-[9px] font-mono tracking-widest ${STATUS_STYLES[campaign.status]}`}>
-                              {STATUS_LABELS[campaign.status]}
+                            <span className="flex flex-wrap items-center gap-2">
+                              <span className={`px-2 py-1 border text-[9px] font-mono tracking-widest ${STATUS_STYLES[campaign.status]}`}>
+                                {STATUS_LABELS[campaign.status]}
+                              </span>
+                              {/* Research status is not the question a person
+                                  opening this list is asking. Three campaigns
+                                  for one product share a name, a status and a
+                                  badge; what tells them apart is which one has
+                                  a kit already rendered. */}
+                              {builtKits[campaign.id] ? (
+                                <span className="px-2 py-1 border border-[#35ea52]/40 text-[#35ea52] text-[9px] font-mono tracking-widest">
+                                  {builtKits[campaign.id]}
+                                </span>
+                              ) : campaign.has_research_result ? (
+                                <span className="px-2 py-1 border border-foreground/15 text-foreground/35 text-[9px] font-mono tracking-widest">
+                                  CHƯA DỰNG
+                                </span>
+                              ) : null}
                             </span>
                             <span className="text-[9px] font-mono text-foreground/20 truncate max-w-32" title={campaign.id}>{campaign.id}</span>
                           </div>
@@ -446,7 +498,15 @@ export default function CampaignsPage() {
               >
               {currentStage === "product_input" && <StageProductInput value={researchSubmission} onChange={setResearchSubmission} initialInputMode={workflowMode === "autopilot" ? "manual" : "link"} />}
               {currentStage === "research" && <StageResearch plan={researchPlan} isLoading={researchLoading} error={researchError} onRetry={() => void runResearch()} />}
-              {currentStage === "content_generation" && <StageContentGeneration campaignId={activeCampaignId} onAssetsReady={handleStudioAssetsReady} />}
+              {currentStage === "content_generation" && (
+                <StageContentGeneration
+                  // Fall back to the brief being edited rather than passing
+                  // null: null makes the studio guess, and guessing means
+                  // picking the oldest of three identically-named campaigns.
+                  campaignId={activeCampaignId ?? researchSubmission.input.campaign_id ?? null}
+                  onAssetsReady={handleStudioAssetsReady}
+                />
+              )}
               {currentStage === "qa_gate" && <StageQAGate campaignInput={campaignInputForQa} campaignOutput={campaignOutput ?? buildMockCampaignOutput(researchPlan, researchSubmission.input)} onResult={setQaResult} />}
               {currentStage === "final_output" && <StageFinalOutput plan={researchPlan} input={researchSubmission.input} campaignOutput={campaignOutput ?? buildMockCampaignOutput(researchPlan, researchSubmission.input)} qaResult={qaResult} />}
               {!["product_input", "research", "content_generation", "qa_gate", "final_output"].includes(currentStage) && (

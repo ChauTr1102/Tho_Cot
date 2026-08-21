@@ -117,6 +117,9 @@ class AssetDTOResponse(BaseModel):
     brief."""
     campaign_id: str
     status: str
+    #: The A/B posters by route id — `{"A": "/media/…", "B": "/media/…"}`.
+    #: Empty for a run made before the studio rendered a poster per route.
+    ab_variants: dict[str, str] = Field(default_factory=dict)
     product_collection_image_set: ProductCollectionImageSet | None = None
     short_form_video_asset: ShortFormVideoAsset | None = None
     commerce_copy: CommerceCopy | None = None
@@ -429,6 +432,7 @@ def get_assets(campaign_id: str):
             data=AssetDTOResponse(
                 campaign_id=campaign_id,
                 status="done",
+                ab_variants=from_disk["ab_variants"],
                 product_collection_image_set=from_disk["product_collection_image_set"],
                 short_form_video_asset=from_disk["short_form_video_asset"],
                 # Copy lives on the bundle, which memory no longer has. Null is
@@ -443,6 +447,7 @@ def get_assets(campaign_id: str):
         data=AssetDTOResponse(
             campaign_id=campaign_id,
             status=run.status,
+            ab_variants=saved.ab_pair(campaign_id),
             product_collection_image_set=dto_bridge.to_image_set(run.bundle, _to_url),
             short_form_video_asset=dto_bridge.to_video_asset(run.bundle, _to_url),
             commerce_copy=run.bundle.listing_copy,
