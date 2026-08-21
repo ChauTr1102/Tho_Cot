@@ -454,9 +454,12 @@ function Board({
             proOptions={{ hideAttribution: true }}
             aria-label="Sơ đồ phụ thuộc của lượt chạy studio"
           >
+            {/* A ruled grid, not dots. The board is a workspace and a grid
+                reads as one; dots at this density read as noise on a light
+                ground. */}
             <Background
-              variant={BackgroundVariant.Dots}
-              gap={26}
+              variant={BackgroundVariant.Lines}
+              gap={28}
               size={1}
               className="studio-flow-bg"
             />

@@ -257,10 +257,16 @@
    ═════════════════════════════════════════════════════════════════════════ */
 
 .studio-flow {
-  --xy-background-pattern-color: color-mix(in srgb, var(--foreground) 9%, transparent);
+  --xy-background-pattern-color: color-mix(in srgb, var(--foreground) 12%, transparent);
   --xy-selection-background-color: color-mix(in srgb, var(--primary) 8%, transparent);
   --xy-selection-border: 1px dashed color-mix(in srgb, var(--primary) 45%, transparent);
-  background-color: color-mix(in srgb, var(--background) 70%, #000 30%);
+  /* Tinted with the foreground, not with black. `#000 30%` was the one
+     hardcoded colour left in this file and the one thing that could not survive
+     a light theme: on ivory it mixed #F5F3EF with black and produced the flat
+     mud-grey the canvas was showing. Tinting toward `--foreground` darkens a
+     light board and lightens a dark one, which is what "slightly recessed"
+     means in both. */
+  background-color: color-mix(in srgb, var(--background) 96%, var(--foreground) 4%);
 }
 
 .studio-flow .react-flow__pane {

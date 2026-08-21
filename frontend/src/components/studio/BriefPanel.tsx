@@ -185,20 +185,26 @@ export function BriefPanel({
       </section>
 
       {/* ── Platforms ─────────────────────────────────────────────────────── */}
-      {/* `min-w-0` is load-bearing. A <fieldset> carries an intrinsic
-          `min-inline-size: min-content` that `width: 100%` does not override, so
-          the longest kit note — "Hook trong 3 giây đầu, chừa vùng UI của sàn" —
-          set the floor for the whole rail and pushed the selection tick past the
-          panel's right edge, where it was clipped by the canvas beside it. */}
-      <fieldset
-        disabled={locked}
-        className="min-w-0 shrink-0 border-b border-border px-4 py-2.5 disabled:opacity-60"
+      {/* A <section> with a labelled group, not a <fieldset>. Overriding the
+          fieldset's intrinsic `min-inline-size: min-content` with `min-w-0` was
+          tried twice and the selection tick kept getting clipped at the rail's
+          edge; removing the element removes the quirk instead of arguing with
+          it. `disabled` moves onto each checkbox, which is where it is read
+          anyway. */}
+      <section
+        className={cn(
+          "min-w-0 shrink-0 border-b border-border px-4 py-2.5",
+          locked && "opacity-60"
+        )}
       >
-        <legend className="mb-2 text-[12px] font-semibold text-foreground/80">
+        <h3
+          id="studio-platforms-label"
+          className="mb-2 text-[12px] font-semibold text-foreground/80"
+        >
           Sàn mục tiêu
-        </legend>
+        </h3>
 
-        <div className="grid gap-1.5">
+        <div role="group" aria-labelledby="studio-platforms-label" className="grid min-w-0 gap-1.5">
           {ALL_PLATFORMS.map((platform) => {
             const kit = KITS[platform];
             const Icon = PLATFORM_ICONS[platform];
@@ -215,6 +221,7 @@ export function BriefPanel({
                 <input
                   type="checkbox"
                   checked={selected}
+                  disabled={locked}
                   onChange={() => togglePlatform(platform)}
                   className="sr-only"
                 />
@@ -264,7 +271,7 @@ export function BriefPanel({
             );
           })}
         </div>
-      </fieldset>
+      </section>
 
       {/* ── Cost of the action, stated before the action ──────────────────── */}
       <div className="shrink-0 px-4 py-3">
