@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { CampaignStage, StageStatus, CAMPAIGN_STAGES, type CampaignListItem } from "@/types/campaign";
 import { PipelineLayout } from "@/components/pipeline/pipeline-layout";
 import { StageProductInput } from "@/components/pipeline/stage-product-input";
@@ -38,6 +39,7 @@ function formatCampaignDate(value: string) {
 }
 
 export default function CampaignsPage() {
+  const router = useRouter();
   // Pipeline State
   const [isCreatingCampaign, setIsCreatingCampaign] = React.useState(false);
   const [currentStage, setCurrentStage] = React.useState<CampaignStage>("product_input");
@@ -49,6 +51,9 @@ export default function CampaignsPage() {
   const [campaignsLoading, setCampaignsLoading] = React.useState(true);
   const [campaignsError, setCampaignsError] = React.useState<string | null>(null);
   const [openingCampaignId, setOpeningCampaignId] = React.useState<string | null>(null);
+  // Which campaign the pipeline is currently walking through. Set when one is
+  // opened from the list; the handoff to the studio needs it by id.
+  const [activeCampaignId, setActiveCampaignId] = React.useState<string | null>(null);
   const readyCampaigns = campaigns.filter((campaign) => campaign.has_research_result).length;
   const activeCampaigns = campaigns.filter((campaign) => campaign.status === "researching").length;
 
@@ -104,6 +109,7 @@ export default function CampaignsPage() {
         throw new Error("Chiến dịch chưa có kết quả nghiên cứu hợp lệ.");
       }
       setResearchPlan(parseResearchCampaignPlan(savedResult.plan));
+      setActiveCampaignId(campaign.id);
       setResearchError(null);
       setCurrentStage("research");
       setIsCreatingCampaign(true);
@@ -139,6 +145,7 @@ export default function CampaignsPage() {
     setCurrentStage("research");
     try {
       setResearchPlan(await api.runResearch(researchSubmission));
+      setActiveCampaignId(researchSubmission.input.campaign_id);
       await loadCampaigns();
       return true;
     } catch (error) {
@@ -152,6 +159,15 @@ export default function CampaignsPage() {
   const handleNextStage = () => {
     if (currentStage === "product_input") {
       void runResearch();
+      return;
+    }
+    // Content generation is a screen of its own — the Asset Studio — so leaving
+    // research hands the campaign over rather than advancing an inner step. The
+    // id rides in the URL so the studio opens on this campaign already selected
+    // and the user never re-picks the product they just briefed.
+    if (currentStage === "research") {
+      const handoffId = activeCampaignId ?? researchSubmission.input.campaign_id;
+      router.push(`/studio?campaign=${encodeURIComponent(handoffId)}`);
       return;
     }
     const currentIndex = CAMPAIGN_STAGES.findIndex(s => s.id === currentStage);
@@ -283,7 +299,15 @@ export default function CampaignsPage() {
               onNext={handleNextStage}
               onBack={handlePrevStage}
               isNextDisabled={currentStage === "research" && (researchLoading || !researchPlan)}
-              nextLabel={currentStage === "deploy" ? "HOÀN THÀNH" : "BƯỚC.TIẾP"}
+              nextLabel={
+                currentStage === "deploy"
+                  ? "HOÀN THÀNH"
+                  : // Leaving research changes screen, not step. Naming the
+                    // destination stops the jump reading as a misclick.
+                    currentStage === "research"
+                    ? "MỞ.XƯỞNG_ẢNH"
+                    : "BƯỚC.TIẾP"
+              }
               >
               {currentStage === "product_input" && <StageProductInput value={researchSubmission} onChange={setResearchSubmission} />}
               {currentStage === "research" && <StageResearch plan={researchPlan} isLoading={researchLoading} error={researchError} onRetry={() => void runResearch()} />}

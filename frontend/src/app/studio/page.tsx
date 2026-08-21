@@ -3,11 +3,13 @@
 /**
  * The Asset Studio screen.
  *
- * A seller picks one of their products and the marketplaces they sell it on,
- * presses Run, and gets back a launch-ready kit of images and video per
- * marketplace. The run takes 6–12 minutes, so the screen's whole job is to
- * make that wait legible: what is being built, how far along it is, which of
- * the three routes each asset took, and what just happened.
+ * The stage after research. A campaign that has already been briefed and
+ * planned arrives here — usually via `?campaign=` from the pipeline screen —
+ * and the seller picks the marketplaces, says how the campaign should feel,
+ * and gets back a launch-ready kit of images and video per marketplace. The
+ * run takes 6–12 minutes, so the screen's whole job is to make that wait
+ * legible: what is being built, how far along it is, which of the three routes
+ * each asset took, and what just happened.
  *
  * Layout: brief rail left, live run stage right. This component owns the run
  * lifecycle (`campaignId`, the wall clock, the POST) and hands everything else
@@ -24,7 +26,7 @@ import { GraphCanvas } from "@/components/studio/GraphCanvas";
 import { OriginLegend } from "@/components/studio/OriginBadge";
 import { RunStage } from "@/components/studio/RunStage";
 import { StudioHeader } from "@/components/studio/StudioHeader";
-import { DEMO_BRANDS, estimateKit } from "@/lib/studio-catalog";
+import { estimateKit } from "@/lib/studio-catalog";
 import { useRunClock, useStudioStream } from "@/lib/studio-events";
 import {
   approveDraft,
@@ -54,7 +56,6 @@ const DIRECTOR_KIND_TO_NODE_KIND: Record<string, NodeKind> = {
 };
 
 export default function StudioPage() {
-  const [brandDir, setBrandDir] = useState<string>(DEMO_BRANDS[0].dir);
   const [platforms, setPlatforms] = useState<Platform[]>([
     "tiktok_shop",
     "shopee",
@@ -75,14 +76,24 @@ export default function StudioPage() {
 
   // The studio's inbox. Fetched once; a research run that finishes while this
   // screen is open is rare enough that polling would cost more than it buys.
+  //
+  // `?campaign=` is how the pipeline screen hands work over: pressing Tiếp tục
+  // after research lands here with the campaign already chosen, so the user
+  // never re-picks something they just finished briefing. Read from
+  // `location.search` rather than `useSearchParams` so the page keeps rendering
+  // without a Suspense boundary. Falling back to the first ready campaign keeps
+  // a direct visit to /studio useful.
   useEffect(() => {
     let cancelled = false;
+    const requested = new URLSearchParams(window.location.search).get("campaign");
     listResearchCampaigns()
       .then((rows) => {
         if (cancelled) return;
         setCampaigns(rows);
-        const ready = rows.find((row) => row.status === "researched");
-        if (ready) setSelectedCampaign(ready.id);
+        const wanted =
+          rows.find((row) => row.id === requested && row.status === "researched") ??
+          rows.find((row) => row.status === "researched");
+        if (wanted) setSelectedCampaign(wanted.id);
       })
       .catch(() => undefined);
     return () => {
@@ -93,9 +104,9 @@ export default function StudioPage() {
   const stream = useStudioStream(campaignId);
   const elapsedSec = useRunClock(startedAt, stoppedAt);
 
-  const brand = useMemo(
-    () => DEMO_BRANDS.find((item) => item.dir === brandDir) ?? null,
-    [brandDir]
+  const campaign = useMemo(
+    () => campaigns.find((item) => item.id === selectedCampaign) ?? null,
+    [campaigns, selectedCampaign]
   );
   const plannedOrigins = useMemo(
     () => estimateKit(platforms).origins,
@@ -133,7 +144,7 @@ export default function StudioPage() {
   // Propose, then approve. The director reads the brief and writes a register
   // for whatever the user asked for; nothing renders until a person says yes.
   const handlePropose = useCallback(async () => {
-    if (platforms.length === 0) return;
+    if (platforms.length === 0 || !selectedCampaign) return;
 
     setStarting(true);
     setCampaignId(null);
@@ -141,13 +152,13 @@ export default function StudioPage() {
     setDraft(null);
 
     try {
-      // A researched campaign carries its own brief and plan; a demo brand is
-      // only the way in when nothing has been researched yet.
-      const result = await requestDraft(
-        selectedCampaign
-          ? { campaign_id: selectedCampaign, direction, with_video: true }
-          : { brand_dir: brandDir, direction, with_video: true }
-      );
+      // The campaign carries its own brief, plan and photos — everything the
+      // director needs is already on file, so this call sends an id and a mood.
+      const result = await requestDraft({
+        campaign_id: selectedCampaign,
+        direction,
+        with_video: true,
+      });
       setDraft(result.draft);
       setDraftId(result.campaignId);
       setDraftGraph(result.graph.nodes);
@@ -162,7 +173,7 @@ export default function StudioPage() {
     } finally {
       setStarting(false);
     }
-  }, [brandDir, direction, platforms, selectedCampaign]);
+  }, [direction, platforms, selectedCampaign]);
 
   const handleApprove = useCallback(
     async (edited: Partial<Draft> | undefined) => {
@@ -193,7 +204,7 @@ export default function StudioPage() {
       <StudioHeader
         status={stream.status}
         campaignId={campaignId}
-        brandName={brand?.name ?? null}
+        brandName={campaign?.name ?? null}
       />
 
       <main className="mx-auto w-full max-w-[1440px] flex-1 px-4 pb-14 sm:px-6">
@@ -240,8 +251,6 @@ export default function StudioPage() {
             />
           ) : (
             <BriefPanel
-              brandDir={brandDir}
-              onBrandChange={setBrandDir}
               platforms={platforms}
               onPlatformsChange={setPlatforms}
               onRun={handlePropose}

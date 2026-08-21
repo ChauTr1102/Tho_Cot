@@ -1,16 +1,19 @@
 "use client";
 
 /**
- * The brief: pick a product, pick the marketplaces, run.
+ * The brief: confirm the campaign, pick the marketplaces, say how it should
+ * feel, run.
  *
- * Two decisions and one action, in that order, with the cost of the action
- * stated immediately above it. A run takes 6–12 minutes, so the panel closes
- * with the time it will take and exactly how many assets come back, before the
- * user commits to the wait.
+ * There is no product picker. The studio is the stage after research, so the
+ * product was chosen and briefed upstream and arrives selected — normally
+ * because the user pressed Tiếp tục on the pipeline screen, which deep-links
+ * here with the campaign id. What is left is the cost of the action, stated
+ * immediately above it: a run takes 6–12 minutes, so the panel closes with the
+ * time and the exact asset count before the user commits to the wait.
  *
- * Both pickers are native form controls under the styling (radio for the brand,
- * checkbox for the platforms), so keyboard navigation, focus rings and screen
- * reader semantics come from the platform rather than being re-invented.
+ * The platform picker is a native checkbox under the styling, so keyboard
+ * navigation, focus rings and screen reader semantics come from the platform
+ * rather than being re-invented.
  */
 
 import { Check, Clock, Play, ShoppingBag, Store } from "lucide-react";
@@ -18,12 +21,7 @@ import type { LucideIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import {
-  ALL_PLATFORMS,
-  DEMO_BRANDS,
-  KITS,
-  estimateKit,
-} from "@/lib/studio-catalog";
+import { ALL_PLATFORMS, KITS, estimateKit } from "@/lib/studio-catalog";
 import {
   DIRECTION_PRESETS,
   type ResearchCampaign,
@@ -35,17 +33,22 @@ const PLATFORM_ICONS: Record<Platform, LucideIcon> = {
   shopee: Store,
 };
 
+/** Upstream statuses, said in the words the pipeline screen uses. */
+const STATUS_TEXT: Record<string, string> = {
+  draft: "chưa chạy nghiên cứu",
+  researching: "đang nghiên cứu…",
+  failed: "nghiên cứu lỗi",
+};
+
 interface BriefPanelProps {
-  brandDir: string;
-  onBrandChange: (dir: string) => void;
   platforms: Platform[];
   onPlatformsChange: (platforms: Platform[]) => void;
   onRun: () => void;
-  /** Campaigns research has finished. Empty until the fetch lands. */
+  /** Campaigns research has worked on. Empty until the fetch lands. */
   campaigns: ResearchCampaign[];
-  /** Which one is selected, or null to fall back to a demo brand. */
+  /** Which one this run is for; null only before the fetch lands. */
   selectedCampaign: string | null;
-  onCampaignChange: (id: string | null) => void;
+  onCampaignChange: (id: string) => void;
   /** Free text: what the user wants this campaign to feel like. */
   direction: string;
   onDirectionChange: (value: string) => void;
@@ -57,8 +60,6 @@ interface BriefPanelProps {
 }
 
 export function BriefPanel({
-  brandDir,
-  onBrandChange,
   platforms,
   onPlatformsChange,
   onRun,
@@ -74,6 +75,8 @@ export function BriefPanel({
   const estimate = estimateKit(platforms);
   const locked = running || starting;
   const noPlatform = platforms.length === 0;
+  const readyCount = campaigns.filter((c) => c.status === "researched").length;
+  const noCampaign = selectedCampaign === null;
 
   // Selection is rebuilt from ALL_PLATFORMS so the array always carries the
   // canonical order, whatever order the user clicked in.
@@ -96,123 +99,85 @@ export function BriefPanel({
           Brief chiến dịch
         </h2>
         <p className="mt-0.5 text-[12.5px] text-muted-foreground">
-          Ảnh gốc lấy từ <span className="font-mono">sample_data/</span>, kho ảnh
-          không bị ghi đè.
+          Brief, plan và ảnh gốc lấy từ bước nghiên cứu. Kho ảnh không bị ghi đè.
         </p>
       </div>
 
-      {/* ── Brand ─────────────────────────────────────────────────────────── */}
-      <fieldset
-        disabled={locked}
-        className="min-h-0 flex-1 overflow-y-auto border-b border-border px-4 py-2.5 disabled:opacity-60"
+      {/* ── Campaign ──────────────────────────────────────────────────────── */}
+      {/* The studio is downstream, so there is no product picker: the campaign
+          arrives from research, already briefed. Normally exactly one is
+          selected — the one the user pressed Next on — and this list is just
+          confirmation of what is about to be built. */}
+      {/* A section, not a fieldset: these are buttons rather than a radio group,
+          and a <legend> is laid out in the fieldset's border gap — the two-column
+          header below overflowed it and collided with the platform list. */}
+      <section
+        className={cn(
+          "min-h-0 flex-1 overflow-y-auto border-b border-border px-4 py-2.5",
+          locked && "opacity-60"
+        )}
       >
-        <legend className="mb-2 text-[12px] font-semibold text-foreground/80">
-{/* The studio is downstream. What research has already worked on comes
-              first; the sample brands below are a fallback for when nothing has
-              been researched yet, not the main way in. */}
-          {campaigns.length > 0 ? (
-            <div className="mb-4">
-              <div className="mb-1.5 flex items-baseline justify-between gap-2">
-                <span className="text-[13px] font-medium">Từ nghiên cứu</span>
-                <span className="text-muted-foreground/60 text-[11px]">
-                  {campaigns.filter((c) => c.status === "researched").length} sẵn sàng
-                </span>
-              </div>
-              <div className="flex flex-col gap-1.5">
-                {campaigns.map((campaign) => {
-                  const ready = campaign.status === "researched";
-                  const active = selectedCampaign === campaign.id;
-                  return (
-                    <button
-                      key={campaign.id}
-                      type="button"
-                      disabled={locked || !ready}
-                      onClick={() => onCampaignChange(active ? null : campaign.id)}
-                      className={`flex items-start gap-2.5 rounded-md border px-2.5 py-2 text-left transition-colors disabled:opacity-45 ${
-                        active
-                          ? "border-primary/60 bg-primary/10"
-                          : "border-border/60 hover:border-primary/40"
-                      }`}
-                    >
-                      <span
-                        aria-hidden
-                        className={`mt-[6px] size-1.5 shrink-0 rounded-full ${
-                          active ? "bg-primary" : "bg-muted-foreground/40"
-                        }`}
-                      />
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-[13px] font-medium">
-                          {campaign.name}
-                        </span>
-                        <span className="text-muted-foreground/70 block text-[11px]">
-                          {ready ? "đã research" : campaign.status}
-                        </span>
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+        <div className="mb-2 flex items-baseline justify-between gap-2">
+          <h3 className="text-[12px] font-semibold text-foreground/80">Chiến dịch</h3>
+          {readyCount > 0 ? (
+            <span className="text-muted-foreground/60 text-[11px]">
+              {readyCount} đã nghiên cứu
+            </span>
           ) : null}
-
-          Sản phẩm
-        </legend>
-
-        <div role="radiogroup" className="space-y-1">
-          {DEMO_BRANDS.map((brand) => {
-            const selected = brand.dir === brandDir;
-            return (
-              <label
-                key={brand.dir}
-                data-selected={selected}
-                className={cn(
-                  "studio-option flex cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-1",
-                  locked && "cursor-not-allowed"
-                )}
-              >
-                <input
-                  type="radio"
-                  name="studio-brand"
-                  value={brand.dir}
-                  checked={selected}
-                  onChange={() => onBrandChange(brand.dir)}
-                  className="sr-only"
-                />
-                <span
-                  aria-hidden
-                  className={cn(
-                    "grid size-7 shrink-0 place-items-center rounded-lg font-display text-[11px] font-bold tracking-tight transition-colors",
-                    selected
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground"
-                  )}
-                >
-                  {brand.monogram}
-                </span>
-                <span className="min-w-0 flex-1 leading-tight">
-                  <span className="block truncate text-[13px] font-medium">
-                    {brand.name}
-                  </span>
-                  <span className="mt-0.5 block truncate text-[11px] text-muted-foreground">
-                    {brand.category}
-                  </span>
-                </span>
-                <span
-                  aria-hidden
-                  className={cn(
-                    "grid size-4 shrink-0 place-items-center rounded-full border",
-                    selected
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border"
-                  )}
-                >
-                  {selected ? <Check className="size-2.5" strokeWidth={3.5} /> : null}
-                </span>
-              </label>
-            );
-          })}
         </div>
-      </fieldset>
+
+        {campaigns.length > 0 ? (
+          <div className="flex flex-col gap-1.5">
+            {campaigns.map((campaign) => {
+              const ready = campaign.status === "researched";
+              const active = selectedCampaign === campaign.id;
+              return (
+                <button
+                  key={campaign.id}
+                  type="button"
+                  // Not-yet-researched campaigns stay visible but unselectable:
+                  // seeing one greyed out explains why it is absent, hiding it
+                  // reads as the campaign having been lost.
+                  disabled={locked || !ready}
+                  onClick={() => onCampaignChange(campaign.id)}
+                  data-selected={active}
+                  className={cn(
+                    "studio-option flex items-start gap-2.5 rounded-lg px-2.5 py-2 text-left",
+                    ready ? "cursor-pointer" : "cursor-not-allowed opacity-45",
+                    locked && "cursor-not-allowed"
+                  )}
+                >
+                  <span
+                    aria-hidden
+                    className={cn(
+                      "mt-[3px] grid size-4 shrink-0 place-items-center rounded-full border",
+                      active
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border"
+                    )}
+                  >
+                    {active ? <Check className="size-2.5" strokeWidth={3.5} /> : null}
+                  </span>
+                  <span className="min-w-0 flex-1 leading-tight">
+                    <span className="block truncate text-[13px] font-medium">
+                      {campaign.name}
+                    </span>
+                    <span className="mt-0.5 block truncate text-[11px] text-muted-foreground">
+                      {ready ? "brief và plan đã sẵn sàng" : STATUS_TEXT[campaign.status] ?? campaign.status}
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="py-2 text-[12.5px] leading-relaxed text-muted-foreground">
+            Chưa có chiến dịch nào nghiên cứu xong. Chạy bước{" "}
+            <span className="text-foreground/75">Nghiên cứu</span> trước, rồi bấm
+            Tiếp tục để quay lại đây.
+          </p>
+        )}
+      </section>
 
       {/* ── Platforms ─────────────────────────────────────────────────────── */}
       <fieldset
@@ -342,7 +307,7 @@ export function BriefPanel({
           type="button"
           size="lg"
           onClick={onRun}
-          disabled={locked || noPlatform}
+          disabled={locked || noPlatform || noCampaign}
           // `.btn-cta` paints the coral gradient over the primary fill; the
           // default variant's near-black `text-primary-foreground` is kept on
           // purpose — white on this orange only reaches 2.8:1.
@@ -368,7 +333,9 @@ export function BriefPanel({
           className="mt-2 min-h-4 text-center text-[11.5px] text-muted-foreground"
           aria-live="polite"
         >
-          {noPlatform ? (
+          {noCampaign ? (
+            "Chọn một chiến dịch đã nghiên cứu xong."
+          ) : noPlatform ? (
             "Chọn ít nhất một sàn để chạy."
           ) : campaignId ? (
             <span className="font-mono">{campaignId}</span>
