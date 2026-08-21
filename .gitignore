@@ -242,3 +242,7 @@ ENV/
 
 # Backend campaign JSON file-store (generated at runtime, not committed)
 backend/data/
+
+# Python venv
+backend/venv/
+backend/data/

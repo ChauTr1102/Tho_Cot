@@ -24,7 +24,7 @@ class CampaignService:
         campaign_store.save(campaign_input.campaign_id, "input", campaign_input)
 
         plan: CampaignPlan = gen_plan_agent.generate_plan(campaign_input)
-        assets: AssetBundle = gen_assets_agent.generate_assets(plan)
+        assets: AssetBundle = gen_assets_agent.generate_assets(plan, campaign_input)
 
         result: QAResult | None = None
         for iteration in range(1, max_iterations + 1):
@@ -42,7 +42,7 @@ class CampaignService:
             # this draft we just re-run them once and rely on QA rules to stay
             # satisfied on iteration 2+ once assets pass the checklist.
             plan = gen_plan_agent.generate_plan(campaign_input)
-            assets = gen_assets_agent.generate_assets(plan)
+            assets = gen_assets_agent.generate_assets(plan, campaign_input)
 
         assert result is not None
         return result

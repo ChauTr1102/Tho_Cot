@@ -142,12 +142,77 @@ class ImageKind(str, Enum):
     SEASONAL = "seasonal_sale_image"
 
 
+class Platform(str, Enum):
+    """Marketplace a kit is built for.
+
+    Kits differ by more than aspect ratio. TikTok is video-first and the viewer
+    is scrolling, so its assets are staged and generated. Shopee is image-first
+    and the shopper is comparing before paying, so its assets favour the brand's
+    real photographs.
+    """
+    TIKTOK_SHOP = "tiktok_shop"
+    SHOPEE = "shopee"
+
+
+class AssetOrigin(str, Enum):
+    """How an asset was produced.
+
+    REUSE    - an existing brand photo, cropped and resized only. Used where the
+               shopper inspects the product and an invented pixel is a liability.
+    REMIX    - image-to-image from a real product photo: new scene, added text.
+    GENERATE - synthesised, anchored to the product photo and the hero image.
+    """
+    REUSE = "reuse"
+    REMIX = "remix"
+    GENERATE = "generate"
+
+
+class ShotAsset(BaseModel):
+    """One shot of a multi-shot video.
+
+    The shot's keyframe carries its on-screen text: Seedream renders Vietnamese
+    correctly and that text survives image-to-video intact, whereas Seedance
+    garbles Vietnamese captions.
+    """
+    index: int
+    role: str  # hook | product | benefit | cta
+    keyframe_path: str
+    clip_path: Optional[str] = None
+    duration_sec: float = 5.0
+    onscreen_text: str = ""
+    vo_text: str = ""
+    used_fallback: bool = False  # clip missed its deadline; a Ken Burns move
+                                 # over the keyframe was used so the shot still exists
+
+
+class VideoCutdown(BaseModel):
+    """A derived cut of the master video - shorter, or a different aspect ratio."""
+    label: str  # "15s" | "1x1" | ...
+    local_path: str
+    duration_sec: float
+    aspect_ratio: str
+
+
 class ImageAsset(BaseModel):
     kind: ImageKind
     url: str
     width: int
     height: int
     model: str = "dola-seedream-5-0-pro-260628"
+
+    # --- studio extensions -------------------------------------------
+    # All optional with defaults: qa_review_agent and the existing tests
+    # construct ImageAsset with the five fields above and must keep working.
+    platform: Optional[Platform] = None
+    slot: Optional[str] = None
+    origin: Optional[AssetOrigin] = None
+    local_path: Optional[str] = None
+    prompt: Optional[str] = None
+    text_rendered: list[str] = Field(default_factory=list)
+    source_photo: Optional[str] = None
+    qa_passed: Optional[bool] = None
+    qa_notes: list[str] = Field(default_factory=list)
+    gen_seconds: Optional[float] = None
 
 
 class VideoAsset(BaseModel):
@@ -157,6 +222,13 @@ class VideoAsset(BaseModel):
     aspect_ratio: str  # e.g. "9:16"
     model: str = "dreamina-seedance-2-5-260628"
     route_id: Optional[str] = None
+
+    # --- studio extensions -------------------------------------------
+    platform: Optional[Platform] = None
+    local_path: Optional[str] = None
+    shots: list[ShotAsset] = Field(default_factory=list)
+    has_voiceover: bool = False
+    cutdowns: list[VideoCutdown] = Field(default_factory=list)
 
 
 class CommerceCopy(BaseModel):

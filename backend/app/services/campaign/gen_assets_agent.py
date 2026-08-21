@@ -14,6 +14,7 @@ from __future__ import annotations
 
 from app.schemas.campaign import (
     AssetBundle,
+    CampaignInput,
     CampaignPlan,
     CommerceCopy,
     ImageAsset,
@@ -22,7 +23,20 @@ from app.schemas.campaign import (
 )
 
 
-def generate_assets(plan: CampaignPlan) -> AssetBundle:
+def generate_assets(
+    plan: CampaignPlan,
+    campaign_input: CampaignInput | None = None,
+) -> AssetBundle:
+    """Produce the asset bundle for a campaign plan.
+
+    `campaign_input` carries what the plan does not: the brand's real product
+    photos (the Brand Lock reference), brand colours, and forbidden claims.
+    Without it the studio can only synthesise generic product imagery, so
+    callers should always pass it.
+
+    It stays optional, and passing None keeps the deterministic mock below, so
+    the QA agent can be developed and tested without a network or an API key.
+    """
     campaign_id = plan.campaign_id
 
     images = [
