@@ -1,0 +1,59 @@
+{
+  "$note": "REFERENCE EXAMPLE ONLY — not read by QA_checklist.py at runtime. Shows what a CampaignPlan produced by GenPlanAgent looks like for the scenario in user_input.json, for documentation purposes. The actual plan is always generated fresh by GenPlanAgent.generate() from user_input.json.",
+  "campaign_id": "camp-bp01-fnb-001",
+  "positioning": {
+    "main_campaign_angle": "The soft-drink fizz you love, made from real hibiscus and ginger, zero added sugar.",
+    "target_audience": "Urban Gen Z and young professionals (18-30) in Vietnam who want a low-sugar, functional alternative to soft drinks",
+    "key_selling_message": "Fizzy Roots gives you the soda experience your cravings want, without the sugar guilt your body doesn't.",
+    "product_benefit_hierarchy": [
+      "Zero added sugar (primary functional benefit)",
+      "Real hibiscus + ginger brewing (ingredient credibility)",
+      "15 kcal per can (guilt-free indulgence)",
+      "Made in Vietnam, locally sourced (provenance/trust)"
+    ],
+    "sources": [
+      "ref://trend-report-2026/sea-functional-beverages",
+      "ref://social-listening/tiktok-vn-zero-sugar-drinks-q2-2026"
+    ]
+  },
+  "creative_routes": [
+    {
+      "route_id": "A",
+      "hook_idea": "\"POV: you want a soda but not the sugar crash\" - problem-agitate-solve opener in first 2 seconds",
+      "visual_direction": "Close-up can crack + fizz pour shot, natural daylight, UGC hand-held style",
+      "message_angle": "Pain-point led: sugar guilt vs. craving",
+      "suggested_platform_usage": ["TikTok Shop", "TikTok organic"]
+    },
+    {
+      "route_id": "B",
+      "hook_idea": "\"We brewed real hibiscus + ginger so you don't need sugar\" - ingredient-led reveal opener",
+      "visual_direction": "Studio macro shots of hibiscus flowers and ginger root transitioning into the can, clean gradient background matching brand colors",
+      "message_angle": "Ingredient-credibility led",
+      "suggested_platform_usage": ["Shopee", "TikTok Shop"]
+    }
+  ],
+  "ab_test_plan": {
+    "what_to_test": "Hook style: sugar-guilt pain point (Route A) vs. real-ingredient credibility (Route B)",
+    "route_a": "A",
+    "route_b": "B",
+    "success_metrics": ["CTR", "3s view rate", "Add-to-cart rate", "CVR"],
+    "expected_learning": "Whether Gen Z VN responds more to an emotional sugar-guilt hook or a rational ingredient-credibility hook, to prioritize creative direction for the next 3 SKUs."
+  },
+  "performance_learning": {
+    "keep": [
+      "Add-to-cart rate is strong once a viewer watches past 3 seconds - keep front-loading a strong visual hook",
+      "Local sourcing / provenance message resonated in comments - keep 'Made in Vietnam' framing"
+    ],
+    "change": [
+      "CTR underperformed benchmark on the previous SKU - test a faster, punchier hook in the first 2 seconds instead of a slow brand intro",
+      "Shift more budget toward TikTok Shop given 62% of prior sales came from that channel"
+    ],
+    "stop": [
+      "Stop using generic 'diet soda' framing - comments show customers want to know about the functional ingredients, not just 'less sugar'"
+    ],
+    "test_next": [
+      "Test ingredient-led hook (hibiscus + ginger) as a new angle not tried in the previous campaign",
+      "Test a shorter 15s cut vs. the previous 30s cut to see impact on watch-through rate"
+    ]
+  }
+}

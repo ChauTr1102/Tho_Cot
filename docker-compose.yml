@@ -17,7 +17,7 @@ services:
       ARK_API_KEY: ${ARK_API_KEY}
       ARK_BASE_URL: ${ARK_BASE_URL:-https://ark.ap-southeast.bytepluses.com/api/v3}
     volumes:
-      # JSON file-storage for campaign pipeline (backend/app/storage/campaign_store.py)
+      # Data volume mount point (used by the Items demo feature)
       - ${BACKEND_DATA_DIR:-./backend/data}:/app/data
     expose:
       - "8000"

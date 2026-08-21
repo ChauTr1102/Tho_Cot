@@ -1,0 +1,136 @@
+{
+  "$note": "REFERENCE EXAMPLE ONLY — not read by QA_checklist.py at runtime. Shows what an AssetBundle produced by GenAssetsAgent could look like (happy_case: compliant; unhappy_case: drifted from the brief) for documentation purposes. The actual asset bundle is always generated fresh by GenAssetsAgent.generate() from user_input.json + the generated plan. Use `python QA_checklist.py --inject-drift` to reproduce an equivalent unhappy-case scenario end-to-end through the real agent instead of this static file.",
+
+  "happy_case": {
+    "campaign_id": "camp-bp01-fnb-001",
+    "images": [
+      {
+        "kind": "product_hero_image",
+        "url": "./ark_out/hero_can_studio.jpg",
+        "width": 2048,
+        "height": 2048,
+        "model": "dola-seedream-5-0-pro-260628"
+      },
+      {
+        "kind": "sku_detail_image",
+        "url": "./ark_out/sku_detail_label_closeup.jpg",
+        "width": 2048,
+        "height": 2048,
+        "model": "dola-seedream-5-0-pro-260628"
+      },
+      {
+        "kind": "campaign_collection_image",
+        "url": "./ark_out/collection_hibiscus_ginger_flatlay.jpg",
+        "width": 2048,
+        "height": 2048,
+        "model": "dola-seedream-5-0-pro-260628"
+      },
+      {
+        "kind": "marketplace_thumbnail",
+        "url": "./ark_out/thumbnail_shopee_cover.jpg",
+        "width": 1080,
+        "height": 1080,
+        "model": "dola-seedream-5-0-pro-260628"
+      },
+      {
+        "kind": "promotion_banner",
+        "url": "./ark_out/banner_buy4get1_launch_week.jpg",
+        "width": 1200,
+        "height": 628,
+        "model": "dola-seedream-5-0-pro-260628"
+      }
+    ],
+    "videos": [
+      {
+        "url": "./ark_out/route_A_sugar_guilt_18s.mp4",
+        "duration_sec": 18,
+        "resolution": "720p",
+        "aspect_ratio": "9:16",
+        "model": "dreamina-seedance-2-5-260628",
+        "route_id": "A"
+      }
+    ],
+    "listing_copy": {
+      "product_title": "Fizzy Roots Sparkling Tea Hibiscus Ginger - Zero Added Sugar 330ml",
+      "product_description": "Fizzy Roots Sparkling Tea Hibiscus Ginger is brewed with real hibiscus and cold-pressed ginger, made in Vietnam with zero added sugar and only 15 kcal per can. Get the soda fizz you crave without the sugar guilt.",
+      "listing_bullet_points": [
+        "Zero added sugar, sweetened naturally with monk fruit",
+        "Brewed with real hibiscus and cold-pressed ginger",
+        "Only 15 kcal per 330ml can",
+        "Made in Vietnam with locally sourced hibiscus"
+      ],
+      "ad_caption": "The fizz you love, zero added sugar. Made in Vietnam with real hibiscus + ginger. #FizzyRoots #KhongDuong",
+      "promotion_copy": "Launch week only: Buy 4 Get 1 Free on Shopee. 25,000 VND/can.",
+      "short_hook_lines": [
+        "POV: soda cravings, zero sugar guilt.",
+        "Real hibiscus. Real ginger. Zero added sugar."
+      ]
+    }
+  },
+
+  "unhappy_case": {
+    "$drift_notes": [
+      "Missing sku_detail_image kind -> triggers ASSETS.MISSING_IMAGE_KIND (blocker)",
+      "Video is 34s (outside 15-30s) and 1:1 aspect instead of 9:16 -> ASSETS.VIDEO_DURATION + ASSETS.VIDEO_ASPECT (both warnings, non-blocking)",
+      "Copy includes forbidden claim 'cures bloating' -> USER.FORBIDDEN_CLAIM (blocker)",
+      "Copy omits required claim 'made in Vietnam' entirely -> USER.MISSING_REQUIRED_CLAIM (blocker)",
+      "Messaging drifts from 'zero added sugar / functional ingredient' angle toward a generic 'diet detox' framing"
+    ],
+    "campaign_id": "camp-bp01-fnb-001",
+    "images": [
+      {
+        "kind": "product_hero_image",
+        "url": "./ark_out/hero_can_studio_v2.jpg",
+        "width": 2048,
+        "height": 2048,
+        "model": "dola-seedream-5-0-pro-260628"
+      },
+      {
+        "kind": "campaign_collection_image",
+        "url": "./ark_out/collection_summer_flatlay.jpg",
+        "width": 2048,
+        "height": 2048,
+        "model": "dola-seedream-5-0-pro-260628"
+      },
+      {
+        "kind": "marketplace_thumbnail",
+        "url": "./ark_out/thumbnail_shopee_cover_v2.jpg",
+        "width": 1080,
+        "height": 1080,
+        "model": "dola-seedream-5-0-pro-260628"
+      },
+      {
+        "kind": "seasonal_sale_image",
+        "url": "./ark_out/seasonal_summer_sale.jpg",
+        "width": 1200,
+        "height": 1200,
+        "model": "dola-seedream-5-0-pro-260628"
+      }
+    ],
+    "videos": [
+      {
+        "url": "./ark_out/route_A_detox_34s.mp4",
+        "duration_sec": 34,
+        "resolution": "720p",
+        "aspect_ratio": "1:1",
+        "model": "dreamina-seedance-2-5-260628",
+        "route_id": "A"
+      }
+    ],
+    "listing_copy": {
+      "product_title": "Fizzy Roots Sparkling Tea Hibiscus Ginger - Detox Diet Drink 330ml",
+      "product_description": "Fizzy Roots Sparkling Tea Hibiscus Ginger helps with detox and cures bloating thanks to real hibiscus and ginger. A refreshing sparkling tea for your diet routine.",
+      "listing_bullet_points": [
+        "Detox-friendly diet drink",
+        "Only 15 kcal per 330ml can",
+        "Brewed with real hibiscus and cold-pressed ginger"
+      ],
+      "ad_caption": "Detox your day, one fizzy can at a time. #FizzyRoots #Detox",
+      "promotion_copy": "Launch week only: Buy 4 Get 1 Free on Shopee. 25,000 VND/can.",
+      "short_hook_lines": [
+        "Bloated? This fixes it.",
+        "Your new detox ritual."
+      ]
+    }
+  }
+}
