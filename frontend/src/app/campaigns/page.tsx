@@ -8,7 +8,8 @@ import { StageResearch } from "@/components/pipeline/stage-research";
 import { StageContentGeneration } from "@/components/pipeline/stage-content-generation";
 import { StageQAGate } from "@/components/pipeline/stage-qa-gate";
 import { StageFinalOutput } from "@/components/pipeline/stage-final-output";
-import { AlertTriangle, ArrowLeft, CalendarDays, FolderKanban, LoaderCircle, Plus, RefreshCw, Search } from "lucide-react";
+import { AutopilotWorkflow } from "@/components/pipeline/autopilot-workflow";
+import { AlertTriangle, ArrowLeft, CalendarDays, FolderKanban, ListTree, LoaderCircle, Plus, RefreshCw, Search, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 import { attachDefaultSampleProductPhotos, createInitialResearchSubmission, parseResearchCampaignPlan, validateResearchSubmission, type ResearchCampaignPlan, type ResearchSubmission } from "@/types/research";
@@ -37,6 +38,8 @@ function formatCampaignDate(value: string) {
 export default function CampaignsPage() {
   // Pipeline State
   const [isCreatingCampaign, setIsCreatingCampaign] = React.useState(false);
+  const [workflowMode, setWorkflowMode] = React.useState<"manual" | "autopilot">("manual");
+  const [showAutopilotOverview, setShowAutopilotOverview] = React.useState(false);
   const [currentStage, setCurrentStage] = React.useState<CampaignStage>("product_input");
   const [researchSubmission, setResearchSubmission] = React.useState<ResearchSubmission>(createInitialResearchSubmission);
   const [researchPlan, setResearchPlan] = React.useState<ResearchCampaignPlan | null>(null);
@@ -98,7 +101,25 @@ export default function CampaignsPage() {
     setResearchPlan(null);
     setResearchError(null);
     setCurrentStage("product_input");
+    setWorkflowMode("manual");
+    setShowAutopilotOverview(false);
     setIsCreatingCampaign(true);
+  };
+
+  const startAutopilotCampaign = async () => {
+    const initialSubmission = createInitialResearchSubmission();
+    setResearchSubmission(initialSubmission);
+    setResearchPlan(null);
+    setResearchError(null);
+    setCurrentStage("product_input");
+    setWorkflowMode("autopilot");
+    setShowAutopilotOverview(false);
+    setIsCreatingCampaign(true);
+    try {
+      setResearchSubmission(await attachDefaultSampleProductPhotos(initialSubmission));
+    } catch {
+      toast.error("Không thể tải sẵn ảnh sản phẩm mẫu G7.");
+    }
   };
 
   const returnToCampaigns = () => {
@@ -119,6 +140,8 @@ export default function CampaignsPage() {
       setResearchPlan(parseResearchCampaignPlan(savedResult.plan));
       setResearchError(null);
       setCurrentStage("research");
+      setWorkflowMode("manual");
+      setShowAutopilotOverview(false);
       setIsCreatingCampaign(true);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Không thể mở chiến dịch.");
@@ -141,7 +164,7 @@ export default function CampaignsPage() {
     return statuses as Record<CampaignStage, StageStatus>;
   }, [currentStage]);
 
-  const runResearch = async () => {
+  const runResearch = async (navigateToResearch = true) => {
     const validationErrors = validateResearchSubmission(researchSubmission);
     if (validationErrors.length) {
       toast.error(validationErrors[0]);
@@ -149,7 +172,7 @@ export default function CampaignsPage() {
     }
     setResearchLoading(true);
     setResearchError(null);
-    setCurrentStage("research");
+    if (navigateToResearch) setCurrentStage("research");
     try {
       setResearchPlan(await api.runResearch(researchSubmission));
       await loadCampaigns();
@@ -164,6 +187,15 @@ export default function CampaignsPage() {
 
   const handleNextStage = () => {
     if (currentStage === "product_input") {
+      if (workflowMode === "autopilot") {
+        const validationErrors = validateResearchSubmission(researchSubmission);
+        if (validationErrors.length) {
+          toast.error(validationErrors[0]);
+          return;
+        }
+        setShowAutopilotOverview(true);
+        return;
+      }
       void runResearch();
       return;
     }
@@ -203,14 +235,10 @@ export default function CampaignsPage() {
                   <h1 className="text-2xl font-bold tracking-wider text-foreground font-display uppercase">CHIẾN DỊCH</h1>
                   <p className="text-sm text-foreground/45 max-w-2xl">Biến thông tin sản phẩm thành góc bán hàng, hai phương án quảng cáo và bộ nội dung sẵn sàng triển khai.</p>
                 </div>
-                <button
-                  type="button"
-                  onClick={startNewCampaign}
-                  className="px-5 h-10 border-2 border-foreground bg-foreground text-black font-display text-sm font-bold tracking-wider flex items-center gap-2 transition-all hover:bg-transparent hover:text-foreground"
-                >
-                  <Plus className="h-4 w-4" />
-                  CHIẾN DỊCH.MỚI
-                </button>
+                <div className="flex items-center gap-2">
+                  <button type="button" onClick={() => void startAutopilotCampaign()} className="px-5 h-10 border-2 border-[#35ea52] bg-[#35ea52] text-black font-display text-sm font-bold tracking-wider flex items-center gap-2 transition-all hover:bg-transparent hover:text-[#35ea52]"><Sparkles className="h-4 w-4" /> LUỒNG TỰ ĐỘNG</button>
+                  <button type="button" onClick={startNewCampaign} className="px-5 h-10 border border-foreground/30 text-foreground font-display text-sm font-bold tracking-wider flex items-center gap-2 transition-all hover:border-foreground"><Plus className="h-4 w-4" /> LÀM TỪNG BƯỚC</button>
+                </div>
               </div>
 
               {!campaignsLoading && !campaignsError && campaigns.length > 0 && (
@@ -290,9 +318,18 @@ export default function CampaignsPage() {
           {/* PIPELINE VIEW */}
           {isCreatingCampaign && (
             <div className="flex-1 flex flex-col gap-3">
-              <button type="button" onClick={returnToCampaigns} className="self-start inline-flex items-center gap-2 text-[11px] font-mono text-foreground/40 hover:text-foreground tracking-wider">
-                <ArrowLeft className="h-3.5 w-3.5" /> TẤT CẢ CHIẾN DỊCH
-              </button>
+              <div className="flex items-center justify-between gap-3">
+                <button type="button" onClick={returnToCampaigns} className="inline-flex items-center gap-2 text-[11px] font-mono text-foreground/40 hover:text-foreground tracking-wider"><ArrowLeft className="h-3.5 w-3.5" /> TẤT CẢ CHIẾN DỊCH</button>
+                {workflowMode === "autopilot" && !showAutopilotOverview && <button type="button" onClick={() => setShowAutopilotOverview(true)} className="inline-flex items-center gap-2 px-3 py-2 border border-[#35ea52]/30 text-[10px] font-mono text-[#35ea52]"><ListTree className="h-3.5 w-3.5" /> TỔNG QUAN LUỒNG TỰ ĐỘNG</button>}
+              </div>
+              {workflowMode === "autopilot" && showAutopilotOverview ? (
+                <AutopilotWorkflow
+                  productName={researchSubmission.input.product_brief.product_name}
+                  errorMessage={researchError}
+                  onRun={() => runResearch(false)}
+                  onOpenStep={(stage) => { setCurrentStage(stage); setShowAutopilotOverview(false); }}
+                />
+              ) : (
               <PipelineLayout
               currentStage={currentStage}
               stageStatuses={stageStatuses}
@@ -300,9 +337,9 @@ export default function CampaignsPage() {
               onNext={handleNextStage}
               onBack={handlePrevStage}
               isNextDisabled={currentStage === "research" && (researchLoading || !researchPlan)}
-              nextLabel={currentStage === "final_output" ? "HOÀN THÀNH" : "BƯỚC.TIẾP"}
+              nextLabel={currentStage === "product_input" && workflowMode === "autopilot" ? "BẮT ĐẦU LUỒNG TỰ ĐỘNG" : currentStage === "final_output" ? "HOÀN THÀNH" : "BƯỚC.TIẾP"}
               >
-              {currentStage === "product_input" && <StageProductInput value={researchSubmission} onChange={setResearchSubmission} />}
+              {currentStage === "product_input" && <StageProductInput value={researchSubmission} onChange={setResearchSubmission} initialInputMode={workflowMode === "autopilot" ? "manual" : "link"} />}
               {currentStage === "research" && <StageResearch plan={researchPlan} isLoading={researchLoading} error={researchError} onRetry={() => void runResearch()} />}
               {currentStage === "content_generation" && <StageContentGeneration />}
               {currentStage === "qa_gate" && <StageQAGate />}
@@ -315,6 +352,7 @@ export default function CampaignsPage() {
                 </div>
               )}
               </PipelineLayout>
+              )}
             </div>
           )}
         </div>

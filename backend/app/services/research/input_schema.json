@@ -199,7 +199,7 @@
     "assetPath": {
       "type": "string",
       "description": "Workspace-relative path or an HTTP(S) URL.",
-      "pattern": "^(https?://|[^/].*)"
+      "pattern": "^$|^(https?://|[^/].*)"
     },
     "stringList": {
       "type": "array",

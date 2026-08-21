@@ -40,6 +40,7 @@ const OBJECTIVE_LABELS: Record<CampaignObjective, string> = {
 interface Props {
   value: ResearchSubmission;
   onChange: React.Dispatch<React.SetStateAction<ResearchSubmission>>;
+  initialInputMode?: "link" | "manual";
 }
 
 const toArr = (val: unknown): string[] => {
@@ -103,8 +104,8 @@ function Section({
   );
 }
 
-export const StageProductInput: React.FC<Props> = ({ value, onChange }) => {
-  const [inputMode, setInputMode] = React.useState<"link" | "manual">("link");
+export const StageProductInput: React.FC<Props> = ({ value, onChange, initialInputMode = "link" }) => {
+  const [inputMode, setInputMode] = React.useState<"link" | "manual">(initialInputMode);
   const [tiktokUrl, setTiktokUrl] = React.useState("");
   const [newImageUrl, setNewImageUrl] = React.useState("");
   const [isExtracting, setIsExtracting] = React.useState(false);

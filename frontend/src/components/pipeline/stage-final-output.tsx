@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import {
-  BarChart3, Check, Copy, FlaskConical,
+  BarChart3, Check, Copy, ExternalLink, FlaskConical,
   Image as ImageIcon, MessageSquareText, PackageCheck, Play, Route,
   Rocket, Sparkles, Target, Video,
 } from "lucide-react";
@@ -30,6 +30,7 @@ const commerceCopy = {
 };
 
 const deliverables = [
+  ["package", "Tải xuống", "1 file ZIP"],
   ["positioning", "Định vị sản phẩm", "1 góc chiến dịch"],
   ["routes", "Phương án quảng cáo", "2 hướng A/B"],
   ["video", "Video ngắn", "1 prototype · 9:16"],
@@ -37,7 +38,6 @@ const deliverables = [
   ["copy", "Nội dung bán hàng", "6 nhóm nội dung"],
   ["testing", "Kế hoạch A/B", "Chỉ số & giả thuyết"],
   ["learning", "Bài học hiệu suất", "Bước tối ưu tiếp theo"],
-  ["package", "Tải xuống", "1 file ZIP"],
 ] as const;
 
 function SectionTitle({ icon: Icon, index, title, subtitle }: { icon: React.ElementType; index: string; title: string; subtitle: string }) {
@@ -45,7 +45,8 @@ function SectionTitle({ icon: Icon, index, title, subtitle }: { icon: React.Elem
 }
 
 function ReadyBadge({ optional = false }: { optional?: boolean }) {
-  return <span className={`inline-flex items-center gap-1 px-2 py-1 border text-[9px] font-mono tracking-wider ${optional ? "border-blue-400/30 text-blue-300" : "border-[#35ea52]/30 text-[#35ea52]"}`}><Check className="h-3 w-3" />{optional ? "BỔ SUNG" : "SẴN SÀNG"}</span>;
+  void optional;
+  return null;
 }
 
 export const StageFinalOutput: React.FC<Props> = ({ plan, input }) => {
@@ -55,6 +56,12 @@ export const StageFinalOutput: React.FC<Props> = ({ plan, input }) => {
   const message = positioning?.key_selling_message.decision ?? fallbackPlan.message;
   const benefits = positioning?.benefit_hierarchy.map(item => item.benefit) ?? fallbackPlan.benefits;
   const routes = plan?.creative_routes ?? [];
+  const citationUrls = [...new Set([
+    ...(plan?.source_summary.sources.map((source) => source.url) ?? []),
+    ...routes.flatMap((route) => route.evidence.map((item) => item.source_url).filter((url): url is string => Boolean(url))),
+  ])];
+  const citationNumbers = new Map(citationUrls.map((url, index) => [url, index + 1]));
+  const sourceTitles = new Map(plan?.source_summary.sources.map((source) => [source.url, source.title]) ?? []);
 
   const copyAll = async () => {
     await navigator.clipboard.writeText([angle, audience, message, commerceCopy.title, commerceCopy.description, commerceCopy.caption].join("\n\n"));
@@ -72,6 +79,8 @@ export const StageFinalOutput: React.FC<Props> = ({ plan, input }) => {
       </div>
     </header>
 
+    <section id="final-package" className="scroll-mt-4 border border-foreground/10 p-4 space-y-3"><SectionTitle icon={PackageCheck} index="" title="TẢI XUỐNG" subtitle="Tải toàn bộ chiến dịch trong một file ZIP" /><StagePackage /></section>
+
     <section className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-foreground/10 border border-foreground/10" aria-label="Tóm tắt campaign brief"><div className="p-3.5 bg-background"><p className="text-[9px] font-mono text-foreground/30">SẢN PHẨM / NGÀNH HÀNG</p><p className="text-xs text-foreground/65 mt-1.5">{input?.product_brief.category || "F&B · Cà phê hòa tan"}</p></div><div className="p-3.5 bg-background"><p className="text-[9px] font-mono text-foreground/30">THỊ TRƯỜNG</p><p className="text-xs text-foreground/65 mt-1.5">{input?.product_brief.target_market.slice(0, 3).join(" · ") || "Trung Quốc · Đông Nam Á"}</p></div><div className="p-3.5 bg-background"><p className="text-[9px] font-mono text-foreground/30">ƯU ĐÃI</p><p className="text-xs text-foreground/65 mt-1.5">{input?.product_brief.promotion || "Không có ưu đãi"}</p></div><div className="p-3.5 bg-background"><p className="text-[9px] font-mono text-foreground/30">MỤC TIÊU</p><p className="text-xs text-foreground/65 mt-1.5">{input?.market_signal.campaign_objectives.join(" · ") || "Nhận biết · Chuyển đổi"}</p></div></section>
 
     <div className="grid grid-cols-1 xl:grid-cols-[230px_minmax(0,1fr)] gap-6 items-start">
@@ -80,9 +89,29 @@ export const StageFinalOutput: React.FC<Props> = ({ plan, input }) => {
       <main className="space-y-6 min-w-0">
         <section id="final-positioning" className="scroll-mt-4 border border-foreground/10 p-5 space-y-5"><div className="flex justify-between gap-3"><SectionTitle icon={Target} index="01" title="ĐỊNH VỊ SẢN PHẨM" subtitle="Góc chiến dịch, khách hàng, thông điệp và thứ tự lợi ích" /><ReadyBadge /></div><div className="grid grid-cols-1 lg:grid-cols-3 gap-3"><div className="lg:col-span-2 p-4 border border-[#35ea52]/20 bg-[#35ea52]/[0.025]"><p className="text-[10px] font-mono text-[#35ea52] mb-2">GÓC CHIẾN DỊCH CHÍNH</p><p className="text-base font-semibold leading-relaxed text-foreground">{angle}</p></div><div className="p-4 border border-foreground/10"><p className="text-[10px] font-mono text-foreground/35 mb-2">KHÁCH HÀNG MỤC TIÊU</p><p className="text-sm text-foreground/65 leading-relaxed">{audience}</p></div><div className="lg:col-span-2 p-4 border border-foreground/10"><p className="text-[10px] font-mono text-foreground/35 mb-2">THÔNG ĐIỆP BÁN HÀNG</p><p className="text-sm text-foreground/70 leading-relaxed">{message}</p></div><div className="p-4 border border-foreground/10"><p className="text-[10px] font-mono text-foreground/35 mb-2">THỨ TỰ LỢI ÍCH</p><ol className="space-y-1.5">{benefits.slice(0, 4).map((benefit, index) => <li key={benefit} className="flex gap-2 text-xs text-foreground/60"><span className="text-[#35ea52] font-mono">{index + 1}</span><span>{benefit}</span></li>)}</ol></div></div></section>
 
-        <section id="final-routes" className="scroll-mt-4 border border-foreground/10 p-5 space-y-5"><div className="flex justify-between gap-3"><SectionTitle icon={Route} index="02" title="HAI PHƯƠNG ÁN QUẢNG CÁO" subtitle="Hai hướng riêng biệt để chạy thử A/B" /><ReadyBadge /></div><div className="grid grid-cols-1 lg:grid-cols-2 gap-4">{[0, 1].map(index => { const route = routes[index]; return <article key={index} className="border border-foreground/10 overflow-hidden"><div className={`px-4 py-3 flex items-center justify-between ${index === 0 ? "bg-[#35ea52]/10" : "bg-foreground/[0.04]"}`}><strong className="text-xs font-mono text-foreground">PHƯƠNG ÁN {index === 0 ? "A" : "B"}</strong><span className="text-[9px] font-mono text-foreground/35">{route?.suggested_platform_usage.join(" · ") || (index === 0 ? "TIKTOK · DOUYIN" : "SHOPEE · TMALL")}</span></div><div className="p-4 space-y-3"><div><p className="text-[9px] font-mono text-foreground/30">HOOK</p><p className="text-sm font-semibold mt-1">{route?.hook_idea || (index === 0 ? "Buổi sáng bận rộn? Pha nhanh vị đậm chuẩn Việt." : "Đặc sản Việt Nam — uống một ngụm là nhớ.")}</p></div><div><p className="text-[9px] font-mono text-foreground/30">HƯỚNG HÌNH ẢNH</p><p className="text-xs text-foreground/55 mt-1 leading-relaxed">{route?.visual_direction || (index === 0 ? "Nhịp nhanh, bối cảnh bàn làm việc buổi sáng, cận cảnh pha cà phê." : "Tông đỏ–đen cao cấp, sản phẩm bên cánh đồng cà phê Buôn Ma Thuột.")}</p></div><div><p className="text-[9px] font-mono text-foreground/30">GÓC THÔNG ĐIỆP</p><p className="text-xs text-foreground/55 mt-1 leading-relaxed">{route?.message_angle || (index === 0 ? "Tiện lợi cho nhịp sống nhanh." : "Vị đậm và bản sắc cà phê Việt.")}</p></div></div></article>; })}</div></section>
+        <section id="final-routes" className="scroll-mt-4 border border-foreground/10 p-5 space-y-5">
+          <div className="flex justify-between gap-3"><SectionTitle icon={Route} index="02" title="HAI PHƯƠNG ÁN QUẢNG CÁO" subtitle="Hai hướng riêng biệt để chạy thử A/B, kèm nguồn tham khảo" /><ReadyBadge /></div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {[0, 1].map(index => {
+              const route = routes[index];
+              const citedEvidence = route?.evidence.filter((item) => item.source_url) ?? [];
+              return <article key={index} className="border border-foreground/10 overflow-hidden">
+                <div className={`px-4 py-3 flex items-center justify-between ${index === 0 ? "bg-[#35ea52]/10" : "bg-foreground/[0.04]"}`}><strong className="text-xs font-mono text-foreground">PHƯƠNG ÁN {index === 0 ? "A" : "B"}</strong><span className="text-[9px] font-mono text-foreground/35">{route?.suggested_platform_usage.join(" · ") || (index === 0 ? "TIKTOK SHOP" : "SHOPEE")}</span></div>
+                <div className="p-4 space-y-4">
+                  <div><p className="text-[9px] font-mono text-foreground/30">HOOK</p><p className="text-sm font-semibold mt-1">{route?.hook_idea || (index === 0 ? "Buổi sáng bận rộn? Pha nhanh vị đậm chuẩn Việt." : "Đặc sản Việt Nam — uống một ngụm là nhớ.")} {citedEvidence.map((item) => { const number = citationNumbers.get(item.source_url!)!; return <a key={`hook-${number}`} href={item.source_url!} target="_blank" rel="noreferrer" className="text-[10px] align-super text-[#35ea52] hover:underline">[{number}]</a>; })}</p></div>
+                  <div><p className="text-[9px] font-mono text-foreground/30">HƯỚNG HÌNH ẢNH</p><p className="text-xs text-foreground/55 mt-1 leading-relaxed">{route?.visual_direction || (index === 0 ? "Nhịp nhanh, bối cảnh bàn làm việc buổi sáng, cận cảnh pha cà phê." : "Tông đỏ–đen cao cấp, sản phẩm bên cánh đồng cà phê Buôn Ma Thuột.")}</p></div>
+                  <div><p className="text-[9px] font-mono text-foreground/30">GÓC THÔNG ĐIỆP</p><p className="text-xs text-foreground/55 mt-1 leading-relaxed">{route?.message_angle || (index === 0 ? "Tiện lợi cho nhịp sống nhanh." : "Vị đậm và bản sắc cà phê Việt.")}</p></div>
+                  <div className="pt-3 border-t border-foreground/10">
+                    <p className="text-[9px] font-mono text-foreground/35 mb-2">NGUỒN THAM KHẢO & CITATION</p>
+                    {citedEvidence.length ? <div className="space-y-2">{citedEvidence.map((item, evidenceIndex) => { const number = citationNumbers.get(item.source_url!)!; return <a key={`${item.source_url}-${evidenceIndex}`} href={item.source_url!} target="_blank" rel="noreferrer" className="flex items-start gap-2 p-2.5 border border-foreground/10 bg-foreground/[0.02] hover:border-[#35ea52]/40 group"><span className="text-[10px] font-mono font-bold text-[#35ea52]">[{number}]</span><span className="min-w-0 flex-1"><span className="block text-[11px] font-medium text-foreground/70 group-hover:text-foreground truncate">{sourceTitles.get(item.source_url!) || new URL(item.source_url!).hostname.replace(/^www\./, "")}</span><span className="block text-[10px] text-foreground/40 mt-1 leading-relaxed">{item.detail}</span><span className="block text-[9px] font-mono text-foreground/25 mt-1 truncate">{item.source_url}</span></span><ExternalLink className="h-3.5 w-3.5 text-foreground/30 group-hover:text-[#35ea52] shrink-0" /></a>; })}</div> : <p className="text-[10px] text-foreground/35">Phương án này hiện dựa trên brief sản phẩm; chưa có nguồn bên ngoài để trích dẫn.</p>}
+                  </div>
+                </div>
+              </article>;
+            })}
+          </div>
+        </section>
 
-        <section className="scroll-mt-4 border border-[#35ea52]/20 p-5 space-y-5"><div className="flex justify-between gap-3"><SectionTitle icon={Rocket} index="" title="ĐĂNG LÊN NỀN TẢNG" subtitle="Triển khai phương án quảng cáo lên TikTok Shop và Shopee" /><ReadyBadge /></div><StageDeploy /></section>
+        <section className="scroll-mt-4 border border-[#35ea52]/20 p-5 space-y-5"><div className="flex justify-between gap-3"><SectionTitle icon={Rocket} index="" title="ĐĂNG LÊN NỀN TẢNG" subtitle="Triển khai phương án quảng cáo lên TikTok Shop, Shopee, Taobao và Tmall" /><ReadyBadge /></div><StageDeploy /></section>
 
         <section id="final-video" className="scroll-mt-4 border border-foreground/10 p-5 space-y-5"><div className="flex justify-between gap-3"><SectionTitle icon={Video} index="03" title="VIDEO QUẢNG CÁO NGẮN" subtitle="Tối thiểu 1 video hoặc prototype · 15–30 giây · khung dọc 9:16" /><ReadyBadge /></div><div className="grid grid-cols-[120px_1fr] sm:grid-cols-[150px_1fr] gap-5 items-center"><div className="aspect-[9/16] border border-[#35ea52]/25 bg-gradient-to-b from-red-950/60 to-black relative flex items-center justify-center overflow-hidden"><div className="absolute inset-0 dot-grid opacity-30" /><button type="button" aria-label="Phát video prototype" className="relative h-12 w-12 rounded-full bg-[#35ea52] text-black flex items-center justify-center hover:scale-105 transition-transform"><Play className="h-5 w-5 fill-current ml-0.5" /></button><span className="absolute top-2 right-2 px-1.5 py-0.5 bg-black/70 text-[8px] font-mono text-white">9:16</span></div><div className="space-y-4"><div><h3 className="font-semibold text-foreground">G7_Morning_Ritual_9x16.mp4</h3><p className="text-xs text-foreground/40 mt-1">Prototype quảng cáo ngắn · 22 giây · 1080 × 1920</p></div><div className="grid grid-cols-2 gap-2 text-[10px] font-mono"><span className="p-2 border border-foreground/10 text-foreground/50">MỞ ĐẦU 0–3S</span><span className="p-2 border border-foreground/10 text-foreground/50">DEMO 4–14S</span><span className="p-2 border border-foreground/10 text-foreground/50">LỢI ÍCH 15–18S</span><span className="p-2 border border-foreground/10 text-foreground/50">CTA 19–22S</span></div><div className="flex gap-2"><span className="px-2 py-1 border border-[#35ea52]/20 text-[9px] text-[#35ea52]">SEEDANCE 2.5</span><span className="px-2 py-1 border border-foreground/10 text-[9px] text-foreground/40">BẢN CẮT 1:1 TÙY CHỌN</span></div></div></div></section>
 
@@ -94,7 +123,6 @@ export const StageFinalOutput: React.FC<Props> = ({ plan, input }) => {
 
         <section id="final-learning" className="scroll-mt-4 border border-blue-400/15 bg-blue-400/[0.025] p-5 space-y-5"><div className="flex justify-between gap-3"><SectionTitle icon={BarChart3} index="07" title="BÀI HỌC HIỆU SUẤT" subtitle="Khuyến nghị tối ưu sau khi có dữ liệu chiến dịch" /><ReadyBadge optional /></div><div className="grid grid-cols-2 lg:grid-cols-4 gap-3">{[["GIỮ LẠI", "Thông điệp vị đậm và hình ảnh bao bì rõ ràng"], ["THAY ĐỔI", "Rút ngắn mở đầu nếu tỷ lệ xem 3 giây thấp"], ["DỪNG", "Claim không có nguồn hoặc không tạo chuyển đổi"], ["THỬ TIẾP", "Ưu đãi, CTA và thumbnail theo từng sàn"]].map(([label, text]) => <div key={label} className="p-3 border border-blue-400/10 bg-background"><p className="text-[9px] font-mono text-blue-300">{label}</p><p className="text-xs text-foreground/55 leading-relaxed mt-2">{text}</p></div>)}</div></section>
 
-        <section id="final-package" className="scroll-mt-4 border border-foreground/10 p-4 space-y-3"><SectionTitle icon={PackageCheck} index="" title="TẢI XUỐNG" subtitle="Tải toàn bộ chiến dịch trong một file ZIP" /><StagePackage /></section>
       </main>
     </div>
   </div>;
