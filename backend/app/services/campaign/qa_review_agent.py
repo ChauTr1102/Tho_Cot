@@ -57,13 +57,13 @@ def _check_internal_plan(plan: CampaignPlan) -> list[QAIssue]:
     if not plan.positioning.main_campaign_angle.strip():
         issues.append(QAIssue(
             rule_id="PLAN.ANGLE_EMPTY", severity=QASeverity.BLOCKER,
-            message="Main campaign angle is empty.", field="positioning.main_campaign_angle",
+            message="Góc chiến dịch chính đang để trống.", field="positioning.main_campaign_angle",
         ))
 
     if len(plan.creative_routes) < MIN_CREATIVE_ROUTES:
         issues.append(QAIssue(
             rule_id="PLAN.ROUTE_COUNT", severity=QASeverity.BLOCKER,
-            message=f"Need >= {MIN_CREATIVE_ROUTES} creative routes for A/B testing, got {len(plan.creative_routes)}.",
+            message=f"Cần ít nhất {MIN_CREATIVE_ROUTES} hướng sáng tạo để thử nghiệm A/B, hiện có {len(plan.creative_routes)}.",
             field="creative_routes",
         ))
 
@@ -71,20 +71,20 @@ def _check_internal_plan(plan: CampaignPlan) -> list[QAIssue]:
     if len(route_ids) != len(set(route_ids)):
         issues.append(QAIssue(
             rule_id="PLAN.ROUTE_ID_DUP", severity=QASeverity.BLOCKER,
-            message="Duplicate route_id values in creative_routes.", field="creative_routes",
+            message="Có giá trị route_id trùng lặp trong creative_routes.", field="creative_routes",
         ))
 
     ab = plan.ab_test_plan
     if ab.route_a not in route_ids or ab.route_b not in route_ids:
         issues.append(QAIssue(
             rule_id="PLAN.AB_ROUTE_MISMATCH", severity=QASeverity.BLOCKER,
-            message="A/B test plan references a route_id not present in creative_routes.",
+            message="Kế hoạch thử nghiệm A/B tham chiếu route_id không tồn tại trong creative_routes.",
             field="ab_test_plan",
         ))
     if not ab.success_metrics:
         issues.append(QAIssue(
             rule_id="PLAN.AB_NO_METRICS", severity=QASeverity.WARNING,
-            message="A/B test plan has no success metrics defined.", field="ab_test_plan.success_metrics",
+            message="Kế hoạch thử nghiệm A/B chưa xác định chỉ số thành công.", field="ab_test_plan.success_metrics",
         ))
 
     return issues
@@ -97,7 +97,7 @@ def _check_internal_assets(assets: AssetBundle) -> list[QAIssue]:
     if len(assets.images) < MIN_PRODUCT_IMAGES:
         issues.append(QAIssue(
             rule_id="ASSETS.IMAGE_COUNT", severity=QASeverity.BLOCKER,
-            message=f"Need >= {MIN_PRODUCT_IMAGES} product images, got {len(assets.images)}.",
+            message=f"Cần ít nhất {MIN_PRODUCT_IMAGES} ảnh sản phẩm, hiện có {len(assets.images)}.",
             field="images",
         ))
 
@@ -106,14 +106,14 @@ def _check_internal_assets(assets: AssetBundle) -> list[QAIssue]:
     if missing_kinds:
         issues.append(QAIssue(
             rule_id="ASSETS.MISSING_IMAGE_KIND", severity=QASeverity.BLOCKER,
-            message=f"Missing required image kinds: {sorted(k.value for k in missing_kinds)}.",
+            message=f"Thiếu các loại ảnh bắt buộc: {sorted(k.value for k in missing_kinds)}.",
             field="images",
         ))
 
     if len(assets.videos) < MIN_VIDEOS:
         issues.append(QAIssue(
             rule_id="ASSETS.VIDEO_COUNT", severity=QASeverity.BLOCKER,
-            message=f"Need >= {MIN_VIDEOS} short-form video asset(s), got {len(assets.videos)}.",
+            message=f"Cần ít nhất {MIN_VIDEOS} video ngắn, hiện có {len(assets.videos)}.",
             field="videos",
         ))
 
@@ -121,13 +121,13 @@ def _check_internal_assets(assets: AssetBundle) -> list[QAIssue]:
         if not (VIDEO_MIN_DURATION_SEC <= v.duration_sec <= VIDEO_MAX_DURATION_SEC):
             issues.append(QAIssue(
                 rule_id="ASSETS.VIDEO_DURATION", severity=QASeverity.WARNING,
-                message=f"Video duration {v.duration_sec}s outside recommended {VIDEO_MIN_DURATION_SEC}-{VIDEO_MAX_DURATION_SEC}s window.",
+                message=f"Thời lượng video {v.duration_sec} giây nằm ngoài khoảng đề xuất {VIDEO_MIN_DURATION_SEC}-{VIDEO_MAX_DURATION_SEC} giây.",
                 field="videos",
             ))
         if v.aspect_ratio != VIDEO_REQUIRED_ASPECT:
             issues.append(QAIssue(
                 rule_id="ASSETS.VIDEO_ASPECT", severity=QASeverity.WARNING,
-                message=f"Video aspect ratio {v.aspect_ratio} != recommended {VIDEO_REQUIRED_ASPECT}.",
+                message=f"Tỷ lệ khung hình {v.aspect_ratio} khác tỷ lệ đề xuất {VIDEO_REQUIRED_ASPECT}.",
                 field="videos",
             ))
 
@@ -135,12 +135,12 @@ def _check_internal_assets(assets: AssetBundle) -> list[QAIssue]:
     if not copy.product_title.strip() or not copy.product_description.strip():
         issues.append(QAIssue(
             rule_id="ASSETS.COPY_INCOMPLETE", severity=QASeverity.BLOCKER,
-            message="Commerce copy missing product_title or product_description.", field="copy",
+            message="Nội dung thương mại thiếu product_title hoặc product_description.", field="copy",
         ))
     if len(copy.listing_bullet_points) == 0:
         issues.append(QAIssue(
             rule_id="ASSETS.COPY_NO_BULLETS", severity=QASeverity.WARNING,
-            message="Commerce copy has no listing bullet points.", field="copy.listing_bullet_points",
+            message="Nội dung thương mại chưa có danh sách lợi ích nổi bật.", field="copy.listing_bullet_points",
         ))
 
     return issues
@@ -153,7 +153,7 @@ def _check_market_research(plan: CampaignPlan) -> list[QAIssue]:
     if not plan.positioning.sources:
         issues.append(QAIssue(
             rule_id="MARKET.NO_SOURCES", severity=QASeverity.WARNING,
-            message="Positioning has no cited market-research sources backing the angle.",
+            message="Định vị chưa có nguồn nghiên cứu thị trường để chứng minh cho góc chiến dịch.",
             field="positioning.sources",
         ))
 
@@ -183,7 +183,7 @@ def _check_user_brief_compliance(
         if forbidden.strip() and forbidden.strip().lower() in text_blob:
             issues.append(QAIssue(
                 rule_id="USER.FORBIDDEN_CLAIM", severity=QASeverity.BLOCKER,
-                message=f"Forbidden claim detected in generated copy: '{forbidden}'.",
+                message=f"Phát hiện tuyên bố bị cấm trong nội dung tạo ra: '{forbidden}'.",
                 field="copy",
             ))
 
@@ -191,7 +191,7 @@ def _check_user_brief_compliance(
         if required.strip() and required.strip().lower() not in text_blob:
             issues.append(QAIssue(
                 rule_id="USER.MISSING_REQUIRED_CLAIM", severity=QASeverity.BLOCKER,
-                message=f"Required claim not found in generated copy: '{required}'.",
+                message=f"Không tìm thấy tuyên bố bắt buộc trong nội dung tạo ra: '{required}'.",
                 field="copy",
             ))
 

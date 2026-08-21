@@ -43,12 +43,12 @@ def generate_assets(plan: CampaignPlan) -> AssetBundle:
     ]
 
     copy = CommerceCopy(
-        product_title="Sample Product Title",
-        product_description="Sample product description highlighting key selling points.",
-        listing_bullet_points=["Benefit 1", "Benefit 2", "Benefit 3"],
-        ad_caption="Discover the difference today.",
-        promotion_copy="Launch week only: limited offer.",
-        short_hook_lines=["Stop scrolling.", "This changes everything."],
+        product_title="Tiêu đề sản phẩm mẫu",
+        product_description="Mô tả sản phẩm mẫu làm nổi bật các điểm bán hàng cốt lõi.",
+        listing_bullet_points=["Lợi ích 1", "Lợi ích 2", "Lợi ích 3"],
+        ad_caption="Khám phá sự khác biệt ngay hôm nay.",
+        promotion_copy="Ưu đãi giới hạn trong tuần ra mắt.",
+        short_hook_lines=["Dừng lướt một chút.", "Điều này sẽ thay đổi mọi thứ."],
     )
 
     return AssetBundle(campaign_id=campaign_id, images=images, videos=videos, listing_copy=copy)

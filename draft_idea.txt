@@ -3,7 +3,7 @@ Input:
 Link sản phẩm (tiktok, shopee, amazon).
 Full form điền tất cả thông tin (ảnh, …).
 Quá trình gen:
-Hiểu người dùng, hiểu thị trường (suggest: có thể dùng manus):
+Hiểu người dùng, hiểu thị trường (dùng Exa):
 Vd: người dùng đã từng đăng những sản phẩm gì, style nnao, … thị trường sắp tới có xu hướng nnao (cần link để backup và check). -> Từ đó làm nội dung tương ứng.
 Cần trích nguồn cụ thể để refer
 Checklist các tiêu chí QA:
