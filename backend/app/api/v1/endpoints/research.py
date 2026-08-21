@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import json
 import logging
-import pathlib
 import time
 from typing import Any, Literal
 
@@ -13,22 +12,12 @@ from starlette.concurrency import run_in_threadpool
 
 from app.core.exceptions import BadRequestException
 from app.schemas.research import ResearchInput
-from app.services.research import ResearchOutputError, validate_campaign_plan
+from app.services.research import ResearchOutputError
 from app.services.research.input import encode_uploaded_visual_assets
 from app.services.research_service import research_service
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
-_GENERATED_MOCK_PLAN = pathlib.Path(__file__).resolve().parents[4] / "ark_out/g7_campaign_plan.json"
-
-
-def _load_generated_mock_plan() -> dict[str, Any]:
-    try:
-        plan = json.loads(_GENERATED_MOCK_PLAN.read_text(encoding="utf-8"))
-        validate_campaign_plan(plan)
-    except (OSError, json.JSONDecodeError, ResearchOutputError) as exc:
-        raise ResearchOutputError(f"Không thể tải generated research result: {exc}") from exc
-    return plan
 
 
 def _json_object(value: str, field_name: str) -> dict[str, Any]:
@@ -77,7 +66,6 @@ async def run_research(
     existing_product_visuals: list[UploadFile] | None = File(default=None),
     schema_version: Literal["1.0"] = Form("1.0"),
     evidence: str | None = Form(default=None),
-    mock_response: bool = Form(default=False),
 ):
     """Accept real images and return the raw campaign-plan JSON object."""
     started_at = time.monotonic()
@@ -116,17 +104,6 @@ async def run_research(
             campaign_id,
             len(visual_assets[1]),
         )
-        if mock_response:
-            plan = _load_generated_mock_plan()
-            logger.info(
-                "research_api.mock_returned campaign_id=%s fixture=%s routes=%d sources=%d duration_ms=%d",
-                campaign_id,
-                _GENERATED_MOCK_PLAN.name,
-                len(plan.get("creative_routes", [])),
-                len(plan.get("source_summary", {}).get("sources", [])),
-                round((time.monotonic() - started_at) * 1000),
-            )
-            return plan
         result = await run_in_threadpool(
             research_service.run,
             research_input=payload.model_dump(mode="json"),

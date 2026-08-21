@@ -69,21 +69,3 @@ def test_research_run_rejects_unknown_campaign_objective(client):
     response = client.post("/api/research/run", data=data, files=files)
     assert response.status_code == 400
     assert response.json()["success"] is False
-
-
-def test_research_run_can_return_previously_generated_result(client, monkeypatch):
-    monkeypatch.setattr(
-        research_endpoint.research_service,
-        "run",
-        lambda **_kwargs: (_ for _ in ()).throw(AssertionError("live flow must not run")),
-    )
-    data, files = _g7_multipart()
-    data["mock_response"] = "true"
-
-    response = client.post("/api/research/run", data=data, files=files)
-
-    assert response.status_code == 200
-    plan = response.json()
-    assert plan["schema_version"] == "1.0"
-    assert len(plan["creative_routes"]) == 2
-    assert len(plan["source_summary"]["sources"]) == 10
