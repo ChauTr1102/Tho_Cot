@@ -14,12 +14,12 @@ export default function DeploymentsPage() {
               <span className="text-[11px] font-mono tracking-widest">∞</span>
               <div className="flex-1 h-px bg-foreground" />
             </div>
-            <h1 className="text-2xl font-bold tracking-wider text-foreground font-mono uppercase">DEPLOYMENTS</h1>
-            <p className="text-sm text-foreground/35 font-mono tracking-wider">Manage deployed campaigns across platforms.</p>
+            <h1 className="text-2xl font-bold tracking-wider text-foreground font-mono uppercase">TRIỂN KHAI</h1>
+            <p className="text-sm text-foreground/35 font-mono tracking-wider">Quản lý chiến dịch đã triển khai trên các nền tảng.</p>
           </div>
           <div className="p-12 text-center border border-dashed border-foreground/15 space-y-3 dot-grid">
             <Rocket className="h-8 w-8 text-foreground/20 mx-auto" />
-            <p className="text-sm font-mono text-foreground/50 tracking-wider">NO_ACTIVE_DEPLOYMENTS</p>
+            <p className="text-sm font-mono text-foreground/50 tracking-wider">CHƯA CÓ ĐỢT TRIỂN KHAI</p>
           </div>
         </div>
       </main>

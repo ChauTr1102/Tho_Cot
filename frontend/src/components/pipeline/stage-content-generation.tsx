@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { AgentLoading } from "./agent-loading";
-import { Play, AlignLeft, Sparkles, MessageSquare } from "lucide-react";
+import { Sparkles, MessageSquare } from "lucide-react";
 
 export const StageContentGeneration: React.FC = () => {
   const [isProcessing, setIsProcessing] = React.useState(true);
@@ -62,7 +62,7 @@ export const StageContentGeneration: React.FC = () => {
                 </div>
                 <div>
                   <span className="text-[10px] text-foreground/40 block mb-1">MESSAGE ANGLE</span>
-                  <p className="text-sm font-mono text-foreground/70">"Đừng để sự uể oải cản bước bạn. Nạp năng lượng với G7 vị đậm Việt Nam!"</p>
+                  <p className="text-sm font-mono text-foreground/70">&ldquo;Đừng để sự uể oải cản bước bạn. Nạp năng lượng với G7 vị đậm Việt Nam!&rdquo;</p>
                 </div>
               </div>
             </div>
@@ -83,7 +83,7 @@ export const StageContentGeneration: React.FC = () => {
                 </div>
                 <div>
                   <span className="text-[10px] text-foreground/40 block mb-1">MESSAGE ANGLE</span>
-                  <p className="text-sm font-mono text-foreground/70">"Mang hương vị cà phê Robusta chuẩn Việt đến mọi nhà. Sang trọng, tiện lợi."</p>
+                  <p className="text-sm font-mono text-foreground/70">&ldquo;Mang hương vị cà phê Robusta chuẩn Việt đến mọi nhà. Sang trọng, tiện lợi.&rdquo;</p>
                 </div>
               </div>
             </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { ProductData } from "@/types/campaign";
 import { Input } from "@/components/ui/input";
 import {
@@ -15,14 +16,12 @@ import {
 interface ProductsListViewProps {
   products: ProductData[];
   onOpenAddModal: () => void;
-  onSelectProductForAd: (product: ProductData) => void;
   onDeleteProduct: (id: string) => void;
 }
 
 export const ProductsListView: React.FC<ProductsListViewProps> = ({
   products,
   onOpenAddModal,
-  onSelectProductForAd,
   onDeleteProduct,
 }) => {
   const [searchTerm, setSearchTerm] = React.useState("");
@@ -52,7 +51,7 @@ export const ProductsListView: React.FC<ProductsListViewProps> = ({
             PRODUCTS
           </h1>
           <p className="text-sm text-foreground/35 font-mono tracking-wider">
-            Manage imported ecommerce products and assets.
+            Quản lý sản phẩm thương mại điện tử và tài nguyên đã nhập.
           </p>
         </div>
 
@@ -62,7 +61,7 @@ export const ProductsListView: React.FC<ProductsListViewProps> = ({
           className="flex items-center gap-2 px-4 py-2.5 border border-foreground text-foreground font-mono text-sm tracking-wider hover:bg-foreground hover:text-black transition-all"
         >
           <Plus className="h-3.5 w-3.5" />
-          <span>ADD.PRODUCT</span>
+          <span>THÊM.SẢN PHẨM</span>
         </button>
       </div>
 
@@ -71,7 +70,7 @@ export const ProductsListView: React.FC<ProductsListViewProps> = ({
         <div className="relative flex-1 max-w-sm">
           <Search className="h-3.5 w-3.5 absolute left-3 top-3 text-foreground/30" />
           <Input
-            placeholder="Search by title, brand..."
+            placeholder="Tìm theo tên hoặc thương hiệu..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-9 h-9 text-sm font-mono bg-transparent border-foreground/15 text-foreground/70 placeholder:text-foreground/20 focus:border-foreground/40"
@@ -88,18 +87,18 @@ export const ProductsListView: React.FC<ProductsListViewProps> = ({
           <div className="h-10 w-10 border border-foreground/20 flex items-center justify-center mx-auto">
             <Package className="h-5 w-5 text-foreground/30" />
           </div>
-          <p className="text-sm font-mono text-foreground/50 tracking-wider">NO_PRODUCTS_FOUND</p>
+          <p className="text-sm font-mono text-foreground/50 tracking-wider">KHÔNG TÌM THẤY SẢN PHẨM</p>
           <p className="text-xs font-mono text-foreground/25 max-w-md mx-auto">
             {searchTerm
-              ? "No products match your search filter."
-              : "Import a product URL (TikTok, Shopee, Amazon) or enter details manually."}
+              ? "Không có sản phẩm phù hợp với bộ lọc."
+              : "Nhập URL sản phẩm (TikTok, Shopee, Amazon) hoặc điền thông tin thủ công."}
           </p>
           <button
             type="button"
             onClick={onOpenAddModal}
             className="text-xs font-mono border border-foreground/30 px-4 py-2 text-foreground/60 hover:bg-foreground hover:text-black transition-all tracking-wider mt-2"
           >
-            + ADD.FIRST.PRODUCT
+            + THÊM SẢN PHẨM ĐẦU TIÊN
           </button>
         </div>
       ) : (
@@ -142,7 +141,7 @@ export const ProductsListView: React.FC<ProductsListViewProps> = ({
                       type="button"
                       onClick={() => product.id && onDeleteProduct(product.id)}
                       className="absolute top-2 right-2 h-6 w-6 border border-foreground/30 bg-background/70 text-foreground/50 hover:text-red-400 hover:border-red-400/50 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100"
-                      title="Delete"
+                      title="Xóa"
                     >
                       <Trash2 className="h-3 w-3" />
                     </button>
@@ -180,14 +179,13 @@ export const ProductsListView: React.FC<ProductsListViewProps> = ({
 
                 {/* Footer Action */}
                 <div className="p-3 pt-0 border-t border-foreground/8">
-                  <button
-                    type="button"
-                    onClick={() => onSelectProductForAd(product)}
+                  <Link
+                    href="/campaigns"
                     className="w-full flex items-center justify-center gap-2 py-2 border border-foreground/20 text-xs font-mono text-foreground/50 hover:bg-foreground hover:text-black transition-all tracking-wider"
                   >
                     <Wand2 className="h-3 w-3" />
-                    <span>GENERATE.AD</span>
-                  </button>
+                    <span>TẠO.QUẢNG CÁO</span>
+                  </Link>
                 </div>
 
                 <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-foreground/20" />

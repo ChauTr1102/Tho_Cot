@@ -1322,15 +1322,15 @@ export const StepInputView: React.FC<StepInputViewProps> = ({ onSubmitProduct })
 
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <Dialog open={showSummaryDialog} onOpenChange={setShowSummaryDialog}>
-                <DialogTrigger asChild>
-                  <Button
+                <DialogTrigger
+                  render={<Button
                     type="button"
                     variant="outline"
                     className="flex-1 sm:flex-none text-xs"
                     disabled={!formData.name}
-                  >
+                  />}
+                >
                     Xem Tóm Tắt Dữ Liệu
-                  </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
                   <DialogHeader>

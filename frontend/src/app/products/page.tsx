@@ -4,7 +4,6 @@ import * as React from "react";
 import { ProductsListView } from "@/components/flow/products-list-view";
 import { AddProductModal } from "@/components/flow/add-product-modal";
 import { ProductData } from "@/types/campaign";
-import { useRouter } from "next/navigation";
 
 const INITIAL_PRODUCTS: ProductData[] = [
   {
@@ -26,7 +25,6 @@ const INITIAL_PRODUCTS: ProductData[] = [
 ];
 
 export default function ProductsPage() {
-  const router = useRouter();
   const [products, setProducts] = React.useState<ProductData[]>(INITIAL_PRODUCTS);
   const [isAddModalOpen, setIsAddModalOpen] = React.useState(false);
 
@@ -80,9 +78,6 @@ export default function ProductsPage() {
         <ProductsListView
           products={products}
           onOpenAddModal={() => setIsAddModalOpen(true)}
-          onSelectProductForAd={() => {
-            router.push("/campaigns");
-          }}
           onDeleteProduct={() => {}}
         />
       </main>

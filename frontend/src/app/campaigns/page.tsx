@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ProductData, CampaignStage, StageStatus, CAMPAIGN_STAGES } from "@/types/campaign";
+import { CampaignStage, StageStatus, CAMPAIGN_STAGES } from "@/types/campaign";
 import { PipelineLayout } from "@/components/pipeline/pipeline-layout";
 import { StageProductInput } from "@/components/pipeline/stage-product-input";
 import { StageResearch } from "@/components/pipeline/stage-research";
@@ -13,33 +13,18 @@ import { StageUserReview } from "@/components/pipeline/stage-user-review";
 import { StagePackage } from "@/components/pipeline/stage-package";
 import { StageDeploy } from "@/components/pipeline/stage-deploy";
 import { Plus, FolderKanban } from "lucide-react";
-
-const INITIAL_PRODUCTS: ProductData[] = [
-  {
-    id: "prod-sample-1",
-    name: "Cà Phê Hòa Tan G7 3in1 Hộp 50 Gói",
-    brand: "Trung Nguyên Legend",
-    category: "Đồ Uống / Cà phê",
-    price: "135.000",
-    originalPrice: "150.000",
-    currency: "₫",
-    images: [{ id: "img-1", url: "https://trungnguyenlegend.us/cdn/shop/files/TNG750SACHETS1.jpg?v=1685340728&width=1946", isCover: true }],
-    description: "Cà phê hòa tan 3in1 vị đậm mạnh, Robusta Buôn Ma Thuột",
-    usps: ["Vị đậm Việt", "Tiện lợi 3in1", "Năng lượng bứt tốc"],
-    targetAudience: { gender: "all", ageGroup: ["18-24", "25-34"], painPoints: [], interests: [] },
-    toneOfVoice: "Trẻ trung, Năng động",
-    campaignGoal: "Chuyển đổi 9.9",
-    platform: "tiktok",
-  }
-];
+import { toast } from "sonner";
+import { api } from "@/lib/api";
+import { createInitialResearchSubmission, validateResearchSubmission, type ResearchCampaignPlan, type ResearchSubmission } from "@/types/research";
 
 export default function CampaignsPage() {
-  const [products, setProducts] = React.useState<ProductData[]>(INITIAL_PRODUCTS);
-  const [isAddModalOpen, setIsAddModalOpen] = React.useState(false);
-
   // Pipeline State
   const [isCreatingCampaign, setIsCreatingCampaign] = React.useState(false);
   const [currentStage, setCurrentStage] = React.useState<CampaignStage>("product_input");
+  const [researchSubmission, setResearchSubmission] = React.useState<ResearchSubmission>(createInitialResearchSubmission);
+  const [researchPlan, setResearchPlan] = React.useState<ResearchCampaignPlan | null>(null);
+  const [researchLoading, setResearchLoading] = React.useState(false);
+  const [researchError, setResearchError] = React.useState<string | null>(null);
 
   // Mock statuses where current is active, previous are completed, next are locked
   const stageStatuses = React.useMemo(() => {
@@ -55,7 +40,31 @@ export default function CampaignsPage() {
     return statuses as Record<CampaignStage, StageStatus>;
   }, [currentStage]);
 
+  const runResearch = async () => {
+    const validationErrors = validateResearchSubmission(researchSubmission);
+    if (validationErrors.length) {
+      toast.error(validationErrors[0]);
+      return false;
+    }
+    setResearchLoading(true);
+    setResearchError(null);
+    setCurrentStage("research");
+    try {
+      setResearchPlan(await api.runResearch(researchSubmission));
+      return true;
+    } catch (error) {
+      setResearchError(error instanceof Error ? error.message : "Research backend không phản hồi.");
+      return false;
+    } finally {
+      setResearchLoading(false);
+    }
+  };
+
   const handleNextStage = () => {
+    if (currentStage === "product_input") {
+      void runResearch();
+      return;
+    }
     const currentIndex = CAMPAIGN_STAGES.findIndex(s => s.id === currentStage);
     if (currentIndex < CAMPAIGN_STAGES.length - 1) {
       setCurrentStage(CAMPAIGN_STAGES[currentIndex + 1].id);
@@ -99,18 +108,18 @@ export default function CampaignsPage() {
           <div className="flex items-center gap-4 text-[10px] font-mono text-foreground/25 tracking-widest">
             <div className="flex items-center gap-1.5">
               <div className="w-1.5 h-1.5 rounded-full bg-[#35ea52] animate-pulse" />
-              <span>SYSTEM.ACTIVE</span>
+              <span>HỆ THỐNG.HOẠT ĐỘNG</span>
             </div>
             <span>V2.0.0</span>
           </div>
           <div className="flex items-center gap-4 text-[10px] font-mono text-foreground/20 tracking-widest">
-            <span>◐ MULTI.AGENT.CORE</span>
+            <span>◐ LÕI.ĐA.TÁC.TỬ</span>
             <div className="flex gap-1">
               <div className="w-1 h-1 bg-foreground/40 rounded-full animate-pulse" />
               <div className="w-1 h-1 bg-foreground/25 rounded-full animate-pulse" style={{ animationDelay: "0.2s" }} />
               <div className="w-1 h-1 bg-foreground/10 rounded-full animate-pulse" style={{ animationDelay: "0.4s" }} />
             </div>
-            <span>FRAME: ∞</span>
+            <span>KHUNG: ∞</span>
           </div>
         </div>
       </div>
@@ -129,8 +138,8 @@ export default function CampaignsPage() {
                     <span className="text-[11px] font-mono tracking-widest">∞</span>
                     <div className="flex-1 h-px bg-foreground" />
                   </div>
-                  <h1 className="text-2xl font-bold tracking-wider text-foreground font-display uppercase">CAMPAIGNS</h1>
-                  <p className="text-sm text-foreground/35 font-mono tracking-wider">Manage your AI-generated ad campaigns.</p>
+                  <h1 className="text-2xl font-bold tracking-wider text-foreground font-display uppercase">CHIẾN DỊCH</h1>
+                  <p className="text-sm text-foreground/35 font-mono tracking-wider">Quản lý các chiến dịch quảng cáo do AI tạo.</p>
                 </div>
                 <button
                   type="button"
@@ -138,14 +147,14 @@ export default function CampaignsPage() {
                   className="px-5 h-10 border-2 border-foreground bg-foreground text-black font-display text-sm font-bold tracking-wider flex items-center gap-2 transition-all hover:bg-transparent hover:text-foreground"
                 >
                   <Plus className="h-4 w-4" />
-                  NEW.CAMPAIGN
+                  CHIẾN DỊCH.MỚI
                 </button>
               </div>
 
               <div className="p-12 text-center border border-dashed border-foreground/15 space-y-3 dot-grid">
                 <FolderKanban className="h-8 w-8 text-foreground/20 mx-auto" />
-                <p className="text-sm font-mono text-foreground/50 tracking-wider">NO_ACTIVE_CAMPAIGNS</p>
-                <p className="text-xs font-mono text-foreground/25">Start a new campaign pipeline to begin.</p>
+                <p className="text-sm font-mono text-foreground/50 tracking-wider">CHƯA CÓ CHIẾN DỊCH</p>
+                <p className="text-xs font-mono text-foreground/25">Tạo chiến dịch mới để bắt đầu quy trình.</p>
               </div>
             </div>
           )}
@@ -158,10 +167,11 @@ export default function CampaignsPage() {
               onStageChange={setCurrentStage}
               onNext={handleNextStage}
               onBack={handlePrevStage}
+              isNextDisabled={currentStage === "research" && (researchLoading || !researchPlan)}
               nextLabel={currentStage === "deploy" ? "HOÀN THÀNH" : "BƯỚC.TIẾP"}
             >
-              {currentStage === "product_input" && <StageProductInput />}
-              {currentStage === "research" && <StageResearch />}
+              {currentStage === "product_input" && <StageProductInput value={researchSubmission} onChange={setResearchSubmission} />}
+              {currentStage === "research" && <StageResearch plan={researchPlan} isLoading={researchLoading} error={researchError} onRetry={() => void runResearch()} />}
               {currentStage === "positioning" && <StagePositioning />}
               {currentStage === "content_generation" && <StageContentGeneration />}
               {currentStage === "qa_gate" && <StageQAGate />}

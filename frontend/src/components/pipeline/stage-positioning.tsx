@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { AgentLoading } from "./agent-loading";
-import { Target, Lightbulb, SplitSquareHorizontal, FileSearch, CheckCircle2, TrendingDown, RefreshCcw } from "lucide-react";
+import { Target, Lightbulb, SplitSquareHorizontal, CheckCircle2, TrendingDown, RefreshCcw } from "lucide-react";
 
 export const StagePositioning: React.FC = () => {
   const [isProcessing, setIsProcessing] = React.useState(true);
@@ -47,15 +47,15 @@ export const StagePositioning: React.FC = () => {
             <div className="border border-foreground/10 p-5 space-y-4 bg-foreground/[0.02]">
               <div className="flex items-center gap-2 text-xs font-mono text-foreground/50 uppercase tracking-widest">
                 <Target className="h-3 w-3" />
-                <span>Target Audience & Angle</span>
+                <span>Khách hàng mục tiêu & góc tiếp cận</span>
               </div>
               <div className="space-y-3">
                 <div>
-                  <span className="text-[10px] text-foreground/40 block mb-1">TARGET AUDIENCE</span>
+                  <span className="text-[10px] text-foreground/40 block mb-1">KHÁCH HÀNG MỤC TIÊU</span>
                   <p className="text-sm font-mono text-foreground">Dân văn phòng, sinh viên (18-34 tuổi) cần tỉnh táo, thích sự tiện lợi.</p>
                 </div>
                 <div>
-                  <span className="text-[10px] text-foreground/40 block mb-1">MAIN CAMPAIGN ANGLE</span>
+                  <span className="text-[10px] text-foreground/40 block mb-1">GÓC TIẾP CẬN CHÍNH</span>
                   <p className="text-sm font-mono text-[#35ea52] font-bold">&quot;Vị đậm Việt đúng gu – Mở đầu ngày bứt tốc&quot;</p>
                 </div>
               </div>
@@ -64,15 +64,15 @@ export const StagePositioning: React.FC = () => {
             <div className="border border-foreground/10 p-5 space-y-4 bg-foreground/[0.02]">
               <div className="flex items-center gap-2 text-xs font-mono text-foreground/50 uppercase tracking-widest">
                 <Lightbulb className="h-3 w-3" />
-                <span>Message & Hierarchy</span>
+                <span>Thông điệp & thứ tự ưu tiên</span>
               </div>
               <div className="space-y-3">
                 <div>
-                  <span className="text-[10px] text-foreground/40 block mb-1">KEY SELLING MESSAGE</span>
+                  <span className="text-[10px] text-foreground/40 block mb-1">THÔNG ĐIỆP BÁN HÀNG CHÍNH</span>
                   <p className="text-sm font-mono text-foreground/80">Cà phê hòa tan 3in1 Trung Nguyên G7 – vị đậm Robusta Việt Nam, pha nhanh tiện lợi.</p>
                 </div>
                 <div>
-                  <span className="text-[10px] text-foreground/40 block mb-1">PRODUCT BENEFIT HIERARCHY</span>
+                  <span className="text-[10px] text-foreground/40 block mb-1">THỨ TỰ ƯU TIÊN LỢI ÍCH</span>
                   <ul className="text-xs font-mono text-foreground/70 space-y-1 list-disc list-inside">
                     <li>1. Đậm vị mạnh mẽ (Cảm tính)</li>
                     <li>2. Năng lượng tức thì (Lợi ích)</li>
@@ -108,7 +108,7 @@ export const StagePositioning: React.FC = () => {
           <div className="bg-background/50 p-4 border border-foreground/10 flex flex-col md:flex-row gap-6">
             <div className="flex-1">
               <span className="text-[11px] font-mono text-foreground/50 block mb-1">WHAT TO TEST</span>
-              <p className="text-sm font-mono text-foreground">Hiệu quả của thông điệp "Tiện lợi cá nhân" (A) so với "Quà tặng đặc sản" (B).</p>
+              <p className="text-sm font-mono text-foreground">Hiệu quả của thông điệp &ldquo;Tiện lợi cá nhân&rdquo; (A) so với &ldquo;Quà tặng đặc sản&rdquo; (B).</p>
             </div>
             <div className="flex-1">
               <span className="text-[11px] font-mono text-foreground/50 block mb-1">SUGGESTED SUCCESS METRICS</span>
