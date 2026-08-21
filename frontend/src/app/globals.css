@@ -1,8 +1,10 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-/* BTC event fonts — Space Grotesk (headings) + Inter (body) để đồng bộ nhận diện aiglobal.dev */
-@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap");
+/* BTC event fonts — Space Grotesk (headings) + Inter (body), loaded through
+   next/font/google in app/layout.tsx: self-hosted, no render-blocking request
+   to fonts.googleapis.com, no flash of fallback text. The layout publishes
+   them as --font-display and --font-sans. */
 
 @custom-variant dark (&:is(.dark *));
 
@@ -11,7 +13,8 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
-  --font-heading: "Space Grotesk", var(--font-sans);
+  --font-display: var(--font-display);
+  --font-heading: var(--font-display), var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -143,7 +146,7 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: "Inter", var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   }
   html {
     @apply font-sans;
@@ -190,5 +193,154 @@
       linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
       linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
     background-size: 40px 40px;
+  }
+}
+
+/* ══ Asset Studio ══════════════════════════════════════════════════════════
+   Surfaces for the live-run screen at /studio. Namespaced `studio-*` so they
+   never collide with the shared BTC helpers above. The event site is a
+   marketing page with enormous vertical rhythm; this is a working tool, so
+   the palette, radius, glow and type pairing are kept verbatim while the
+   spacing is compressed. Every animation has a prefers-reduced-motion
+   fallback at the foot of this block.
+   ═══════════════════════════════════════════════════════════════════════ */
+@layer components {
+  /* Page substrate: forest base, two soft lime auroras bleeding in from the
+     top corners, and the faint 1px technical grid taken from the event site.
+     The auroras are fixed so they read as light in the room rather than as
+     decoration glued to the content. */
+  .studio-backdrop {
+    background-color: var(--background);
+    background-image:
+      radial-gradient(48rem 26rem at 4% -10%, rgba(53, 234, 82, 0.1), transparent 60%),
+      radial-gradient(38rem 22rem at 100% -4%, rgba(126, 249, 98, 0.05), transparent 58%),
+      linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 100% 3.5rem, 3.5rem 100%;
+    background-attachment: fixed, fixed, scroll, scroll;
+  }
+
+  /* One card treatment for the whole screen: dark fill, faint lime hairline,
+     a long soft drop so panels lift off the grid. No nesting — a panel never
+     contains another panel. */
+  .studio-panel {
+    background-color: color-mix(in srgb, var(--card) 86%, transparent);
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) * 1.25);
+    box-shadow: var(--shadow-elegant);
+  }
+
+  /* A selectable row or tile in the brief panel. Selection is carried by
+     border + tint + a tight lime glow, never by colour alone: every option
+     also renders a check mark. */
+  .studio-option {
+    border: 1px solid var(--border);
+    background-color: color-mix(in srgb, var(--muted) 60%, transparent);
+    transition:
+      border-color 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .studio-option:hover {
+    border-color: color-mix(in srgb, var(--primary) 38%, transparent);
+    background-color: color-mix(in srgb, var(--muted) 92%, transparent);
+  }
+  .studio-option:has(:focus-visible) {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  .studio-option[data-selected="true"] {
+    border-color: color-mix(in srgb, var(--primary) 60%, transparent);
+    background-color: color-mix(in srgb, var(--primary) 9%, transparent);
+    box-shadow: 0 0 26px -12px var(--primary);
+  }
+}
+
+@layer utilities {
+  /* Numerals that do not jitter as a timer counts. Used on every elapsed
+     time, counter and progress figure on this screen. */
+  .studio-nums {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+
+  .studio-rail {
+    background-color: color-mix(in srgb, var(--foreground) 8%, transparent);
+  }
+  /* Progress is driven by scaleX rather than width: the fill is composited,
+     so a rail that updates on every SSE event never costs a layout pass. */
+  .studio-rail-fill {
+    background-image: linear-gradient(90deg, var(--primary), var(--accent));
+    transform-origin: left center;
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  /* A light sweep crosses the rail only while work is in flight, so the rail
+     distinguishes "stalled at 40%" from "running at 40%". */
+  .studio-rail-sweep {
+    background-image: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.42),
+      transparent
+    );
+    transform: translateX(-100%);
+    animation: studio-sweep 1.9s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+
+  /* Live indicator: a dot with a slow expanding halo drawn in currentColor,
+     so the same class serves lime (running), gold (retry) and red (failed). */
+  .studio-live-dot::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    animation: studio-halo 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+
+  /* Applied to activity rows as they arrive — motion that reports an event,
+     not decoration. */
+  .studio-enter {
+    animation: studio-enter 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
+@keyframes studio-sweep {
+  to {
+    transform: translateX(100%);
+  }
+}
+@keyframes studio-halo {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 55%, transparent);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 8px transparent;
+  }
+}
+@keyframes studio-enter {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .studio-option,
+  .studio-rail-fill {
+    transition: none;
+  }
+  .studio-rail-fill[data-live="true"]::after,
+  .studio-enter {
+    animation: none;
+  }
+  /* The halo stops pulsing but stays drawn: "live" is information, not flair. */
+  .studio-live-dot::after {
+    animation: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 26%, transparent);
   }
 }
