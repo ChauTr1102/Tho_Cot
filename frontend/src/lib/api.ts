@@ -127,7 +127,7 @@ export const api = {
     form.append("brand_kit", JSON.stringify(input.brand_kit));
     form.append("audience_brief", JSON.stringify(input.audience_brief));
     form.append("market_signal", JSON.stringify(input.market_signal));
-    form.append("logo", files.logo!);
+    if (files.logo) form.append("logo", files.logo);
     files.product_photos.forEach((file) => form.append("product_photos", file));
     files.existing_product_visuals.forEach((file) => form.append("existing_product_visuals", file));
     if (evidence.trim()) form.append("evidence", evidence.trim());

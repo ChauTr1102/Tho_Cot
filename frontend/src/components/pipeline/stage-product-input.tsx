@@ -25,6 +25,7 @@ import { toast } from "sonner";
 import { api } from "@/lib/api";
 import {
   CAMPAIGN_OBJECTIVES,
+  attachDefaultSampleProductPhotos,
   createEmptyResearchSubmission,
   createInitialResearchSubmission,
   type CampaignObjective,
@@ -247,9 +248,13 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange }) => {
     toast.info("Đã xóa trắng form để nhập thủ công từ đầu.");
   };
 
-  const handleLoadSample = () => {
-    onChange(createInitialResearchSubmission());
-    toast.success("Đã tải dữ liệu mẫu (G7 Coffee).");
+  const handleLoadSample = async () => {
+    try {
+      onChange(await attachDefaultSampleProductPhotos(createInitialResearchSubmission()));
+      toast.success("Đã tải dữ liệu mẫu và ảnh sản phẩm G7 Coffee.");
+    } catch {
+      toast.error("Không thể tải ảnh sản phẩm mẫu G7.");
+    }
   };
 
   return (
@@ -783,7 +788,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange }) => {
           {/* Logo Card */}
           <div className="space-y-1.5">
             <label className="text-[10px] font-mono text-foreground/50 uppercase tracking-wider flex items-center justify-between">
-              <span>Logo thương hiệu *</span>
+              <span>Logo thương hiệu (không bắt buộc)</span>
               {value.files.logo && (
                 <span className="text-[#35ea52] font-mono text-[10px]">✓ {value.files.logo.name}</span>
               )}

@@ -16,9 +16,10 @@ export type CampaignStage =
   | "content_generation"
   | "qa_gate"
   | "final_output"
-  | "user_review"
-  | "package"
-  | "deploy";
+  // | "user_review" // Tạm ẩn: review người dùng chưa nằm trong flow hiện tại.
+  // | "package" // Đã gộp vào final_output.
+  // | "deploy" // Đã gộp vào final_output.
+  ;
 
 export const CAMPAIGN_STAGES: { id: CampaignStage; label: string; shortLabel: string; index: number }[] = [
   { id: "product_input", label: "NHẬP.SẢN_PHẨM", shortLabel: "NHẬP", index: 0 },
@@ -26,9 +27,8 @@ export const CAMPAIGN_STAGES: { id: CampaignStage; label: string; shortLabel: st
   { id: "content_generation", label: "TẠO.NỘI_DUNG", shortLabel: "NỘI DUNG", index: 2 },
   { id: "qa_gate", label: "KIỂM_DUYỆT.CHẤT_LƯỢNG", shortLabel: "KIỂM DUYỆT", index: 3 },
   { id: "final_output", label: "KẾT_QUẢ.CUỐI_CÙNG", shortLabel: "KẾT QUẢ", index: 4 },
-  { id: "user_review", label: "ĐÁNH_GIÁ.TỪ_NGƯỜI_DÙNG", shortLabel: "ĐÁNH GIÁ", index: 5 },
-  { id: "package", label: "ĐÓNG_GÓI", shortLabel: "ĐÓNG GÓI", index: 6 },
-  { id: "deploy", label: "TRIỂN_KHAI", shortLabel: "TRIỂN_KHAI", index: 7 },
+  // { id: "user_review", label: "ĐÁNH_GIÁ.TỪ_NGƯỜI_DÙNG", shortLabel: "ĐÁNH GIÁ", index: 5 },
+  // Package, tải ZIP và triển khai hiện được hiển thị ngay trong final_output.
 ];
 
 export type StageStatus = "locked" | "active" | "processing" | "completed" | "failed";

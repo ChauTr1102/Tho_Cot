@@ -8,13 +8,10 @@ import { StageResearch } from "@/components/pipeline/stage-research";
 import { StageContentGeneration } from "@/components/pipeline/stage-content-generation";
 import { StageQAGate } from "@/components/pipeline/stage-qa-gate";
 import { StageFinalOutput } from "@/components/pipeline/stage-final-output";
-import { StageUserReview } from "@/components/pipeline/stage-user-review";
-import { StagePackage } from "@/components/pipeline/stage-package";
-import { StageDeploy } from "@/components/pipeline/stage-deploy";
 import { AlertTriangle, ArrowLeft, CalendarDays, FolderKanban, LoaderCircle, Plus, RefreshCw, Search } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
-import { createInitialResearchSubmission, parseResearchCampaignPlan, validateResearchSubmission, type ResearchCampaignPlan, type ResearchSubmission } from "@/types/research";
+import { attachDefaultSampleProductPhotos, createInitialResearchSubmission, parseResearchCampaignPlan, validateResearchSubmission, type ResearchCampaignPlan, type ResearchSubmission } from "@/types/research";
 
 const STATUS_LABELS: Record<CampaignListItem["status"], string> = {
   draft: "BẢN NHÁP",
@@ -80,8 +77,24 @@ export default function CampaignsPage() {
     return () => { cancelled = true; };
   }, []);
 
+  React.useEffect(() => {
+    let cancelled = false;
+    void attachDefaultSampleProductPhotos(createInitialResearchSubmission())
+      .then((submission) => {
+        if (!cancelled) setResearchSubmission(submission);
+      })
+      .catch(() => {
+        if (!cancelled) toast.error("Không thể tải sẵn ảnh sản phẩm mẫu G7.");
+      });
+    return () => { cancelled = true; };
+  }, []);
+
   const startNewCampaign = () => {
-    setResearchSubmission(createInitialResearchSubmission());
+    const initialSubmission = createInitialResearchSubmission();
+    setResearchSubmission(initialSubmission);
+    void attachDefaultSampleProductPhotos(initialSubmission)
+      .then(setResearchSubmission)
+      .catch(() => toast.error("Không thể tải sẵn ảnh sản phẩm mẫu G7."));
     setResearchPlan(null);
     setResearchError(null);
     setCurrentStage("product_input");
@@ -152,6 +165,10 @@ export default function CampaignsPage() {
   const handleNextStage = () => {
     if (currentStage === "product_input") {
       void runResearch();
+      return;
+    }
+    if (currentStage === "final_output") {
+      returnToCampaigns();
       return;
     }
     const currentIndex = CAMPAIGN_STAGES.findIndex(s => s.id === currentStage);
@@ -283,17 +300,14 @@ export default function CampaignsPage() {
               onNext={handleNextStage}
               onBack={handlePrevStage}
               isNextDisabled={currentStage === "research" && (researchLoading || !researchPlan)}
-              nextLabel={currentStage === "deploy" ? "HOÀN THÀNH" : "BƯỚC.TIẾP"}
+              nextLabel={currentStage === "final_output" ? "HOÀN THÀNH" : "BƯỚC.TIẾP"}
               >
               {currentStage === "product_input" && <StageProductInput value={researchSubmission} onChange={setResearchSubmission} />}
               {currentStage === "research" && <StageResearch plan={researchPlan} isLoading={researchLoading} error={researchError} onRetry={() => void runResearch()} />}
               {currentStage === "content_generation" && <StageContentGeneration />}
               {currentStage === "qa_gate" && <StageQAGate />}
-              {currentStage === "final_output" && <StageFinalOutput />}
-              {currentStage === "user_review" && <StageUserReview />}
-              {currentStage === "package" && <StagePackage />}
-              {currentStage === "deploy" && <StageDeploy />}
-              {!["product_input", "research", "content_generation", "qa_gate", "final_output", "user_review", "package", "deploy"].includes(currentStage) && (
+              {currentStage === "final_output" && <StageFinalOutput plan={researchPlan} input={researchSubmission.input} />}
+              {!["product_input", "research", "content_generation", "qa_gate", "final_output"].includes(currentStage) && (
                 <div className="flex items-center justify-center h-full min-h-[400px] border border-dashed border-foreground/10">
                   <p className="text-sm font-mono text-foreground/30 tracking-wider">
                     [{currentStage.toUpperCase()}_COMPONENT_PLACEHOLDER]
