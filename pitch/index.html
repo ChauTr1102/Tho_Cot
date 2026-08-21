@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pitch Deck · Team Thợ Cốt — AI Cross-Border Hackathon 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  /* ===== Brand tokens (bóc từ aiglobal.dev) ===== */
+  :root{
+    --bg:#001708; --fg:#f4faf5; --card:#00220e; --muted:#012a14;
+    --muted-fg:#a1c1a7; --primary:#35ea52; --primary-glow:#90fd77;
+    --accent:#7ef962; --accent-glow:#34f47a; --gold:#fcbb00; --cta:#fe6e00;
+    --border:rgba(107,239,117,.18);
+    --font-display:"Space Grotesk",ui-sans-serif,system-ui,sans-serif;
+    --font-body:"Inter",ui-sans-serif,system-ui,sans-serif;
+    --radius:.75rem; --radius-lg:1.25rem;
+    --glow:0 0 40px rgba(53,234,82,.45);
+    --shadow-elegant:0 10px 40px -10px rgba(0,5,1,.7);
+    --maxw:1120px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg);color:var(--fg);font-family:var(--font-body);
+    overflow:hidden;-webkit-font-smoothing:antialiased;
+  }
+
+  /* ===== Textured background + glows ===== */
+  .bg-fx{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+  .bg-fx::before{ /* grid */
+    content:"";position:absolute;inset:-2px;
+    background-image:linear-gradient(rgba(126,249,98,.035) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(126,249,98,.035) 1px,transparent 1px);
+    background-size:52px 52px;mask-image:radial-gradient(ellipse 90% 80% at 50% 40%,#000 40%,transparent 100%);
+  }
+  .glow{position:absolute;border-radius:50%;filter:blur(90px);opacity:.5}
+  .glow.g1{width:520px;height:520px;background:rgba(53,234,82,.20);top:-160px;left:-120px}
+  .glow.g2{width:480px;height:480px;background:rgba(52,244,122,.14);bottom:-180px;right:-120px}
+  .glow.g3{width:360px;height:360px;background:rgba(252,187,0,.08);top:40%;right:10%}
+
+  /* ===== Deck / slides ===== */
+  .deck{position:relative;z-index:1;height:100vh;overflow:hidden}
+  .track{display:flex;height:100%;transition:transform .55s cubic-bezier(.16,.84,.44,1)}
+  .slide{
+    min-width:100vw;height:100vh;display:flex;flex-direction:column;
+    justify-content:center;padding:76px clamp(28px,7vw,110px) 92px;position:relative;
+  }
+  .slide .inner{width:100%;max-width:var(--maxw);margin:0 auto}
+
+  /* entrance animation for active slide */
+  .slide .anim{opacity:0;transform:translateY(18px);transition:opacity .5s ease,transform .5s ease}
+  .slide.active .anim{opacity:1;transform:none}
+  .slide.active .anim:nth-child(1){transition-delay:.08s}
+  .slide.active .anim:nth-child(2){transition-delay:.16s}
+  .slide.active .anim:nth-child(3){transition-delay:.24s}
+  .slide.active .anim:nth-child(4){transition-delay:.32s}
+  .slide.active .anim:nth-child(5){transition-delay:.40s}
+
+  /* ===== Typography ===== */
+  h1{font-family:var(--font-display);font-weight:700;line-height:1.02;letter-spacing:-.02em;font-size:clamp(40px,7.2vw,86px)}
+  h2{font-family:var(--font-display);font-weight:700;line-height:1.04;letter-spacing:-.02em;font-size:clamp(30px,4.4vw,56px);text-wrap:balance;max-width:20ch}
+  .lime{color:var(--accent)}
+  .gold{color:var(--gold)}
+  .lead{font-size:clamp(16px,1.5vw,21px);color:#c8ddca;line-height:1.6;max-width:52ch}
+  .ph{color:var(--muted-fg);font-style:italic}
+
+  /* ===== Section header: numbered kicker (deliberate sequence) ===== */
+  .skick{display:flex;align-items:center;gap:11px;margin-bottom:clamp(14px,2.4vh,22px);font-family:var(--font-display)}
+  .skick .num{font-weight:700;font-size:15px;color:var(--accent)}
+  .skick .sep{color:var(--muted-fg)}
+  .skick .lbl{font-weight:600;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted-fg)}
+
+  /* ===== Content layouts ===== */
+  .split{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(34px,5vw,78px);align-items:center}
+  .narrative{max-width:42ch}
+  .herostat{display:flex;align-items:baseline;gap:18px;margin-top:clamp(20px,3.2vh,32px)}
+  .herostat .n{font-family:var(--font-display);font-weight:700;font-size:clamp(54px,7.2vw,100px);color:var(--accent);line-height:.86}
+  .herostat .t{font-size:clamp(16px,1.6vw,21px);color:var(--fg);max-width:16ch;line-height:1.3}
+  .statrows{display:flex;flex-direction:column}
+  .statrow{padding:clamp(15px,2.3vh,22px) 0;border-top:1px solid var(--border)}
+  .statrow:first-child{border-top:none;padding-top:0}
+  .statrow .big{font-family:var(--font-display);font-weight:700;font-size:clamp(30px,3.6vw,46px);line-height:1;color:var(--accent)}
+  .statrow .big.g{color:var(--gold)}
+  .statrow .l{font-size:clamp(14px,1.3vw,16px);color:var(--fg);margin-top:7px;font-weight:500;line-height:1.35;max-width:30ch}
+  .statrow .s{font-size:12px;color:var(--muted-fg);font-style:italic;margin-top:5px}
+
+  /* numbered features (editorial columns, not cards) */
+  .features{display:grid;grid-template-columns:repeat(3,1fr)}
+  .feat{padding:clamp(4px,1vh,10px) clamp(22px,2.6vw,38px)}
+  .feat:first-child{padding-left:0}
+  .feat + .feat{border-left:1px solid var(--border)}
+  .feat .idx{font-family:var(--font-display);font-weight:700;font-size:clamp(28px,3.2vw,42px);color:var(--accent);line-height:1}
+  .feat h3{font-family:var(--font-display);font-weight:600;font-size:clamp(18px,1.7vw,22px);margin:15px 0 9px;line-height:1.15}
+  .feat p{color:var(--muted-fg);font-size:15px;line-height:1.55}
+
+  /* flow (tech) */
+  .flow{display:flex;align-items:stretch;gap:12px;flex-wrap:wrap}
+  .flow .node{flex:1;min-width:150px;padding:20px 18px;border-radius:var(--radius);border:1px solid var(--border);
+      background:linear-gradient(180deg,rgba(0,34,14,.6),rgba(0,28,11,.28))}
+  .flow .node.mid{border-color:rgba(53,234,82,.4);box-shadow:0 0 30px rgba(53,234,82,.12)}
+  .flow .node b{font-family:var(--font-display);display:block;font-size:17px;margin-bottom:5px}
+  .flow .node b.a{color:var(--accent)}
+  .flow .node span{font-size:13px;color:var(--muted-fg);line-height:1.4}
+  .flow .arrow{align-self:center;color:var(--accent);font-size:22px}
+  .chips{display:flex;gap:10px;flex-wrap:wrap}
+  .chip{display:inline-flex;align-items:center;padding:9px 16px;border-radius:999px;border:1px solid var(--border);
+      background:rgba(1,42,20,.5);font-size:14px;font-weight:500;font-family:var(--font-display)}
+  .chip.p{border-color:rgba(53,234,82,.5);color:var(--accent)}
+
+  /* demo frame */
+  .demo-frame{border:1px solid var(--border);border-radius:var(--radius-lg);height:min(50vh,420px);
+      background:repeating-linear-gradient(135deg,rgba(126,249,98,.04) 0 12px,transparent 12px 24px),var(--card);
+      display:flex;align-items:center;justify-content:center;text-align:center;box-shadow:var(--shadow-elegant)}
+  .demo-frame b{display:block;font-family:var(--font-display);color:var(--fg);font-size:22px;margin-bottom:8px}
+  .demo-frame span{color:var(--muted-fg)}
+
+  /* timeline (roadmap sequence) */
+  .timeline{display:grid;grid-template-columns:repeat(4,1fr);position:relative;margin-top:clamp(22px,3.4vh,34px);gap:18px}
+  .timeline::before{content:"";position:absolute;top:8px;left:9px;right:9px;height:2px;
+      background:linear-gradient(90deg,var(--accent),rgba(126,249,98,.16))}
+  .tnode{position:relative;padding-right:14px}
+  .tnode .dot{width:18px;height:18px;border-radius:50%;background:var(--bg);border:2px solid var(--accent);
+      box-shadow:0 0 12px var(--accent);position:relative;z-index:1;margin-bottom:18px}
+  .tnode.hl .dot{border-color:var(--gold);box-shadow:0 0 12px var(--gold)}
+  .tnode .n{font-family:var(--font-display);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+  .tnode.hl .n{color:var(--gold)}
+  .tnode b{font-family:var(--font-display);display:block;font-size:clamp(17px,1.6vw,20px);margin:7px 0 6px}
+  .tnode span{font-size:14px;color:var(--muted-fg);line-height:1.4}
+
+  /* team */
+  .team-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(16px,2.4vw,30px)}
+  .member .av{width:72px;height:72px;border-radius:16px;margin-bottom:14px;
+      background:linear-gradient(135deg,var(--muted),#023a1c);border:1px solid var(--border);
+      display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:26px;color:var(--accent)}
+  .member b{font-family:var(--font-display);font-size:17px;display:block;margin-bottom:2px}
+  .member span{font-size:13px;color:var(--muted-fg)}
+
+  /* helpers */
+  .note{margin-top:clamp(18px,2.6vh,26px);font-size:15px;color:var(--muted-fg);max-width:66ch;line-height:1.5}
+  .note b{color:var(--accent);font-weight:600}
+  .btn{display:inline-flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:600;
+      padding:14px 26px;border-radius:999px;font-size:16px;background:linear-gradient(135deg,#ff8a2b,var(--cta));
+      color:#2a0e00;box-shadow:0 0 40px rgba(238,53,51,.4)}
+
+  /* ===== Cover slide (editorial competition cover, no motif) ===== */
+  .slide.cover{padding:0;display:block;height:100vh;overflow:hidden}
+  .cover-inner{position:relative;z-index:2;height:100vh;display:flex;flex-direction:column;
+      padding:clamp(26px,4.2vh,46px) clamp(32px,7vw,100px) clamp(28px,4.2vh,46px)}
+  /* sponsor masthead (top) */
+  .cover-spon{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;
+      padding-bottom:clamp(16px,3vh,26px);border-bottom:1px solid var(--border)}
+  .cover-spon .row{display:flex;flex-wrap:wrap;justify-content:center;align-items:baseline;gap:6px 30px}
+  .cover-spon .g{display:inline-flex;align-items:baseline;gap:9px}
+  .cover-spon .t{font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted-fg)}
+  .cover-spon .n{font-family:var(--font-display);font-weight:600;font-size:13.5px;color:var(--fg)}
+  .cover-spon .g.gold .n{color:var(--gold)}
+  .cover-spon .g.pb .n{color:var(--accent)}
+  /* main: lead (left) + specs column (right) */
+  .cover-main{flex:1;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:clamp(36px,5vw,84px);align-items:center}
+  .cover-logolock{margin-bottom:clamp(20px,3.2vh,32px)}
+  .cover-logolock img{height:clamp(32px,4.2vh,44px);width:auto;filter:drop-shadow(0 0 12px rgba(53,234,82,.22))}
+  .cover-h1{font-family:var(--font-display);font-weight:700;line-height:1.0;letter-spacing:-.028em;
+      font-size:clamp(40px,6vw,88px);max-width:15ch;text-wrap:balance}
+  .cover-h1 .l{color:var(--accent)}
+  .cover-desc{margin-top:clamp(18px,2.6vh,26px);font-size:clamp(15px,1.5vw,20px);color:#c8ddca;
+      max-width:46ch;line-height:1.55}
+  .cover-specs{display:flex;flex-direction:column;gap:clamp(15px,2.3vh,23px);
+      border-left:1px solid var(--border);padding-left:clamp(26px,2.8vw,42px)}
+  .spec .k{font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted-fg);margin-bottom:6px}
+  .spec .v{font-family:var(--font-display);font-weight:600;font-size:clamp(15px,1.35vw,18px);color:var(--fg);line-height:1.2}
+  .spec .v.a{color:var(--accent)}
+  .spec .v .dot{color:var(--accent)}
+  body.cover-active .brand,body.cover-active .event-logo{opacity:0;pointer-events:none}
+  .brand,.event-logo{transition:opacity .3s ease}
+  @media (max-width:860px){
+    .cover-main{grid-template-columns:1fr;gap:24px;align-content:center}
+    .cover-specs{border-left:none;padding-left:0;border-top:1px solid var(--border);padding-top:22px;
+        flex-flow:row wrap;gap:16px 30px}
+    .cover-h1{font-size:clamp(34px,8vw,52px)}
+  }
+
+  /* ===== Chrome: header, footer, nav ===== */
+  .brand{position:fixed;top:22px;left:clamp(24px,7vw,110px);z-index:5;display:flex;align-items:center;gap:12px}
+  .brand .mark{font-family:var(--font-display);font-weight:700;font-size:18px;letter-spacing:-.01em}
+  .brand .mark .dot{color:var(--accent)}
+  .brand .sub{font-size:12px;color:var(--muted-fg);border-left:1px solid var(--border);padding-left:12px;letter-spacing:.02em}
+  .event-logo{position:fixed;top:19px;right:clamp(24px,7vw,110px);height:26px;width:auto;z-index:5;opacity:.92;
+      filter:drop-shadow(0 0 10px rgba(53,234,82,.25))}
+  .event-lockup{display:flex;align-items:center;gap:15px;flex-wrap:wrap}
+  .event-lockup .lbl{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted-fg)}
+  .event-lockup img{height:30px;width:auto}
+  .event-lockup .pb{font-size:12px;color:var(--muted-fg);padding-left:14px;position:relative}
+  .event-lockup .pb::before{content:"";position:absolute;left:0;top:2px;bottom:2px;width:1px;background:var(--border)}
+  footer{position:fixed;bottom:22px;left:0;right:0;z-index:5;display:flex;align-items:center;
+      justify-content:space-between;padding:0 clamp(24px,7vw,110px);pointer-events:none}
+  .dots{display:flex;gap:9px;pointer-events:auto}
+  .dots button{width:9px;height:9px;border-radius:50%;border:none;background:var(--border);cursor:pointer;padding:0;transition:.25s}
+  .dots button.on{background:var(--accent);box-shadow:0 0 10px var(--accent);transform:scale(1.55)}
+  .counter{font-family:var(--font-display);font-size:14px;color:var(--muted-fg);letter-spacing:.05em}
+  .counter b{color:var(--fg)}
+  .arrows{position:fixed;bottom:20px;right:clamp(24px,7vw,110px);z-index:6;display:flex;gap:10px;pointer-events:auto}
+  .arrows button{width:44px;height:44px;border-radius:50%;border:1px solid var(--border);
+      background:rgba(0,34,14,.7);color:var(--fg);font-size:18px;cursor:pointer;transition:.2s;backdrop-filter:blur(6px)}
+  .arrows button:hover{border-color:var(--accent);color:var(--accent)}
+  .progress{position:fixed;top:0;left:0;width:100%;height:3px;transform:scaleX(0);transform-origin:left;
+      background:linear-gradient(90deg,var(--primary),var(--accent));
+      z-index:7;transition:transform .5s cubic-bezier(.16,.84,.44,1);box-shadow:0 0 12px var(--accent)}
+  .hint{position:fixed;bottom:74px;left:50%;transform:translateX(-50%);z-index:5;font-size:12px;color:var(--muted-fg);
+      opacity:.7;letter-spacing:.03em}
+
+  @media (max-width:820px){
+    .two{grid-template-columns:1fr;gap:26px}
+    .cols-3,.cols-2{grid-template-columns:1fr}
+    .team-grid{grid-template-columns:repeat(2,1fr)}
+    .brand .sub{display:none}
+  }
+
+  /* ===== Reduced motion ===== */
+  @media (prefers-reduced-motion: reduce){
+    .track,.progress,.brand,.event-logo,.dots button,.hint{transition:none !important}
+    .slide .anim{transition:none !important;opacity:1 !important;transform:none !important}
+    html{scroll-behavior:auto}
+  }
+
+  /* ===== Print → PDF (mỗi slide 1 trang, backup khi không chiếu HTML) ===== */
+  @media print{
+    @page{size:1280px 720px;margin:0}
+    body{overflow:visible}
+    .bg-fx,.arrows,.dots,.hint,.progress,footer .counter{display:none}
+    .deck{height:auto;overflow:visible}
+    .track{display:block;transform:none!important}
+    .slide{page-break-after:always;height:720px;min-width:0;width:1280px;background:var(--bg)}
+    .slide .anim{opacity:1!important;transform:none!important}
+  }
+</style>
+</head>
+<body>
+  <div class="bg-fx"><div class="glow g1"></div><div class="glow g2"></div><div class="glow g3"></div></div>
+  <div class="progress" id="progress"></div>
+
+  <div class="brand">
+    <span class="mark">THỢ CỐT<span class="dot">.</span></span>
+    <span class="sub">AI Cross-Border Hackathon 2026</span>
+  </div>
+  <img class="event-logo" src="brand/logo-event.png" alt="Cross-Border AI Innovation Summit 2026" />
+
+  <div class="deck">
+    <div class="track" id="track">
+
+      <!-- 1 · COVER (editorial competition cover) -->
+      <section class="slide cover">
+        <div class="cover-inner">
+          <div class="cover-spon anim">
+            <div class="row">
+              <span class="g"><span class="t">Tổ chức bởi</span><span class="n">DNES · Ecomdy</span></span>
+              <span class="g"><span class="t">Đồng tổ chức</span><span class="n">Printway · BurgerPrints</span></span>
+              <span class="g pb"><span class="t">Powered by</span><span class="n">BytePlus</span></span>
+            </div>
+            <div class="row">
+              <span class="g gold"><span class="t">Tài trợ Vàng</span><span class="n">Kalodata</span></span>
+              <span class="g"><span class="t">Tài trợ Đồng</span><span class="n">Wealify</span></span>
+              <span class="g"><span class="t">Crowdfunding</span><span class="n">PG Prints · GKE · Innovark · LianLian · Fristify</span></span>
+            </div>
+          </div>
+          <div class="cover-main">
+            <div class="cover-lead">
+              <div class="cover-logolock anim"><img src="brand/logo-event.png" alt="Cross-Border AI Innovation Summit 2026" /></div>
+              <h1 class="cover-h1 anim">[Tên sản phẩm] <span class="l">— [tagline ngắn]</span></h1>
+              <p class="cover-desc anim">[Mô tả 1–2 câu: sản phẩm là gì, giải quyết vấn đề gì, cho ai, bằng AI như thế nào.]</p>
+            </div>
+            <div class="cover-specs anim">
+              <div class="spec"><div class="k">Thời gian</div><div class="v">21–22.08.2026</div></div>
+              <div class="spec"><div class="k">Địa điểm</div><div class="v">Hà Nội</div></div>
+              <div class="spec"><div class="k">Hạng mục</div><div class="v">[chọn nhánh]</div></div>
+              <div class="spec"><div class="k">Đội dự thi</div><div class="v">Team Thợ Cốt<span class="dot">.</span></div></div>
+              <div class="spec"><div class="k">Powered by</div><div class="v a">BytePlus</div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2 · PROBLEM -->
+      <section class="slide">
+        <div class="inner split">
+          <div class="narrative">
+            <div class="skick anim"><span class="num">01</span><span class="sep">·</span><span class="lbl">Vấn đề</span></div>
+            <h2 class="anim"><span class="ph">[Một câu tuyên bố nỗi đau — VD: “Một lối đi cho tất cả.”]</span></h2>
+            <p class="lead anim" style="margin-top:20px"><span class="ph">[2–3 dòng: ai đang gặp vấn đề gì, vì sao cách làm hiện tại thất bại.]</span></p>
+            <div class="herostat anim">
+              <span class="n">[XX%]</span>
+              <span class="t"><span class="ph">[điều gì đang tệ — VD: bỏ cuộc trước khi hoàn thành]</span></span>
+            </div>
+          </div>
+          <div class="statrows anim">
+            <div class="statrow"><div class="big">[&lt;10%]</div><div class="l"><span class="ph">[số liệu hỗ trợ 1]</span></div><div class="s"><span class="ph">[nguồn]</span></div></div>
+            <div class="statrow"><div class="big g">[~50%]</div><div class="l"><span class="ph">[số liệu hỗ trợ 2]</span></div><div class="s"><span class="ph">[nguồn]</span></div></div>
+            <div class="statrow"><div class="big" style="font-size:clamp(18px,1.7vw,22px);color:var(--fg)"><span class="ph">[Insight: giải pháp lý tưởng đã có…]</span></div><div class="l"><span class="ph">[…nhưng quá đắt để nhân rộng.]</span></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3 · SOLUTION -->
+      <section class="slide">
+        <div class="inner">
+          <div class="skick anim"><span class="num">02</span><span class="sep">·</span><span class="lbl">Giải pháp</span></div>
+          <h2 class="anim"><span class="lime">[Sản phẩm]</span> <span class="ph">[làm gì, cho ai, bằng AI]</span></h2>
+          <div class="features anim" style="margin-top:clamp(30px,5vh,52px)">
+            <div class="feat"><div class="idx">01</div><h3><span class="ph">[Tính năng lõi 1]</span></h3><p><span class="ph">[Giá trị cụ thể, đo được nếu có]</span></p></div>
+            <div class="feat"><div class="idx">02</div><h3><span class="ph">[Tính năng lõi 2]</span></h3><p><span class="ph">[Giá trị cụ thể]</span></p></div>
+            <div class="feat"><div class="idx">03</div><h3><span class="ph">[Tính năng lõi 3]</span></h3><p><span class="ph">[Giá trị cụ thể]</span></p></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4 · DEMO -->
+      <section class="slide">
+        <div class="inner">
+          <div class="skick anim"><span class="num">03</span><span class="sep">·</span><span class="lbl">Demo</span></div>
+          <h2 class="anim" style="margin-bottom:clamp(22px,3vh,30px)">Thấy là tin.</h2>
+          <div class="demo-frame anim">
+            <div><b>[ Chèn ảnh / video demo sản phẩm ]</b><span>Screenshot flow chính · hoặc link demo trực tiếp</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5 · TECH -->
+      <section class="slide">
+        <div class="inner">
+          <div class="skick anim"><span class="num">04</span><span class="sep">·</span><span class="lbl">Công nghệ</span></div>
+          <h2 class="anim" style="margin-bottom:clamp(26px,4vh,38px)">Kiến trúc gọn, AI đúng chỗ.</h2>
+          <div class="flow anim">
+            <div class="node"><b>[Input]</b><span>[Dữ liệu / yêu cầu từ doanh nghiệp]</span></div>
+            <span class="arrow">→</span>
+            <div class="node mid"><b class="a">Lõi AI</b><span>Claude API · [+ BytePlus]</span></div>
+            <span class="arrow">→</span>
+            <div class="node"><b>[Output]</b><span>[Kết quả cho người dùng]</span></div>
+          </div>
+          <div class="chips anim" style="margin-top:clamp(24px,3.4vh,34px)">
+            <span class="chip p">Claude API</span><span class="chip">BytePlus</span><span class="chip">[Backend]</span>
+            <span class="chip">[Frontend]</span><span class="chip">[Database]</span><span class="chip">[Deploy]</span>
+          </div>
+          <p class="note anim">💡 <b>Mẹo:</b> ghép BytePlus để “ăn” +5đ thưởng sponsor (xem <code>docs/thong-tin-cuoc-thi.md</code>).</p>
+        </div>
+      </section>
+
+      <!-- 6 · IMPACT / MARKET -->
+      <section class="slide">
+        <div class="inner split">
+          <div class="narrative">
+            <div class="skick anim"><span class="num">05</span><span class="sep">·</span><span class="lbl">Tác động &amp; Thị trường</span></div>
+            <h2 class="anim">Vì sao <span class="lime">cross-border</span>, vì sao bây giờ.</h2>
+            <div class="herostat anim">
+              <span class="n">[$X]</span>
+              <span class="t"><span class="ph">[Quy mô thị trường / TAM có thể chạm tới]</span></span>
+            </div>
+            <p class="note anim" style="max-width:40ch"><span class="ph">[1 câu: TMĐT xuyên biên giới VN đang bùng nổ + AI đủ rẻ/mạnh = thời điểm vàng.]</span></p>
+          </div>
+          <div class="statrows anim">
+            <div class="statrow"><div class="big">[Nx]</div><div class="l"><span class="ph">[nhanh hơn / tiết kiệm bao nhiêu so với cách cũ]</span></div></div>
+            <div class="statrow"><div class="big g">[+Y%]</div><div class="l"><span class="ph">[tăng doanh thu / hiệu quả cho khách hàng]</span></div></div>
+            <div class="statrow"><div class="big">[Z]</div><div class="l"><span class="ph">[chỉ số thứ 3 — người dùng, đơn hàng, thị trường…]</span></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 7 · BUSINESS & ROADMAP -->
+      <section class="slide">
+        <div class="inner">
+          <div class="skick anim"><span class="num">06</span><span class="sep">·</span><span class="lbl">Mô hình &amp; Lộ trình</span></div>
+          <h2 class="anim">Từ nguyên mẫu đến thị trường.</h2>
+          <p class="lead anim" style="margin-top:16px"><span class="ph">[Mô hình doanh thu 1 dòng — VD: SaaS theo tháng / phí theo giao dịch]</span></p>
+          <div class="timeline anim">
+            <div class="tnode"><div class="dot"></div><div class="n">Bước 1</div><b>Hackathon</b><span>Nguyên mẫu AI chạy được (48h)</span></div>
+            <div class="tnode"><div class="dot"></div><div class="n">Bước 2</div><b>POC</b><span>Thử nghiệm với 1 doanh nghiệp thật</span></div>
+            <div class="tnode hl"><div class="dot"></div><div class="n">Bước 3</div><b class="gold">DNES Incubation</b><span>Top 10 · mentor · nhà đầu tư</span></div>
+            <div class="tnode"><div class="dot"></div><div class="n">Bước 4</div><b>Ra thị trường</b><span>Khách hàng đầu tiên</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 8 · TEAM + THANK YOU -->
+      <section class="slide">
+        <div class="inner">
+          <div class="skick anim"><span class="num">07</span><span class="sep">·</span><span class="lbl">Đội ngũ</span></div>
+          <h2 class="anim">Team <span class="lime">Thợ Cốt</span>.</h2>
+          <div class="team-grid anim" style="margin-top:clamp(30px,4.4vh,44px)">
+            <div class="member"><div class="av">T</div><b>[Tên]</b><span>[Vai trò]</span></div>
+            <div class="member"><div class="av">H</div><b>[Tên]</b><span>[Vai trò]</span></div>
+            <div class="member"><div class="av">C</div><b>[Tên]</b><span>[Vai trò]</span></div>
+            <div class="member"><div class="av">+</div><b>[Tên]</b><span>[Vai trò]</span></div>
+          </div>
+          <div class="anim" style="margin-top:clamp(34px,4.6vh,50px);display:flex;align-items:center;gap:22px;flex-wrap:wrap">
+            <span class="btn">Cảm ơn &amp; Q/A →</span>
+            <span class="lead" style="margin:0"><span class="ph">[email · SĐT · link demo]</span></span>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <div class="hint" id="hint">← → hoặc Space để chuyển slide · F: toàn màn hình · P: in ra PDF</div>
+  <footer>
+    <div class="dots" id="dots"></div>
+    <div class="counter"><b id="cur">01</b> / <span id="total">08</span></div>
+  </footer>
+  <div class="arrows">
+    <button id="prev" aria-label="Trước">‹</button>
+    <button id="next" aria-label="Sau">›</button>
+  </div>
+
+<script>
+  const track=document.getElementById('track');
+  const slides=[...document.querySelectorAll('.slide')];
+  const dotsWrap=document.getElementById('dots');
+  const progress=document.getElementById('progress');
+  const curEl=document.getElementById('cur');
+  const hint=document.getElementById('hint');
+  let i=0;
+  document.getElementById('total').textContent=String(slides.length).padStart(2,'0');
+
+  slides.forEach((_,n)=>{
+    const b=document.createElement('button');
+    b.addEventListener('click',()=>go(n));
+    dotsWrap.appendChild(b);
+  });
+  const dots=[...dotsWrap.children];
+
+  function go(n){
+    i=Math.max(0,Math.min(slides.length-1,n));
+    track.style.transform=`translateX(-${i*100}vw)`;
+    slides.forEach((s,n2)=>s.classList.toggle('active',n2===i));
+    dots.forEach((d,n2)=>d.classList.toggle('on',n2===i));
+    progress.style.transform='scaleX('+((i+1)/slides.length)+')';
+    curEl.textContent=String(i+1).padStart(2,'0');
+    document.body.classList.toggle('cover-active',i===0);
+  }
+  function next(){go(i+1)} function prev(){go(i-1)}
+  document.getElementById('next').addEventListener('click',next);
+  document.getElementById('prev').addEventListener('click',prev);
+  addEventListener('keydown',e=>{
+    if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();next()}
+    else if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();prev()}
+    else if(e.key==='Home')go(0); else if(e.key==='End')go(slides.length-1);
+    else if(e.key==='f'||e.key==='F'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}
+    else if(e.key==='p'||e.key==='P'){window.print()}
+  });
+  // swipe (mobile)
+  let x0=null;
+  addEventListener('touchstart',e=>x0=e.touches[0].clientX,{passive:true});
+  addEventListener('touchend',e=>{if(x0===null)return;const dx=e.changedTouches[0].clientX-x0;if(Math.abs(dx)>50)dx<0?next():prev();x0=null},{passive:true});
+  setTimeout(()=>hint.style.opacity='0',5200);
+  const _h=parseInt((location.hash||'').slice(1),10);
+  go(Number.isFinite(_h)&&_h>=1&&_h<=slides.length?_h-1:0);
+</script>
+</body>
+</html>
