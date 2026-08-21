@@ -99,7 +99,7 @@ export const StagePositioning: React.FC = () => {
             </div>
 
             <div className="border border-foreground/20 bg-foreground/[0.02] p-4 relative">
-              <div className="absolute top-0 right-0 px-2 py-0.5 bg-foreground text-black text-[10px] font-mono font-bold tracking-widest">HƯỚNG B</div>
+              <div className="absolute top-0 right-0 px-2 py-0.5 bg-foreground text-white text-[10px] font-mono font-bold tracking-widest">HƯỚNG B</div>
               <p className="text-sm font-mono text-foreground font-bold mb-1">Mở đầu &quot;Uy tín & Đặc sản&quot;</p>
               <p className="text-xs font-mono text-foreground/50 mb-3">Chỉ tập trung vào hình ảnh túi 50 gói lớn, nhấn mạnh giá trị văn hóa cà phê Việt Nam uy tín toàn cầu.</p>
             </div>

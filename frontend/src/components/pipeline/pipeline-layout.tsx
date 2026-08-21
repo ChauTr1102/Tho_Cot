@@ -54,7 +54,7 @@ export const PipelineLayout: React.FC<PipelineLayoutProps> = ({
             type="button"
             onClick={onNext}
             disabled={isNextDisabled}
-            className="px-8 py-2.5 border-2 border-foreground bg-foreground text-black text-sm font-display font-bold tracking-widest hover:bg-transparent hover:text-foreground transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:bg-transparent disabled:text-foreground/30 disabled:border-foreground/20"
+            className="px-8 py-2.5 border-2 border-foreground bg-foreground text-white text-sm font-display font-bold tracking-widest hover:bg-transparent hover:text-foreground transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:bg-transparent disabled:text-foreground/30 disabled:border-foreground/20"
           >
             {nextLabel}
           </button>

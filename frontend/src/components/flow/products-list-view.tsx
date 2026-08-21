@@ -58,7 +58,7 @@ export const ProductsListView: React.FC<ProductsListViewProps> = ({
         <button
           type="button"
           onClick={onOpenAddModal}
-          className="flex items-center gap-2 px-4 py-2.5 border border-foreground text-foreground font-mono text-sm tracking-wider hover:bg-foreground hover:text-black transition-all"
+          className="flex items-center gap-2 px-4 py-2.5 border border-foreground text-foreground font-mono text-sm tracking-wider hover:bg-foreground hover:text-white transition-all"
         >
           <Plus className="h-3.5 w-3.5" />
           <span>THÊM.SẢN PHẨM</span>
@@ -96,7 +96,7 @@ export const ProductsListView: React.FC<ProductsListViewProps> = ({
           <button
             type="button"
             onClick={onOpenAddModal}
-            className="text-xs font-mono border border-foreground/30 px-4 py-2 text-foreground/60 hover:bg-foreground hover:text-black transition-all tracking-wider mt-2"
+            className="text-xs font-mono border border-foreground/30 px-4 py-2 text-foreground/60 hover:bg-foreground hover:text-white transition-all tracking-wider mt-2"
           >
             + THÊM SẢN PHẨM ĐẦU TIÊN
           </button>
@@ -181,7 +181,7 @@ export const ProductsListView: React.FC<ProductsListViewProps> = ({
                 <div className="p-3 pt-0 border-t border-foreground/8">
                   <Link
                     href="/campaigns"
-                    className="w-full flex items-center justify-center gap-2 py-2 border border-foreground/20 text-xs font-mono text-foreground/50 hover:bg-foreground hover:text-black transition-all tracking-wider"
+                    className="w-full flex items-center justify-center gap-2 py-2 border border-foreground/20 text-xs font-mono text-foreground/50 hover:bg-foreground hover:text-white transition-all tracking-wider"
                   >
                     <Wand2 className="h-3 w-3" />
                     <span>TẠO.QUẢNG CÁO</span>
