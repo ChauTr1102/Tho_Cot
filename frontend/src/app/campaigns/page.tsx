@@ -13,6 +13,8 @@ import { AlertTriangle, ArrowLeft, CalendarDays, FolderKanban, ListTree, LoaderC
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 import { attachDefaultSampleProductPhotos, createInitialResearchSubmission, parseResearchCampaignPlan, validateResearchSubmission, type ResearchCampaignPlan, type ResearchSubmission } from "@/types/research";
+import { buildCampaignInputDTO, buildMockCampaignOutput } from "@/types/campaign_output_mock";
+import type { VerifyChecklistResponseData } from "@/types/qa_checklist";
 
 const STATUS_LABELS: Record<CampaignListItem["status"], string> = {
   draft: "BẢN NHÁP",
@@ -44,6 +46,8 @@ export default function CampaignsPage() {
   const [currentStage, setCurrentStage] = React.useState<CampaignStage>("product_input");
   const [researchSubmission, setResearchSubmission] = React.useState<ResearchSubmission>(createInitialResearchSubmission);
   const [researchPlan, setResearchPlan] = React.useState<ResearchCampaignPlan | null>(null);
+  const [campaignOutput, setCampaignOutput] = React.useState<Record<string, unknown> | null>(null);
+  const [qaResult, setQaResult] = React.useState<VerifyChecklistResponseData | null>(null);
   const [researchLoading, setResearchLoading] = React.useState(false);
   const [researchError, setResearchError] = React.useState<string | null>(null);
   const [campaigns, setCampaigns] = React.useState<CampaignListItem[]>([]);
@@ -101,6 +105,8 @@ export default function CampaignsPage() {
       .catch(() => toast.error("Không thể tải sẵn ảnh sản phẩm mẫu G7."));
     setResearchPlan(null);
     setResearchError(null);
+    setCampaignOutput(null);
+    setQaResult(null);
     setCurrentStage("product_input");
     setWorkflowMode("manual");
     setShowAutopilotOverview(false);
@@ -113,6 +119,8 @@ export default function CampaignsPage() {
     setResearchSubmission(initialSubmission);
     setResearchPlan(null);
     setResearchError(null);
+    setCampaignOutput(null);
+    setQaResult(null);
     setCurrentStage("product_input");
     setWorkflowMode("autopilot");
     setShowAutopilotOverview(false);
@@ -142,6 +150,8 @@ export default function CampaignsPage() {
         throw new Error("Chiến dịch chưa có kết quả nghiên cứu hợp lệ.");
       }
       setResearchPlan(parseResearchCampaignPlan(savedResult.plan));
+      setCampaignOutput(null);
+      setQaResult(null);
       if (campaignData?.research_input) {
         setResearchSubmission((current) => ({
           ...current,
@@ -195,6 +205,14 @@ export default function CampaignsPage() {
       setResearchLoading(false);
     }
   };
+
+  // CampaignInputDTO for the QA gate / autopilot, derived from the current
+  // research submission's input (real user data, always available once the
+  // product_input stage is filled in).
+  const campaignInputForQa = React.useMemo(
+    () => buildCampaignInputDTO(researchSubmission.input),
+    [researchSubmission.input],
+  );
 
   const handleNextStage = () => {
     if (currentStage === "product_input") {
@@ -340,6 +358,16 @@ export default function CampaignsPage() {
                   initialComplete={autopilotInitiallyComplete}
                   onRun={() => runResearch(false)}
                   onOpenStep={(stage) => { setCurrentStage(stage); setShowAutopilotOverview(false); }}
+                  campaignInput={campaignInputForQa}
+                  getCampaignOutput={() => {
+                    // Autopilot skips the real StageContentGeneration component per
+                    // product decision — content_generation stays mocked, using the
+                    // same buildMockCampaignOutput helper directly.
+                    const output = buildMockCampaignOutput(researchPlan, researchSubmission.input);
+                    setCampaignOutput(output);
+                    return output;
+                  }}
+                  onQaResult={setQaResult}
                 />
               ) : (
               <PipelineLayout
@@ -353,9 +381,9 @@ export default function CampaignsPage() {
               >
               {currentStage === "product_input" && <StageProductInput value={researchSubmission} onChange={setResearchSubmission} initialInputMode={workflowMode === "autopilot" ? "manual" : "link"} />}
               {currentStage === "research" && <StageResearch plan={researchPlan} isLoading={researchLoading} error={researchError} onRetry={() => void runResearch()} />}
-              {currentStage === "content_generation" && <StageContentGeneration />}
-              {currentStage === "qa_gate" && <StageQAGate />}
-              {currentStage === "final_output" && <StageFinalOutput plan={researchPlan} input={researchSubmission.input} />}
+              {currentStage === "content_generation" && <StageContentGeneration plan={researchPlan} input={researchSubmission.input} onGenerated={setCampaignOutput} />}
+              {currentStage === "qa_gate" && <StageQAGate campaignInput={campaignInputForQa} campaignOutput={campaignOutput ?? buildMockCampaignOutput(researchPlan, researchSubmission.input)} onResult={setQaResult} />}
+              {currentStage === "final_output" && <StageFinalOutput plan={researchPlan} input={researchSubmission.input} campaignOutput={campaignOutput ?? buildMockCampaignOutput(researchPlan, researchSubmission.input)} qaResult={qaResult} />}
               {!["product_input", "research", "content_generation", "qa_gate", "final_output"].includes(currentStage) && (
                 <div className="flex items-center justify-center h-full min-h-[400px] border border-dashed border-foreground/10">
                   <p className="text-sm font-mono text-foreground/30 tracking-wider">

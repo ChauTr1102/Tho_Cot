@@ -3,6 +3,8 @@
 import * as React from "react";
 import { Activity, ArrowRight, Check, FileInput, FileText, FlaskConical, Loader2, Microscope, Sparkles, WandSparkles, Zap } from "lucide-react";
 import type { CampaignStage } from "@/types/campaign";
+import { api } from "@/lib/api";
+import type { VerifyChecklistResponseData } from "@/types/qa_checklist";
 
 type RunState = "idle" | "running" | "complete" | "failed";
 type NodeState = "waiting" | "running" | "complete" | "failed";
@@ -33,9 +35,14 @@ interface Props {
   initialComplete?: boolean;
   onRun: () => Promise<boolean>;
   onOpenStep: (stage: CampaignStage) => void;
+  /** CampaignInputDTO JSON (snake_case), matching backend/app/schemas/campaign_dto.py. */
+  campaignInput: Record<string, unknown>;
+  /** Computed lazily since the mock output depends on researchPlan, which is only available after the research step completes. */
+  getCampaignOutput: () => Record<string, unknown>;
+  onQaResult: (result: VerifyChecklistResponseData) => void;
 }
 
-export const AutopilotWorkflow: React.FC<Props> = ({ productName, errorMessage, initialComplete = false, onRun, onOpenStep }) => {
+export const AutopilotWorkflow: React.FC<Props> = ({ productName, errorMessage, initialComplete = false, onRun, onOpenStep, campaignInput, getCampaignOutput, onQaResult }) => {
   const [runState, setRunState] = React.useState<RunState>(initialComplete ? "complete" : "idle");
   const [nodeStates, setNodeStates] = React.useState<Record<CampaignStage, NodeState>>(() => ({
     product_input: initialComplete ? "complete" : "waiting",
@@ -85,7 +92,25 @@ export const AutopilotWorkflow: React.FC<Props> = ({ productName, errorMessage, 
     for (const id of ["content_generation", "qa_gate", "final_output"] as CampaignStage[]) {
       setActivityIndex(0);
       setNode(id, "running");
-      await wait(8000);
+      if (id === "qa_gate") {
+        try {
+          const response = await api.verifyChecklist({
+            campaign_input: campaignInput,
+            campaign_output: getCampaignOutput(),
+            iteration: 1,
+          });
+          if (!response.data) throw new Error("QA checklist backend trả về dữ liệu trống.");
+          onQaResult(response.data);
+        } catch {
+          // QA failures in autopilot must surface, not be swallowed —
+          // mirrors the existing research failure handling above.
+          setNode("qa_gate", "failed");
+          setRunState("failed");
+          return;
+        }
+      } else {
+        await wait(8000);
+      }
       setNode(id, "complete");
     }
     setRunState("complete");

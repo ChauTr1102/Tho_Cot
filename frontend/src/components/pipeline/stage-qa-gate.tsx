@@ -11,6 +11,8 @@ interface Props {
   /** CampaignOutputDTO JSON (snake_case), matching backend/app/schemas/campaign_dto.py. */
   campaignOutput?: Record<string, unknown>;
   iteration?: number;
+  /** Called with the verify-checklist response data right after a successful call resolves. */
+  onResult?: (result: VerifyChecklistResponseData) => void;
 }
 
 // Fallback sample data so this stage is runnable end-to-end before the
@@ -81,7 +83,7 @@ const SAMPLE_CAMPAIGN_OUTPUT: Record<string, unknown> = {
 
 const REGENERATE_LABEL: Record<string, string> = { plan: "PLAN", asset: "ASSET (ảnh / video / copy)" };
 
-export const StageQAGate: React.FC<Props> = ({ campaignInput, campaignOutput, iteration = 1 }) => {
+export const StageQAGate: React.FC<Props> = ({ campaignInput, campaignOutput, iteration = 1, onResult }) => {
   const [state, setState] = React.useState<"checking" | "done" | "error">("checking");
   const [result, setResult] = React.useState<VerifyChecklistResponseData | null>(null);
   const [error, setError] = React.useState<string | null>(null);
@@ -90,6 +92,9 @@ export const StageQAGate: React.FC<Props> = ({ campaignInput, campaignOutput, it
     setState("checking");
     setError(null);
     api
+      // Falls back to the local SAMPLE_CAMPAIGN_INPUT/OUTPUT only when no
+      // props are supplied at all (e.g. standalone/dev preview usage). The
+      // real call site (campaigns/page.tsx) always passes real campaign data.
       .verifyChecklist({
         campaign_input: campaignInput ?? SAMPLE_CAMPAIGN_INPUT,
         campaign_output: campaignOutput ?? SAMPLE_CAMPAIGN_OUTPUT,
@@ -98,12 +103,13 @@ export const StageQAGate: React.FC<Props> = ({ campaignInput, campaignOutput, it
       .then((res) => {
         setResult(res.data);
         setState("done");
+        if (res.data) onResult?.(res.data);
       })
       .catch((err: unknown) => {
         setError(err instanceof ApiError ? err.message : "Không thể kết nối QA checklist backend.");
         setState("error");
       });
-  }, [campaignInput, campaignOutput, iteration]);
+  }, [campaignInput, campaignOutput, iteration, onResult]);
 
   React.useEffect(() => {
     runVerify();

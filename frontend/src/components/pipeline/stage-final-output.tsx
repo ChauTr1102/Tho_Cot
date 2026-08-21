@@ -1,19 +1,26 @@
 "use client";
 
 import * as React from "react";
-import {
-  BarChart3, Check, Copy, Eye, ExternalLink, FlaskConical,
+import { BarChart3, Check, Copy, Eye, ExternalLink, FlaskConical, ShieldAlert, ShieldCheck,
   Image as ImageIcon, MessageSquareText, PackageCheck, Play, Route,
   Rocket, Sparkles, Target, Video,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { ResearchCampaignPlan, ResearchInput } from "@/types/research";
+import type { VerifyChecklistResponseData } from "@/types/qa_checklist";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { StagePackage } from "./stage-package";
 import { StageDeploy } from "./stage-deploy";
 import { TiktokPdpPreview } from "./tiktok-pdp-preview";
 
-interface Props { plan?: ResearchCampaignPlan | null; input?: ResearchInput }
+interface Props {
+  plan?: ResearchCampaignPlan | null;
+  input?: ResearchInput;
+  /** CampaignOutputDTO JSON (snake_case) produced by the content-generation stage. */
+  campaignOutput?: Record<string, unknown> | null;
+  /** Real QA result from POST /verify-checklist, surfaced from the QA gate stage. */
+  qaResult?: VerifyChecklistResponseData | null;
+}
 
 const fallbackPlan = {
   angle: "Cà phê đậm vị Robusta Buôn Ma Thuột chuẩn Việt — pha nhanh tiện lợi cho ngày bận rộn.",
@@ -51,7 +58,7 @@ function ReadyBadge({ optional = false }: { optional?: boolean }) {
   return null;
 }
 
-export const StageFinalOutput: React.FC<Props> = ({ plan, input }) => {
+export const StageFinalOutput: React.FC<Props> = ({ plan, input, campaignOutput, qaResult }) => {
   const positioning = plan?.product_positioning;
   const angle = positioning?.main_campaign_angle.decision ?? fallbackPlan.angle;
   const audience = positioning?.target_audience.decision ?? fallbackPlan.audience;
@@ -65,8 +72,22 @@ export const StageFinalOutput: React.FC<Props> = ({ plan, input }) => {
   const citationNumbers = new Map(citationUrls.map((url, index) => [url, index + 1]));
   const sourceTitles = new Map(plan?.source_summary.sources.map((source) => [source.url, source.title]) ?? []);
 
+  // Prefer real generated commerce copy from the content-generation stage
+  // (CampaignOutputDTO shape) when available; fall back to the static mock.
+  const dtoCommerceCopy = campaignOutput?.commerce_copy as
+    | { product_title?: string; product_description?: string; listing_bullet_points?: string[]; ad_caption?: string; promotion_copy?: string; short_hook_lines?: string[] }
+    | undefined;
+  const resolvedCommerceCopy = {
+    title: dtoCommerceCopy?.product_title ?? commerceCopy.title,
+    description: dtoCommerceCopy?.product_description ?? commerceCopy.description,
+    bullets: dtoCommerceCopy?.listing_bullet_points ?? commerceCopy.bullets,
+    caption: dtoCommerceCopy?.ad_caption ?? commerceCopy.caption,
+    promotion: dtoCommerceCopy?.promotion_copy ?? commerceCopy.promotion,
+    hooks: dtoCommerceCopy?.short_hook_lines ?? commerceCopy.hooks,
+  };
+
   const copyAll = async () => {
-    await navigator.clipboard.writeText([angle, audience, message, commerceCopy.title, commerceCopy.description, commerceCopy.caption].join("\n\n"));
+    await navigator.clipboard.writeText([angle, audience, message, resolvedCommerceCopy.title, resolvedCommerceCopy.description, resolvedCommerceCopy.caption].join("\n\n"));
     toast.success("Đã sao chép nội dung chính của chiến dịch.");
   };
 
@@ -74,7 +95,7 @@ export const StageFinalOutput: React.FC<Props> = ({ plan, input }) => {
   const platforms = input?.audience_brief.platforms.slice(0, 3) ?? ["TikTok Shop", "Shopee", "Tmall"];
   const pdpImages = [...(input?.brand_kit.product_photos ?? []), ...(input?.brand_kit.existing_product_visuals ?? [])];
   const pdpPrice = input?.product_brief.price ?? null;
-  const pdpPromotion = input?.product_brief.promotion ?? commerceCopy.promotion;
+  const pdpPromotion = input?.product_brief.promotion ?? resolvedCommerceCopy.promotion;
 
   return <div className="space-y-6 h-full overflow-y-auto pr-1 pb-8 scroll-smooth">
     <header className="relative overflow-hidden border border-[#35ea52]/30 bg-[#35ea52]/[0.035] p-5 lg:p-7">
@@ -87,6 +108,34 @@ export const StageFinalOutput: React.FC<Props> = ({ plan, input }) => {
     <section id="final-package" className="scroll-mt-4 border border-foreground/10 p-4 space-y-3"><SectionTitle icon={PackageCheck} index="" title="TẢI XUỐNG" subtitle="Tải toàn bộ chiến dịch trong một file ZIP" /><StagePackage /></section>
 
     <section className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-foreground/10 border border-foreground/10" aria-label="Tóm tắt campaign brief"><div className="p-3.5 bg-background"><p className="text-[9px] font-mono text-foreground/30">SẢN PHẨM / NGÀNH HÀNG</p><p className="text-xs text-foreground/65 mt-1.5">{input?.product_brief.category || "F&B · Cà phê hòa tan"}</p></div><div className="p-3.5 bg-background"><p className="text-[9px] font-mono text-foreground/30">THỊ TRƯỜNG</p><p className="text-xs text-foreground/65 mt-1.5">{input?.product_brief.target_market.slice(0, 3).join(" · ") || "Trung Quốc · Đông Nam Á"}</p></div><div className="p-3.5 bg-background"><p className="text-[9px] font-mono text-foreground/30">ƯU ĐÃI</p><p className="text-xs text-foreground/65 mt-1.5">{input?.product_brief.promotion || "Không có ưu đãi"}</p></div><div className="p-3.5 bg-background"><p className="text-[9px] font-mono text-foreground/30">MỤC TIÊU</p><p className="text-xs text-foreground/65 mt-1.5">{input?.market_signal.campaign_objectives.join(" · ") || "Nhận biết · Chuyển đổi"}</p></div></section>
+
+    {qaResult && (
+      <section id="final-qa" className="scroll-mt-4 border border-foreground/10 p-4 space-y-3">
+        {qaResult.issues.length === 0 ? (
+          <div className="border-l-2 border-[#35ea52] bg-[#35ea52]/[0.05] p-4 flex items-start gap-4">
+            <ShieldCheck className="h-6 w-6 text-[#35ea52] shrink-0" />
+            <div>
+              <h3 className="text-[15px] font-mono font-bold text-[#35ea52]">QA & POLICY GATE: ĐÃ VƯỢT QUA</h3>
+              <p className="text-sm font-mono text-foreground/70">Không có lưu ý nào từ AI trên gói chiến dịch này (lần kiểm tra {qaResult.iteration}).</p>
+            </div>
+          </div>
+        ) : (
+          <div className="border-l-2 border-amber-500 bg-amber-500/[0.05] p-4 flex items-start gap-4">
+            <ShieldAlert className="h-6 w-6 text-amber-400 shrink-0" />
+            <div className="space-y-1 flex-1">
+              <h3 className="text-[15px] font-mono font-bold text-amber-400">QA & POLICY GATE: {qaResult.issues.length} LƯU Ý (lần kiểm tra {qaResult.iteration})</h3>
+              <ul className="space-y-1 mt-2">
+                {qaResult.issues.map((issue) => (
+                  <li key={issue.rule_id} className="text-xs font-mono text-amber-400/90">
+                    <span className="font-bold">{issue.rule_id}</span> — {issue.message}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+      </section>
+    )}
 
     <div className="grid grid-cols-1 xl:grid-cols-[230px_minmax(0,1fr)] gap-6 items-start">
       <aside className="xl:sticky xl:top-0 border border-foreground/10 bg-background p-4 space-y-4"><div><p className="text-xs font-mono font-bold tracking-wider text-foreground">KIỂM TRA NHANH</p><p className="text-[10px] text-foreground/30 mt-1">Đối chiếu yêu cầu đầu bài</p></div><nav className="space-y-1">{deliverables.map(([id, label, count], index) => <a key={id} href={`#final-${id}`} className="group flex items-center gap-2.5 p-2 hover:bg-foreground/[0.04]"><span className="h-5 w-5 rounded-full bg-[#35ea52]/10 border border-[#35ea52]/25 flex items-center justify-center"><Check className="h-3 w-3 text-[#35ea52]" /></span><span className="min-w-0 flex-1"><span className="block text-[11px] text-foreground/65 group-hover:text-foreground">{index + 1}. {label}</span><span className="block text-[9px] text-foreground/30 truncate">{count}</span></span></a>)}</nav><button type="button" onClick={() => void copyAll()} className="w-full inline-flex items-center justify-center gap-2 px-3 py-2.5 border border-foreground/20 text-[10px] font-mono text-foreground/60 hover:border-[#35ea52]/40 hover:text-[#35ea52]"><Copy className="h-3.5 w-3.5" /> SAO CHÉP NỘI DUNG CHÍNH</button></aside>
@@ -120,9 +169,9 @@ export const StageFinalOutput: React.FC<Props> = ({ plan, input }) => {
 
         <section id="final-video" className="scroll-mt-4 border border-foreground/10 p-5 space-y-5"><div className="flex justify-between gap-3"><SectionTitle icon={Video} index="03" title="VIDEO QUẢNG CÁO NGẮN" subtitle="Tối thiểu 1 video hoặc prototype · 15–30 giây · khung dọc 9:16" /><ReadyBadge /></div><div className="grid grid-cols-[120px_1fr] sm:grid-cols-[150px_1fr] gap-5 items-center"><div className="aspect-[9/16] border border-[#35ea52]/25 bg-gradient-to-b from-red-950/60 to-black relative flex items-center justify-center overflow-hidden"><div className="absolute inset-0 dot-grid opacity-30" /><button type="button" aria-label="Phát video prototype" className="relative h-12 w-12 rounded-full bg-[#35ea52] text-black flex items-center justify-center hover:scale-105 transition-transform"><Play className="h-5 w-5 fill-current ml-0.5" /></button><span className="absolute top-2 right-2 px-1.5 py-0.5 bg-black/70 text-[8px] font-mono text-white">9:16</span></div><div className="space-y-4"><div><h3 className="font-semibold text-foreground">G7_Morning_Ritual_9x16.mp4</h3><p className="text-xs text-foreground/40 mt-1">Prototype quảng cáo ngắn · 22 giây · 1080 × 1920</p></div><div className="grid grid-cols-2 gap-2 text-[10px] font-mono"><span className="p-2 border border-foreground/10 text-foreground/50">MỞ ĐẦU 0–3S</span><span className="p-2 border border-foreground/10 text-foreground/50">DEMO 4–14S</span><span className="p-2 border border-foreground/10 text-foreground/50">LỢI ÍCH 15–18S</span><span className="p-2 border border-foreground/10 text-foreground/50">CTA 19–22S</span></div><div className="flex gap-2"><span className="px-2 py-1 border border-[#35ea52]/20 text-[9px] text-[#35ea52]">SEEDANCE 2.5</span><span className="px-2 py-1 border border-foreground/10 text-[9px] text-foreground/40">BẢN CẮT 1:1 TÙY CHỌN</span></div></div></div></section>
 
-        <section id="final-images" className="scroll-mt-4 border border-foreground/10 p-5 space-y-5"><div className="flex justify-between gap-3"><SectionTitle icon={ImageIcon} index="04" title="BỘ HÌNH ẢNH SẢN PHẨM" subtitle="4 hình ảnh sẵn sàng cho gian hàng và chiến dịch" /><div className="flex items-center gap-2 shrink-0"><Dialog><DialogTrigger className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[#35ea52]/30 text-[10px] font-mono text-[#35ea52] hover:bg-[#35ea52]/10"><Eye className="h-3.5 w-3.5" /> XEM TRƯỚC</DialogTrigger><DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto"><DialogTitle>Xem trước trang sản phẩm TikTok Shop</DialogTitle><TiktokPdpPreview productName={productName} images={pdpImages} price={pdpPrice} promotion={pdpPromotion} description={commerceCopy.description} bullets={commerceCopy.bullets} angle={angle} /></DialogContent></Dialog><ReadyBadge /></div></div><div className="grid grid-cols-2 lg:grid-cols-4 gap-3">{[["ẢNH HERO", "Sản phẩm nổi bật"], ["CHI TIẾT SKU", "Thông tin & bao bì"], ["ẢNH CHIẾN DỊCH", "Bộ sưu tập 9.9"], ["ẢNH BÌA SÀN", "Thumbnail chuyển đổi"]].map(([label, note], index) => <article key={label} className="border border-foreground/10 p-2"><div className={`aspect-square relative flex items-center justify-center overflow-hidden ${index % 2 ? "bg-gradient-to-br from-neutral-900 to-red-950" : "bg-gradient-to-br from-red-950 to-amber-950"}`}><div className="absolute inset-0 dot-grid opacity-30" /><div className="relative text-center"><PackageCheck className="h-8 w-8 text-[#35ea52]/70 mx-auto" /><span className="text-[8px] font-mono text-white/40 mt-2 block">G7 · 3IN1</span></div><span className="absolute top-2 left-2 text-[8px] font-mono text-white/50">0{index + 1}</span></div><div className="p-2"><p className="text-[10px] font-mono font-bold text-[#35ea52]">{label}</p><p className="text-[10px] text-foreground/35 mt-1">{note}</p></div></article>)}</div><div className="flex items-center gap-2 text-[10px] text-foreground/35"><Sparkles className="h-3.5 w-3.5 text-[#35ea52]" /> Tạo với Seedream 5.0 Pro · đồng nhất màu sắc, logo và bao bì sản phẩm</div></section>
+        <section id="final-images" className="scroll-mt-4 border border-foreground/10 p-5 space-y-5"><div className="flex justify-between gap-3"><SectionTitle icon={ImageIcon} index="04" title="BỘ HÌNH ẢNH SẢN PHẨM" subtitle="4 hình ảnh sẵn sàng cho gian hàng và chiến dịch" /><div className="flex items-center gap-2 shrink-0"><Dialog><DialogTrigger className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[#35ea52]/30 text-[10px] font-mono text-[#35ea52] hover:bg-[#35ea52]/10"><Eye className="h-3.5 w-3.5" /> XEM TRƯỚC</DialogTrigger><DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto"><DialogTitle>Xem trước trang sản phẩm TikTok Shop</DialogTitle><TiktokPdpPreview productName={productName} images={pdpImages} price={pdpPrice} promotion={pdpPromotion} description={resolvedCommerceCopy.description} bullets={resolvedCommerceCopy.bullets} angle={angle} /></DialogContent></Dialog><ReadyBadge /></div></div><div className="grid grid-cols-2 lg:grid-cols-4 gap-3">{[["ẢNH HERO", "Sản phẩm nổi bật"], ["CHI TIẾT SKU", "Thông tin & bao bì"], ["ẢNH CHIẾN DỊCH", "Bộ sưu tập 9.9"], ["ẢNH BÌA SÀN", "Thumbnail chuyển đổi"]].map(([label, note], index) => <article key={label} className="border border-foreground/10 p-2"><div className={`aspect-square relative flex items-center justify-center overflow-hidden ${index % 2 ? "bg-gradient-to-br from-neutral-900 to-red-950" : "bg-gradient-to-br from-red-950 to-amber-950"}`}><div className="absolute inset-0 dot-grid opacity-30" /><div className="relative text-center"><PackageCheck className="h-8 w-8 text-[#35ea52]/70 mx-auto" /><span className="text-[8px] font-mono text-white/40 mt-2 block">G7 · 3IN1</span></div><span className="absolute top-2 left-2 text-[8px] font-mono text-white/50">0{index + 1}</span></div><div className="p-2"><p className="text-[10px] font-mono font-bold text-[#35ea52]">{label}</p><p className="text-[10px] text-foreground/35 mt-1">{note}</p></div></article>)}</div><div className="flex items-center gap-2 text-[10px] text-foreground/35"><Sparkles className="h-3.5 w-3.5 text-[#35ea52]" /> Tạo với Seedream 5.0 Pro · đồng nhất màu sắc, logo và bao bì sản phẩm</div></section>
 
-        <section id="final-copy" className="scroll-mt-4 border border-foreground/10 p-5 space-y-5"><div className="flex justify-between gap-3"><SectionTitle icon={MessageSquareText} index="05" title="NỘI DUNG BÁN HÀNG" subtitle="Tiêu đề, mô tả, bullet, caption, ưu đãi và hook ngắn" /><ReadyBadge /></div><div className="grid grid-cols-1 lg:grid-cols-2 gap-4"><div className="p-4 border border-foreground/10 space-y-4"><div><p className="text-[9px] font-mono text-foreground/30">TIÊU ĐỀ SẢN PHẨM</p><p className="text-sm font-semibold mt-1">{commerceCopy.title}</p></div><div><p className="text-[9px] font-mono text-foreground/30">MÔ TẢ SẢN PHẨM</p><p className="text-xs text-foreground/55 leading-relaxed mt-1">{commerceCopy.description}</p></div><ul className="space-y-1">{commerceCopy.bullets.map(item => <li key={item} className="flex gap-2 text-xs text-foreground/60"><Check className="h-3.5 w-3.5 text-[#35ea52] shrink-0" />{item}</li>)}</ul></div><div className="p-4 border border-foreground/10 space-y-4"><div className="inline-block px-3 py-2 bg-red-500/10 border border-red-500/20 text-red-300 text-sm font-bold">{commerceCopy.promotion}</div><div><p className="text-[9px] font-mono text-foreground/30">CAPTION QUẢNG CÁO</p><p className="text-xs text-foreground/60 leading-relaxed mt-1">{commerceCopy.caption}</p></div><div><p className="text-[9px] font-mono text-foreground/30 mb-2">HOOK NGẮN</p><div className="flex flex-wrap gap-2">{commerceCopy.hooks.map(hook => <span key={hook} className="px-2 py-1 bg-foreground/[0.05] text-[10px] text-foreground/55">{hook}</span>)}</div></div></div></div></section>
+        <section id="final-copy" className="scroll-mt-4 border border-foreground/10 p-5 space-y-5"><div className="flex justify-between gap-3"><SectionTitle icon={MessageSquareText} index="05" title="NỘI DUNG BÁN HÀNG" subtitle="Tiêu đề, mô tả, bullet, caption, ưu đãi và hook ngắn" /><ReadyBadge /></div><div className="grid grid-cols-1 lg:grid-cols-2 gap-4"><div className="p-4 border border-foreground/10 space-y-4"><div><p className="text-[9px] font-mono text-foreground/30">TIÊU ĐỀ SẢN PHẨM</p><p className="text-sm font-semibold mt-1">{resolvedCommerceCopy.title}</p></div><div><p className="text-[9px] font-mono text-foreground/30">MÔ TẢ SẢN PHẨM</p><p className="text-xs text-foreground/55 leading-relaxed mt-1">{resolvedCommerceCopy.description}</p></div><ul className="space-y-1">{resolvedCommerceCopy.bullets.map(item => <li key={item} className="flex gap-2 text-xs text-foreground/60"><Check className="h-3.5 w-3.5 text-[#35ea52] shrink-0" />{item}</li>)}</ul></div><div className="p-4 border border-foreground/10 space-y-4"><div className="inline-block px-3 py-2 bg-red-500/10 border border-red-500/20 text-red-300 text-sm font-bold">{resolvedCommerceCopy.promotion}</div><div><p className="text-[9px] font-mono text-foreground/30">CAPTION QUẢNG CÁO</p><p className="text-xs text-foreground/60 leading-relaxed mt-1">{resolvedCommerceCopy.caption}</p></div><div><p className="text-[9px] font-mono text-foreground/30 mb-2">HOOK NGẮN</p><div className="flex flex-wrap gap-2">{resolvedCommerceCopy.hooks.map(hook => <span key={hook} className="px-2 py-1 bg-foreground/[0.05] text-[10px] text-foreground/55">{hook}</span>)}</div></div></div></div></section>
 
         <section id="final-testing" className="scroll-mt-4 border border-foreground/10 p-5 space-y-5"><div className="flex justify-between gap-3"><SectionTitle icon={FlaskConical} index="06" title="KẾ HOẠCH THỬ NGHIỆM A/B" subtitle="Biết rõ thử gì, đo gì và học được gì" /><ReadyBadge /></div><div className="grid grid-cols-1 md:grid-cols-4 gap-px bg-foreground/10 border border-foreground/10"><div className="p-4 bg-background"><p className="text-[9px] font-mono text-[#35ea52]">GIẢ THUYẾT</p><p className="text-xs text-foreground/60 mt-2">Hook tiện lợi tạo nhiều lượt nhấp hơn hook đặc sản Việt.</p></div><div className="p-4 bg-background"><p className="text-[9px] font-mono text-[#35ea52]">A SO VỚI B</p><p className="text-xs text-foreground/60 mt-2">A: Nỗi đau buổi sáng<br />B: Hương vị & bản sắc</p></div><div className="p-4 bg-background"><p className="text-[9px] font-mono text-[#35ea52]">CHỈ SỐ THÀNH CÔNG</p><p className="text-xs text-foreground/60 mt-2">CTR · CVR · thời gian xem · thêm vào giỏ</p></div><div className="p-4 bg-background"><p className="text-[9px] font-mono text-[#35ea52]">KẾT QUẢ CẦN HỌC</p><p className="text-xs text-foreground/60 mt-2">Động lực mua mạnh nhất theo từng kênh và thị trường.</p></div></div></section>
 

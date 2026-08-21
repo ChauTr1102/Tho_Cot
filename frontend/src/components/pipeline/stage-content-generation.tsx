@@ -3,12 +3,28 @@
 import * as React from "react";
 import { AgentLoading } from "./agent-loading";
 import { Sparkles, MessageSquare } from "lucide-react";
+import type { ResearchCampaignPlan, ResearchInput } from "@/types/research";
+import { buildMockCampaignOutput } from "@/types/campaign_output_mock";
 
-export const StageContentGeneration: React.FC = () => {
+interface Props {
+  plan: ResearchCampaignPlan | null;
+  input: ResearchInput;
+  onGenerated: (campaignOutput: Record<string, unknown>) => void;
+}
+
+export const StageContentGeneration: React.FC<Props> = ({ plan, input, onGenerated }) => {
   const [isProcessing, setIsProcessing] = React.useState(true);
+  // Captured once on mount; plan/input/onGenerated are expected to be stable
+  // for the lifetime of this stage's mount (parent does not change them
+  // mid-simulation), so the one-shot 3.5s timer intentionally runs only once.
+  const initialPropsRef = React.useRef({ plan, input, onGenerated });
 
   React.useEffect(() => {
-    const timer = setTimeout(() => setIsProcessing(false), 3500);
+    const timer = setTimeout(() => {
+      setIsProcessing(false);
+      const { plan: capturedPlan, input: capturedInput, onGenerated: capturedOnGenerated } = initialPropsRef.current;
+      capturedOnGenerated(buildMockCampaignOutput(capturedPlan, capturedInput));
+    }, 3500);
     return () => clearTimeout(timer);
   }, []);
 
