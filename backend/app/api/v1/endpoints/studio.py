@@ -518,7 +518,13 @@ def propose(req: DraftRequest):
     campaign_id = f"c-{uuid.uuid4().hex[:10]}"
     plan, campaign_input = _resolve_brief(req, campaign_id)
 
-    d = director.draft(plan, campaign_input, direction=req.direction)
+    # The research prose, bounded. The structured plan is already research's own
+    # summary of itself, so this is a taste rather than the thirty thousand
+    # characters it wrote — enough to ground the art direction in the market the
+    # campaign is actually for, and never anywhere near an image prompt.
+    handoff_notes = _NOTES.get(campaign_id) or {}
+    d = director.draft(plan, campaign_input, direction=req.direction,
+                       research=handoff_notes.get("research_digest", ""))
     spec = director.plan_graph(d, plan, campaign_input, with_video=req.with_video)
 
     _DRAFTS[campaign_id] = {
@@ -686,15 +692,24 @@ def download_zip(campaign_id: str):
     from fastapi.responses import FileResponse
 
     run = _RUNS.get(campaign_id)
+    target = Path(studio_settings.DATA_DIR) / campaign_id / f"{campaign_id}_kit.zip"
+
+    if run is not None and run.bundle is not None:
+        pack.build_zip(run.bundle, target)
+        return FileResponse(target, media_type="application/zip", filename=target.name)
+
+    # Same process-local problem as `/assets`: `_RUNS` empties on restart, so
+    # "Tải .zip" was a dead button for every campaign a judge opens. The files
+    # are still there, so pack them from disk. The manifest is thinner — a
+    # bundle carries each image's origin and the text on it, and none of that
+    # survives on disk — and says so rather than inventing provenance.
+    if saved.build_zip(campaign_id, target):
+        return FileResponse(target, media_type="application/zip", filename=target.name)
+
     if run is None:
         raise NotFoundException(message=f"Không tìm thấy lượt chạy '{campaign_id}'.")
-    if run.bundle is None:
-        raise NotFoundException(
-            message=f"Lượt chạy '{campaign_id}' chưa xong (trạng thái: {run.status}).")
-
-    target = Path(studio_settings.DATA_DIR) / campaign_id / f"{campaign_id}_kit.zip"
-    pack.build_zip(run.bundle, target)
-    return FileResponse(target, media_type="application/zip", filename=target.name)
+    raise NotFoundException(
+        message=f"Lượt chạy '{campaign_id}' chưa xong (trạng thái: {run.status}).")
 
 
 @router.get("/brands", response_model=StandardResponse[list[dict]])

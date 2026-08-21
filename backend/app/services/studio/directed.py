@@ -134,10 +134,18 @@ def build_nodes(spec: director.GraphSpec, draft: director.Draft,
                     img = render.render_item(
                         _stub(_n), spine, photo, hero_path, label_text, out_dir)
                 _qa_later(img, [t for _, t in _n.texts], _n.id)
-                return {"image": img, "url": img.local_path, "slot": _n.id,
-                        "origin": img.origin.value, "platform": _n.platform,
-                        "kind_hint": guess_kind(_n.id, _poster).value,
-                        "qa": "PASS" if img.qa_passed is not False else "WARN"}
+                out: dict[str, Any] = {
+                    "image": img, "url": img.local_path, "slot": _n.id,
+                    "origin": img.origin.value, "platform": _n.platform,
+                    "kind_hint": guess_kind(_n.id, _poster).value,
+                    "qa": "PASS" if img.qa_passed is not False else "WARN"}
+                # Two cards named `ab_poster_a` and `ab_poster_b` say nothing
+                # about what they are. The board is where the run is watched, so
+                # the A/B pair has to be legible there and not only in the
+                # report at the end.
+                if _n.route:
+                    out["note"] = f"A/B · phương án {_n.route} — biến thử: headline"
+                return out
 
             nodes.append(Node(id=spec_node.id, kind="image", deps=list(spec_node.deps),
                               run=_still, concurrency_group="image"))

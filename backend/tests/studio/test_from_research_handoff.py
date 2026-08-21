@@ -15,6 +15,7 @@ the research stage and a checkout without one is a legitimate state.
 """
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import pytest
@@ -50,8 +51,15 @@ def test_the_brief_survives_the_crossing(handoff):
     # artwork — so the assertion is about the formatting, not the presence: an
     # unformatted amount reaches a badge as "135000.0".
     if brief.price_or_promotion:
-        assert "135000.0" not in brief.price_or_promotion
-        assert ".0" not in brief.price_or_promotion.split(" ")[0]
+        # The defect is a raw float that escaped formatting — `135000.0`, an
+        # ungrouped run of digits with a decimal stuck on. Two things that look
+        # similar are correct and must pass: `135.000đ`, because Vietnamese
+        # groups thousands with a dot, and `9.9`, because that is the name of
+        # the sale. So the tell is a *long* digit run before the dot, not the
+        # dot itself.
+        assert not re.search(r"\d{4,}\.\d", brief.price_or_promotion), (
+            f"giá chưa được format: {brief.price_or_promotion!r}"
+        )
 
 
 def test_photos_resolve_to_the_right_brand(handoff, researched_id):

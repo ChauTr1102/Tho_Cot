@@ -294,6 +294,13 @@ export default function CampaignsPage() {
             ? { short_form_video_asset: assets.short_form_video_asset }
             : {}),
           ...(assets.commerce_copy ? { commerce_copy: assets.commerce_copy } : {}),
+          // The A/B pair. Dropped here for its first day: the endpoint returned
+          // it, the report read it, and this merge copied three fields past it —
+          // so the section rendered its two hypotheses over no artwork at all,
+          // which is the exact state adding the pair was meant to end.
+          ...(assets.ab_variants && Object.keys(assets.ab_variants).length
+            ? { ab_variants: assets.ab_variants }
+            : {}),
         };
       });
     },

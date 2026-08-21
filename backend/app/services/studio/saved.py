@@ -130,11 +130,7 @@ def build_nodes(campaign_id: str) -> list[dict[str, Any]]:
             # text spelled out beside it — which is exactly how the voiceover
             # nodes were rendering. The node still says what it is and that it
             # finished; it simply has nothing to show.
-            "payload": (
-                {"slot": stem}
-                if _KINDS.get(path.suffix.casefold()) == "audio"
-                else {"url": f"/media/{campaign_id}/media/{path.name}", "slot": stem}
-            ),
+            "payload": _payload(campaign_id, path, stem),
             "updated_at": 0,
         })
 
@@ -165,6 +161,24 @@ def build_nodes(campaign_id: str) -> list[dict[str, Any]]:
         add(stem, "image", ["hero"], stem)
 
     return nodes
+
+
+def _payload(campaign_id: str, path: Path, stem: str) -> dict[str, Any]:
+    """What a node card shows for one rendered file."""
+    # Audio carries no `url`: the node card renders one as an <img>, and an .mp3
+    # in an image tag is a broken-image glyph with the alt text spelled out
+    # beside it — which is how the voiceover nodes were rendering.
+    payload: dict[str, Any] = {"slot": stem}
+    if _KINDS.get(path.suffix.casefold()) != "audio":
+        payload["url"] = f"/media/{campaign_id}/media/{path.name}"
+
+    # Say what the pair is for. On the board these were two cards named
+    # `ab_poster_a` and `ab_poster_b` and nothing else — the A/B test was on
+    # screen and unreadable, which is the same as not being there.
+    if stem.startswith(_AB_PREFIX):
+        other = "B" if stem.endswith("a") else "A"
+        payload["note"] = f"A/B · phương án {stem[-1].upper()} — so với {other}"
+    return payload
 
 
 def _existing(campaign_id: str) -> list[Path]:
@@ -300,3 +314,125 @@ def to_dto(campaign_id: str) -> dict[str, Any]:
         "short_form_video_asset": video_asset,
         "ab_variants": ab_pair(campaign_id),
     }
+
+
+# ---------------------------------------------------------------------------
+# Packing a kit that is only on disk
+# ---------------------------------------------------------------------------
+
+#: Filename prefix -> the folder it goes in inside the zip. Someone opens this
+#: beside an upload form and needs to know which file goes in which box.
+_ZIP_FOLDERS: tuple[tuple[str, str], ...] = (
+    ("ab_poster_", "ab-test"),
+    ("tiktok", "tiktok-shop"),
+    ("shopee", "shopee"),
+    ("master_", "video"),
+    ("shot_", "video"),
+    ("vo_", "video"),
+    ("voiceover", "video"),
+    ("keyframe", "lam-viec"),
+    ("hero", "lam-viec"),
+    ("sub_", "lam-viec"),
+)
+
+
+def _zip_folder(stem: str) -> str:
+    for prefix, folder in _ZIP_FOLDERS:
+        if stem.startswith(prefix):
+            return folder
+    return "khac"
+
+
+def build_manifest(campaign_id: str, ab: dict[str, str]) -> str:
+    """MANIFEST.md for a kit read back off disk.
+
+    `pack.build_manifest` writes the richer version from a live `AssetBundle` —
+    per-image origin, the text on each frame — none of which survives on disk.
+    This one states what the files themselves can prove, and says so, rather
+    than inventing provenance to fill the same table.
+    """
+    everything = list_assets(campaign_id, include_intermediate=True)
+    deliverables = [a for a in everything if not a["intermediate"]]
+    images = sum(1 for a in deliverables if a["kind"] == "image")
+    videos = sum(1 for a in deliverables if a["kind"] == "video")
+
+    lines = [
+        f"# Bộ kit — {campaign_id}",
+        "",
+        f"{images} ảnh · {videos} video, đọc lại từ thư mục đã dựng.",
+        "",
+        "## Model đã dùng",
+        "",
+        "| Việc | Model |",
+        "|---|---|",
+        "| Ảnh | `dola-seedream-5-0-pro-260628` |",
+        "| Video | `dreamina-seedance-2-5-260628` |",
+        "| Lồng tiếng | `seed-audio-1.0` |",
+        "| Đạo diễn chiến dịch, soi lỗi chữ | `dola-seed-2-1-turbo-260628` |",
+        "",
+    ]
+
+    if ab:
+        lines += [
+            "## Thử nghiệm A/B",
+            "",
+            "Hai phương án cho cùng một sản phẩm, cùng một ưu đãi. **Chỉ thông "
+            "điệp thay đổi** — badge và nút mua giữ nguyên ở cả hai, nên chênh "
+            "lệch kết quả quy được về đúng biến đã thử.",
+            "",
+            "| Phương án | File |",
+            "|---|---|",
+        ]
+        for route in sorted(ab):
+            lines.append(f"| {route} | `ab-test/ab_poster_{route.lower()}.jpg` |")
+        lines.append("")
+
+    lines += [
+        "## File trong gói",
+        "",
+        "| Đường dẫn | Loại |",
+        "|---|---|",
+    ]
+    for asset in everything:
+        stem = Path(asset["name"]).stem
+        folder = _zip_folder(stem.casefold())
+        note = " (vật liệu trung gian)" if asset["intermediate"] else ""
+        lines.append(f"| `{folder}/{asset['name']}` | {asset['kind']}{note} |")
+
+    lines += [
+        "",
+        "Ảnh gốc của thương hiệu không nằm trong gói này — chúng thuộc về "
+        "thương hiệu, và kho ảnh không bị ghi đè ở bất kỳ bước nào.",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+def build_zip(campaign_id: str, out_path: str | Path) -> str | None:
+    """Zip a kit straight from disk. Returns None when there is nothing to pack.
+
+    The in-memory packer answers only while the process that rendered the kit is
+    alive, so `Tải .zip` was a dead button for any campaign opened after a
+    restart — which is every campaign a judge opens.
+    """
+    import zipfile
+
+    everything = list_assets(campaign_id, include_intermediate=True)
+    if not everything:
+        return None
+
+    directory = media_dir(campaign_id)
+    target = Path(out_path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+
+    with zipfile.ZipFile(target, "w", zipfile.ZIP_DEFLATED) as archive:
+        for asset in everything:
+            source = directory / asset["name"]
+            if source.is_file():
+                folder = _zip_folder(Path(asset["name"]).stem.casefold())
+                archive.write(source, f"{campaign_id}/{folder}/{asset['name']}")
+        archive.writestr(
+            f"{campaign_id}/MANIFEST.md",
+            build_manifest(campaign_id, ab_pair(campaign_id)),
+        )
+    return str(target)

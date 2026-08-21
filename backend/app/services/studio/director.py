@@ -158,11 +158,20 @@ _DRAFT_SYSTEM = (
 )
 
 
-def _brief_digest(plan: CampaignPlan, campaign_input: CampaignInput | None) -> str:
+def _brief_digest(plan: CampaignPlan, campaign_input: CampaignInput | None,
+                  research: str = "") -> str:
     """The compact brief the director reasons over.
 
     Deliberately short. A model handed the whole plan spends its attention
-    summarising rather than deciding.
+    summarising rather than deciding — which is why `research` is an excerpt and
+    not the sixteen thousand characters the research stage actually wrote.
+
+    What earns a line here is what can change the *look*. The benefit hierarchy
+    says which promise the frame should lead with; the competitor angle says
+    what it must not look like; the trend and the search keywords say what a
+    shopper is already scrolling past. All four were being produced upstream,
+    carried through the adapter, and then not shown to the one component whose
+    whole job is to decide how the campaign should look.
     """
     lines = [f"Sản phẩm: {campaign_input.product_brief.product_name if campaign_input else ''}"]
     if campaign_input:
@@ -177,19 +186,36 @@ def _brief_digest(plan: CampaignPlan, campaign_input: CampaignInput | None) -> s
             f"Dịp: {m.seasonal_moment or 'không có'}",
             f"Nỗi đau: {m.consumer_pain_point or 'không có'}",
             f"Mục tiêu: {m.campaign_objective or 'không có'}",
+            f"Xu hướng: {m.trend or 'không có'}",
+            f"Đối thủ đang làm: {m.competitor_angle or 'không có'}",
+            f"Từ khoá tìm kiếm: {m.search_keyword or 'không có'}",
+            f"Tông thương hiệu: {campaign_input.brand_kit.tone_of_voice or 'không có'}",
             f"CLAIM CẤM: {'; '.join(b.forbidden_claims) or 'không có'}",
         ]
+    # Upstream writes its own field names into its values — "Góc chiến dịch
+    # chính: …" — so labelling them again gives the director "Góc chiến dịch:
+    # Góc chiến dịch chính: …". It is only tokens, but it is also the string
+    # that ends up quoted onto artwork if anything downstream trusts it.
     lines += [
-        f"Góc chiến dịch: {plan.positioning.main_campaign_angle}",
-        f"Thông điệp: {plan.positioning.key_selling_message}",
+        f"Góc chiến dịch: {wording.strip_label(plan.positioning.main_campaign_angle)}",
+        f"Khách mục tiêu: {wording.strip_label(plan.positioning.target_audience)}",
+        f"Thông điệp: {wording.strip_label(plan.positioning.key_selling_message)}",
     ]
+    if plan.positioning.product_benefit_hierarchy:
+        # Ranked upstream, and the rank is the point: it says which promise the
+        # frame leads with and which two are supporting detail.
+        ranked = plan.positioning.product_benefit_hierarchy[:3]
+        lines.append("Lợi ích theo thứ tự: "
+                     + " > ".join(wording.shorten(b, 70) for b in ranked))
     for r in plan.creative_routes[:2]:
         lines.append(f"Route {r.route_id}: {r.hook_idea} | {r.visual_direction}")
+    if research.strip():
+        lines.append("Trích nghiên cứu thị trường:\n" + research.strip())
     return "\n".join(l for l in lines if l.strip())
 
 
 def draft(plan: CampaignPlan, campaign_input: CampaignInput | None = None,
-          direction: str = "") -> Draft:
+          direction: str = "", research: str = "") -> Draft:
     """Ask the director what this campaign should produce.
 
     `direction` is whatever the user typed — "dễ thương", "điện ảnh", "cho dân
@@ -202,7 +228,7 @@ def draft(plan: CampaignPlan, campaign_input: CampaignInput | None = None,
     """
     steer = (f"\n\nNGƯỜI DÙNG YÊU CẦU (ưu tiên cao nhất, đè lên suy luận của bạn): "
              f"{direction.strip()}" if direction.strip() else "")
-    prompt = f"""{_brief_digest(plan, campaign_input)}{steer}
+    prompt = f"""{_brief_digest(plan, campaign_input, research)}{steer}
 
 Đề xuất bộ asset cho chiến dịch này. Cân nhắc:
 - Sàn nào đáng làm. TikTok Shop là video-first, người xem đang lướt. Shopee là

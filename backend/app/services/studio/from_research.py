@@ -378,8 +378,37 @@ def load_pair(campaign_id: str, db_path: str | Path | None = None
         ],
         "stripped_placeholders": parsed.stripped_placeholders,
         "warnings": parsed.warnings,
+        "research_digest": research_digest(research_result),
     }
     return parsed.plan, campaign_input, notes
+
+
+#: How much of the research prose the director is shown. The research stage
+#: writes about thirty thousand characters across `report`, `research` and its
+#: drafts; a model handed all of it spends its attention summarising rather than
+#: deciding, and the structured plan is already that summary. This is a taste —
+#: enough to ground the art direction in the market it is for.
+RESEARCH_DIGEST_CHARS = 1400
+
+
+def research_digest(research_result: dict[str, Any]) -> str:
+    """A bounded excerpt of the research, for the director's brief.
+
+    The creative draft first: it is the one written about how the campaign
+    should look and feel, which is the only question the director is answering.
+    The market report is the fallback, because a campaign with no creative draft
+    still has an audience worth knowing about.
+
+    None of this reaches an image prompt. Seedream renders what a prompt names
+    explicitly and garbles what it has to invent, so prose belongs where a model
+    is *deciding* — the register — and never where one is lettering.
+    """
+    drafts = research_result.get("drafts") or {}
+    for source in (drafts.get("creative"), drafts.get("positioning"),
+                   research_result.get("report")):
+        if isinstance(source, str) and source.strip():
+            return source.strip()[:RESEARCH_DIGEST_CHARS]
+    return ""
 
 
 def list_campaigns(db_path: str | Path | None = None) -> list[dict[str, Any]]:

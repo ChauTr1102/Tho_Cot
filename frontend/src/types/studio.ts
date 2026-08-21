@@ -327,6 +327,9 @@ export interface StudioCommerceCopy {
 }
 
 export interface StudioAssetDTOResponse {
+  /** The A/B posters by route id — `{"A": "/media/…", "B": "/media/…"}`. Empty
+      for a kit rendered before the studio varied artwork by route. */
+  ab_variants?: Record<string, string>;
   campaign_id: string;
   status: string;
   product_collection_image_set: StudioProductCollectionImageSet | null;
