@@ -74,7 +74,7 @@ export const ContextPanel: React.FC<ContextPanelProps> = ({ currentStage }) => {
             </ResponsiveContainer>
           </div>
         );
-      case "positioning":
+      case "content_generation":
         return (
           <div className="h-[250px] w-full mt-4">
             <ResponsiveContainer width="100%" height="100%">
@@ -124,7 +124,7 @@ export const ContextPanel: React.FC<ContextPanelProps> = ({ currentStage }) => {
     switch (currentStage) {
       case "product_input": return "PHÂN TÍCH THUỘC TÍNH SẢN PHẨM";
       case "research": return "PHÂN BỐ ĐỘ TUỔI KHÁCH HÀNG";
-      case "positioning": return "XU HƯỚNG THỊ TRƯỜNG TỔNG QUAN";
+      case "content_generation": return "XU HƯỚNG THỊ TRƯỜNG TỔNG QUAN";
       case "qa_gate": return "PHÂN BỐ NGUỒN DỮ LIỆU";
       default: return "BIỂU ĐỒ PHÂN TÍCH";
     }

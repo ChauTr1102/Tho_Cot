@@ -13,7 +13,6 @@ export type InputMode = "link" | "form";
 export type CampaignStage =
   | "product_input"
   | "research"
-  | "positioning"
   | "content_generation"
   | "qa_gate"
   | "final_output"
@@ -24,13 +23,12 @@ export type CampaignStage =
 export const CAMPAIGN_STAGES: { id: CampaignStage; label: string; shortLabel: string; index: number }[] = [
   { id: "product_input", label: "NHẬP.SẢN_PHẨM", shortLabel: "NHẬP", index: 0 },
   { id: "research", label: "PHÂN_TÍCH.NGHIÊN_CỨU", shortLabel: "NGHIÊN CỨU", index: 1 },
-  { id: "positioning", label: "CHIẾN_LƯỢC.ĐỊNH_VỊ", shortLabel: "CHIẾN LƯỢC", index: 2 },
-  { id: "content_generation", label: "TẠO.NỘI_DUNG", shortLabel: "NỘI DUNG", index: 3 },
-  { id: "qa_gate", label: "KIỂM_DUYỆT.CHẤT_LƯỢNG", shortLabel: "KIỂM DUYỆT", index: 4 },
-  { id: "final_output", label: "KẾT_QUẢ.CUỐI_CÙNG", shortLabel: "KẾT QUẢ", index: 5 },
-  { id: "user_review", label: "ĐÁNH_GIÁ.TỪ_NGƯỜI_DÙNG", shortLabel: "ĐÁNH GIÁ", index: 6 },
-  { id: "package", label: "ĐÓNG_GÓI", shortLabel: "ĐÓNG GÓI", index: 7 },
-  { id: "deploy", label: "TRIỂN_KHAI", shortLabel: "TRIỂN_KHAI", index: 8 },
+  { id: "content_generation", label: "TẠO.NỘI_DUNG", shortLabel: "NỘI DUNG", index: 2 },
+  { id: "qa_gate", label: "KIỂM_DUYỆT.CHẤT_LƯỢNG", shortLabel: "KIỂM DUYỆT", index: 3 },
+  { id: "final_output", label: "KẾT_QUẢ.CUỐI_CÙNG", shortLabel: "KẾT QUẢ", index: 4 },
+  { id: "user_review", label: "ĐÁNH_GIÁ.TỪ_NGƯỜI_DÙNG", shortLabel: "ĐÁNH GIÁ", index: 5 },
+  { id: "package", label: "ĐÓNG_GÓI", shortLabel: "ĐÓNG GÓI", index: 6 },
+  { id: "deploy", label: "TRIỂN_KHAI", shortLabel: "TRIỂN_KHAI", index: 7 },
 ];
 
 export type StageStatus = "locked" | "active" | "processing" | "completed" | "failed";
@@ -269,4 +267,41 @@ export interface Campaign {
   performance?: PerformanceMetrics[];
   createdAt: string;
   updatedAt: string;
+}
+
+// ── Persisted Campaign API ───────────────────────────────
+
+export type PersistedCampaignStatus = "draft" | "researching" | "researched" | "failed";
+
+export interface PersistedCampaign {
+  id: string;
+  name: string;
+  description: string | null;
+  status: PersistedCampaignStatus;
+  research_input: Record<string, unknown> | null;
+  research_result: Record<string, unknown> | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CampaignListItem {
+  id: string;
+  name: string;
+  description: string | null;
+  status: PersistedCampaignStatus;
+  has_research_result: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateCampaignInput {
+  id?: string;
+  name: string;
+  description?: string | null;
+}
+
+export interface UpdateCampaignInput {
+  name?: string;
+  description?: string | null;
+  status?: PersistedCampaignStatus;
 }

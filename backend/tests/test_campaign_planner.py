@@ -49,6 +49,19 @@ def test_raw_client_sends_no_tools():
     assert calls[0]["thinking"] == {"type": "disabled"}
 
 
+def test_exa_client_sends_api_key_as_private_mcp_header():
+    calls = []
+    def fake_post(url, **kwargs):
+        calls.append(kwargs["json"]); return FakeResponse("Market research")
+
+    client = RawModelClient("ark-key", exa_api_key="exa-key", post=fake_post)
+    client.research_with_exa(
+        system=RESEARCH_DISCOVERY_SYSTEM, user="brief", required_tool="web_search",
+    )
+
+    assert calls[0]["tools"][0]["headers"] == {"x-api-key": "exa-key"}
+
+
 def test_research_service_runs_exa_then_four_specialists_and_structured_editor():
     calls = []
     outputs = iter([

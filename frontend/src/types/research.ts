@@ -38,7 +38,7 @@ export interface ResearchSubmission {
   evidence: string;
 }
 
-export type EvidenceBasis = "product_brief" | "supplied_source" | "general_marketing_knowledge" | "assumption";
+export type EvidenceBasis = "product_brief" | "supplied_source" | "external_research" | "general_marketing_knowledge" | "assumption";
 export interface ResearchEvidence { basis: EvidenceBasis; detail: string; source_url: string | null }
 export interface ResearchDecision { decision: string; rationale: string; evidence: ResearchEvidence[] }
 
@@ -180,4 +180,3 @@ export const createEmptyResearchSubmission = (): ResearchSubmission => ({
   files: { logo: null, product_photos: [], existing_product_visuals: [] },
   evidence: "",
 });
-

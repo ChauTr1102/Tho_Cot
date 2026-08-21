@@ -1,7 +1,9 @@
 "use client";
 import * as React from "react";
 import {
+  Bot,
   Briefcase,
+  CheckCircle2,
   ExternalLink,
   FileText,
   ImageIcon,
@@ -28,6 +30,11 @@ import {
   type CampaignObjective,
   type ResearchSubmission,
 } from "@/types/research";
+
+const OBJECTIVE_LABELS: Record<CampaignObjective, string> = {
+  awareness: "Tăng nhận biết", consideration: "Tăng cân nhắc", conversion: "Tăng đơn hàng",
+  retention: "Giữ chân khách hàng", engagement: "Tăng tương tác", lead_generation: "Thu thập khách hàng tiềm năng",
+};
 
 interface Props {
   value: ResearchSubmission;
@@ -228,8 +235,8 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange }) => {
 
       setExtractedSuccess(true);
       toast.success("Đã trích xuất & tự động điền toàn bộ thông tin sản phẩm!");
-    } catch (error: any) {
-      toast.error(error.message || "Không thể trích xuất dữ liệu từ URL.");
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Không thể trích xuất dữ liệu từ URL.");
     } finally {
       setIsExtracting(false);
     }
@@ -251,14 +258,14 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange }) => {
       <div className="space-y-2 border-b border-foreground/10 pb-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold font-mono tracking-wider text-foreground">
-            THÔNG TIN NGHIÊN CỨU · LƯỢC ĐỒ 1.0
+            THÔNG TIN SẢN PHẨM & MỤC TIÊU BÁN HÀNG
           </h2>
           <span className="text-[10px] font-mono text-[#35ea52] border border-[#35ea52]/30 px-2 py-0.5 tracking-widest uppercase">
             2 CHẾ ĐỘ NHẬP LIỆU
           </span>
         </div>
         <p className="text-sm font-mono text-foreground/40">
-          Chọn phương thức cung cấp dữ liệu sản phẩm để hệ thống AI tiến hành nghiên cứu.
+          Cung cấp đủ thông tin để nhận chiến lược, nội dung và tài sản bán hàng phù hợp với từng kênh.
         </p>
 
         {/* 2 OPTIONS TAB SWITCHER */}
@@ -273,7 +280,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange }) => {
             }`}
           >
             <Link2 className="h-3.5 w-3.5" />
-            LỰA CHỌN 1: DÁN LINK TIKTOK SHOP (TỰ ĐỘNG)
+            DÁN LINK TIKTOK SHOP
           </button>
           <div className="w-px bg-foreground/20" />
           <button
@@ -286,7 +293,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange }) => {
             }`}
           >
             <PenLine className="h-3.5 w-3.5" />
-            LỰA CHỌN 2: NHẬP THÔNG TIN TỪ ĐẦU (THỦ CÔNG)
+            NHẬP THÔNG TIN THỦ CÔNG
           </button>
         </div>
       </div>
@@ -298,10 +305,10 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange }) => {
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-[#35ea52]" />
               <span className="text-xs font-mono font-bold tracking-wider text-foreground uppercase">
-                NHẬP TỰ ĐỘNG TỪ TIKTOK SHOP URL
+                LẤY THÔNG TIN TỪ TIKTOK SHOP
               </span>
             </div>
-            <span className="text-[10px] font-mono text-foreground/40">GEMINI + AGNO + PLAYWRIGHT</span>
+            <span className="text-[10px] font-mono text-foreground/40">TỰ ĐỘNG ĐIỀN THÔNG TIN SẢN PHẨM</span>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-2">
@@ -378,32 +385,101 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange }) => {
         </div>
       )}
 
-      {/* DETAILED FORM SECTIONS */}
-      <div className="flex-1 space-y-6 overflow-y-auto pr-2 pb-8">
-        <Section icon={Briefcase} title="1. Thông tin sản phẩm">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field label="Campaign ID *">
-              <Input
-                className={inputClass}
-                value={data.campaign_id}
-                onChange={(e) => setInput({ ...data, campaign_id: e.target.value })}
-              />
+      {/* WAITING / LOADING STATES IN LINK MODE BEFORE EXTRACTION */}
+      {inputMode === "link" && !extractedSuccess && (
+        <div className="flex-1 flex flex-col justify-center py-4">
+          {isExtracting ? (
+            <div className="p-8 border border-[#35ea52]/40 bg-[#35ea52]/[0.02] flex flex-col items-center justify-center text-center space-y-4 animate-in fade-in duration-300">
+              <div className="w-14 h-14 rounded-full border border-[#35ea52] bg-[#35ea52]/10 flex items-center justify-center text-[#35ea52] shadow-[0_0_20px_rgba(53,234,82,0.2)]">
+                <Loader2 className="h-7 w-7 animate-spin" />
+              </div>
+              <div className="space-y-1.5 max-w-md">
+                <h4 className="text-sm font-mono font-bold tracking-wider text-[#35ea52] uppercase">
+                  AI ĐANG CÀO & PHÂN TÍCH DỮ LIỆU SẢN PHẨM...
+                </h4>
+                <p className="text-xs font-mono text-foreground/50">
+                  Playwright đang tải trang & Gemini AI đang đọc thông số, hình ảnh, phân khúc khách hàng. Dữ liệu sẽ tự động bắn xuống form ngay sau khi hoàn tất.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="p-8 border border-dashed border-foreground/20 bg-foreground/[0.01] flex flex-col items-center justify-center text-center space-y-4 my-auto animate-in fade-in duration-300">
+              <div className="w-14 h-14 rounded-full border border-[#35ea52]/30 bg-[#35ea52]/5 flex items-center justify-center text-[#35ea52]">
+                <Bot className="h-7 w-7" />
+              </div>
+              <div className="space-y-1.5 max-w-md">
+                <h4 className="text-sm font-mono font-bold tracking-wider text-foreground uppercase">
+                  SẴN SÀNG TIẾP NHẬN LINK TIKTOK SHOP
+                </h4>
+                <p className="text-xs font-mono text-foreground/45">
+                  Dán URL sản phẩm vào thanh tìm kiếm phía trên và bấm{" "}
+                  <span className="text-[#35ea52] font-bold">TRÍCH XUẤT & ĐIỀN FORM</span>. Toàn bộ hồ sơ nghiên cứu sản phẩm sẽ được AI tự động phân tích và bắn xuống form chi tiết.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setInputMode("manual")}
+                  className="px-3.5 py-1.5 border border-foreground/20 text-xs font-mono text-foreground/60 hover:text-foreground hover:border-foreground/40 transition-all flex items-center gap-1.5"
+                >
+                  <PenLine className="h-3.5 w-3.5" />
+                  Hoặc chuyển sang chế độ tự điền thủ công
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* DETAILED FORM SECTIONS: RENDERED ONLY WHEN MANUAL OR AFTER EXTRACTION */}
+      {(inputMode === "manual" || extractedSuccess) && (
+        <div className="flex-1 space-y-6 overflow-y-auto pr-2 pb-8 animate-in fade-in slide-in-from-top-3 duration-300">
+          {inputMode === "link" && extractedSuccess && (
+            <div className="p-3 border border-[#35ea52]/40 bg-[#35ea52]/[0.05] flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-[#35ea52]" />
+                <span className="text-xs font-mono font-bold text-foreground">
+                  ĐÃ NẠP DỮ LIỆU TỪ LINK:{" "}
+                  <span className="text-[#35ea52]">{data.product_brief.product_name || "Sản phẩm"}</span>
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setExtractedSuccess(false);
+                  setTiktokUrl("");
+                }}
+                className="h-7 px-3 border border-foreground/20 text-[11px] font-mono text-foreground/60 hover:text-foreground transition-all"
+              >
+                Trích xuất link khác
+              </button>
+            </div>
+          )}
+
+          <Section icon={Briefcase} title="1. Thông tin sản phẩm">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Mã chiến dịch *">
+                <Input
+                  className={inputClass}
+                  value={data.campaign_id}
+                  onChange={(e) => setInput({ ...data, campaign_id: e.target.value })}
+                />
             </Field>
-            <Field label="Product name *">
+            <Field label="Tên sản phẩm *">
               <Input
                 className={inputClass}
                 value={data.product_brief.product_name}
                 onChange={(e) => product({ product_name: e.target.value })}
               />
             </Field>
-            <Field label="Category *">
+            <Field label="Ngành hàng *">
               <Input
                 className={inputClass}
                 value={data.product_brief.category}
                 onChange={(e) => product({ category: e.target.value })}
               />
             </Field>
-            <Field label="Promotion">
+            <Field label="Ưu đãi / khuyến mãi">
               <Input
                 className={inputClass}
                 value={data.product_brief.promotion ?? ""}
@@ -411,24 +487,24 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange }) => {
               />
             </Field>
             <ListField
-              label="Key selling points"
+              label="Điểm bán hàng nổi bật"
               required
               value={data.product_brief.key_selling_points}
               onChange={(key_selling_points) => product({ key_selling_points })}
             />
             <ListField
-              label="Target markets"
+              label="Thị trường mục tiêu"
               required
               value={data.product_brief.target_market}
               onChange={(target_market) => product({ target_market })}
             />
             <ListField
-              label="Required claims"
+              label="Thông tin bắt buộc phải nhắc"
               value={data.product_brief.required_claims}
               onChange={(required_claims) => product({ required_claims })}
             />
             <ListField
-              label="Restricted claims"
+              label="Nội dung không được sử dụng"
               value={data.product_brief.restricted_claims}
               onChange={(restricted_claims) => product({ restricted_claims })}
             />
@@ -454,7 +530,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange }) => {
                 }
               />
             </Field>
-            <Field label="Currency">
+            <Field label="Đơn vị tiền tệ">
               <Input
                 className={inputClass}
                 disabled={!data.product_brief.price}
@@ -465,7 +541,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange }) => {
                 }
               />
             </Field>
-            <Field label="Price unit">
+            <Field label="Đơn vị bán">
               <Input
                 className={inputClass}
                 disabled={!data.product_brief.price}
@@ -476,7 +552,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange }) => {
                 }
               />
             </Field>
-            <Field label="Price note">
+            <Field label="Ghi chú giá">
               <Input
                 className={inputClass}
                 disabled={!data.product_brief.price}
@@ -495,7 +571,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <label className="text-[10px] font-mono text-foreground/50 uppercase tracking-wider">
-              Brand color name *
+              Tên màu thương hiệu *
             </label>
             <div className="flex gap-2">
               <Input
@@ -518,7 +594,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange }) => {
 
           <div className="space-y-1.5">
             <label className="text-[10px] font-mono text-foreground/50 uppercase tracking-wider">
-              Brand color hex
+              Mã màu thương hiệu
             </label>
             <div className="flex items-center gap-2">
               <div
@@ -546,7 +622,7 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange }) => {
           </div>
 
           <ListField
-            label="Tone of voice"
+            label="Giọng điệu thương hiệu"
             required
             value={data.brand_kit.tone_of_voice}
             onChange={(tone_of_voice) => brand({ tone_of_voice })}
@@ -818,22 +894,23 @@ export const StageProductInput: React.FC<Props> = ({ value, onChange }) => {
         )}
       </Section>
       <Section icon={Users} title="3. Khách hàng mục tiêu"><div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <ListField label="Target customers" required value={data.audience_brief.target_customer} onChange={(target_customer) => audience({ target_customer })} />
-        <ListField label="Languages" required value={data.audience_brief.languages} onChange={(languages) => audience({ languages })} />
-        <ListField label="Platforms" required value={data.audience_brief.platforms} onChange={(platforms) => audience({ platforms })} />
-        <ListField label="Markets" required value={data.audience_brief.markets} onChange={(markets) => audience({ markets })} />
+        <ListField label="Nhóm khách hàng" required value={data.audience_brief.target_customer} onChange={(target_customer) => audience({ target_customer })} />
+        <ListField label="Ngôn ngữ nội dung" required value={data.audience_brief.languages} onChange={(languages) => audience({ languages })} />
+        <ListField label="Kênh bán hàng" required value={data.audience_brief.platforms} onChange={(platforms) => audience({ platforms })} />
+        <ListField label="Khu vực bán" required value={data.audience_brief.markets} onChange={(markets) => audience({ markets })} />
       </div></Section>
       <Section icon={TrendingUp} title="4. Tín hiệu thị trường">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <ListField label="Trends" value={data.market_signal.trends} onChange={(trends) => market({ trends })} />
-          <ListField label="Seasonal moments" value={data.market_signal.seasonal_moments} onChange={(seasonal_moments) => market({ seasonal_moments })} />
-          <ListField label="Consumer pain points" value={data.market_signal.consumer_pain_points} onChange={(consumer_pain_points) => market({ consumer_pain_points })} />
-          <ListField label="Search keywords" value={data.market_signal.search_keywords} onChange={(search_keywords) => market({ search_keywords })} />
-          <ListField label="Competitor angles" value={data.market_signal.competitor_angles} onChange={(competitor_angles) => market({ competitor_angles })} />
+          <ListField label="Xu hướng liên quan" value={data.market_signal.trends} onChange={(trends) => market({ trends })} />
+          <ListField label="Dịp bán hàng / mùa vụ" value={data.market_signal.seasonal_moments} onChange={(seasonal_moments) => market({ seasonal_moments })} />
+          <ListField label="Vấn đề khách hàng đang gặp" value={data.market_signal.consumer_pain_points} onChange={(consumer_pain_points) => market({ consumer_pain_points })} />
+          <ListField label="Từ khóa khách hàng tìm kiếm" value={data.market_signal.search_keywords} onChange={(search_keywords) => market({ search_keywords })} />
+          <ListField label="Góc truyền thông của đối thủ" value={data.market_signal.competitor_angles} onChange={(competitor_angles) => market({ competitor_angles })} />
         </div>
-        <fieldset className="space-y-2"><legend className="text-[10px] font-mono text-foreground/50 uppercase tracking-wider">Campaign objectives *</legend><div className="flex flex-wrap gap-4">{CAMPAIGN_OBJECTIVES.map((objective) => <label key={objective} className="flex items-center gap-2 text-xs font-mono text-foreground/60"><input type="checkbox" className="accent-[#35ea52]" checked={data.market_signal.campaign_objectives.includes(objective)} onChange={(e) => market({ campaign_objectives: e.target.checked ? [...data.market_signal.campaign_objectives, objective] : data.market_signal.campaign_objectives.filter((item: CampaignObjective) => item !== objective) })} />{objective}</label>)}</div></fieldset>
+        <fieldset className="space-y-2"><legend className="text-[10px] font-mono text-foreground/50 uppercase tracking-wider">Mục tiêu chiến dịch *</legend><div className="flex flex-wrap gap-4">{CAMPAIGN_OBJECTIVES.map((objective) => <label key={objective} className="flex items-center gap-2 text-xs font-mono text-foreground/60"><input type="checkbox" className="accent-[#35ea52]" checked={data.market_signal.campaign_objectives.includes(objective)} onChange={(e) => market({ campaign_objectives: e.target.checked ? [...data.market_signal.campaign_objectives, objective] : data.market_signal.campaign_objectives.filter((item: CampaignObjective) => item !== objective) })} />{OBJECTIVE_LABELS[objective]}</label>)}</div></fieldset>
       </Section>
     </div>
+    )}
   </div>
   );
 };
