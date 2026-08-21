@@ -38,7 +38,7 @@ export interface ResearchSubmission {
   evidence: string;
 }
 
-export type EvidenceBasis = "product_brief" | "supplied_source" | "general_marketing_knowledge" | "assumption";
+export type EvidenceBasis = "product_brief" | "supplied_source" | "external_research" | "general_marketing_knowledge" | "assumption";
 export interface ResearchEvidence { basis: EvidenceBasis; detail: string; source_url: string | null }
 export interface ResearchDecision { decision: string; rationale: string; evidence: ResearchEvidence[] }
 
@@ -139,4 +139,44 @@ export const createInitialResearchSubmission = (): ResearchSubmission => ({
     },
   },
   files: { logo: null, product_photos: [], existing_product_visuals: [] }, evidence: "",
+});
+
+export const createEmptyResearchSubmission = (): ResearchSubmission => ({
+  input: {
+    schema_version: "1.0",
+    campaign_id: `campaign-${Date.now()}`,
+    product_brief: {
+      product_name: "",
+      category: "",
+      key_selling_points: [],
+      price: null,
+      promotion: null,
+      target_market: [],
+      required_claims: [],
+      restricted_claims: [],
+    },
+    brand_kit: {
+      logo: "logo.png",
+      brand_colors: [{ name: "Primary Color", hex: "#000000", verification_status: "unknown" }],
+      tone_of_voice: [],
+      product_photos: [],
+      existing_product_visuals: [],
+    },
+    audience_brief: {
+      target_customer: [],
+      languages: ["vi"],
+      platforms: ["TikTok Shop"],
+      markets: ["Việt Nam"],
+    },
+    market_signal: {
+      trends: [],
+      seasonal_moments: [],
+      consumer_pain_points: [],
+      search_keywords: [],
+      competitor_angles: [],
+      campaign_objectives: ["conversion"],
+    },
+  },
+  files: { logo: null, product_photos: [], existing_product_visuals: [] },
+  evidence: "",
 });

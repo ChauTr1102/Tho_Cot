@@ -9,7 +9,7 @@ redraws the product's own packaging, badly where the lettering is rotated - a
 real COSRX bottle came back reading `COSRᴀ` on its vertical wordmark in every
 render, while the same string set horizontally was perfect.
 """
-from app.schemas.campaign import AssetOrigin, ImageKind, Platform
+from app.schemas.studio import AssetOrigin, ImageKind, Platform
 from app.services.studio.config import studio_settings
 from app.services.studio.direct import (
     build_worksheet,

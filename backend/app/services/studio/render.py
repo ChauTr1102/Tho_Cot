@@ -33,7 +33,7 @@ from typing import Sequence
 
 from PIL import Image
 
-from app.schemas.campaign import AssetOrigin
+from app.schemas.studio import AssetOrigin
 from app.services.studio import ark, prompts
 from app.services.studio.config import studio_settings
 

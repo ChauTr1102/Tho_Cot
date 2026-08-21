@@ -37,7 +37,7 @@ import re
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Iterable, Sequence
 
-from app.schemas.campaign import (
+from app.schemas.studio import (
     AssetOrigin,
     AudienceBrief,
     BrandKit,

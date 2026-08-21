@@ -12,7 +12,7 @@ for the real API call shapes to swap in later.
 """
 from __future__ import annotations
 
-from app.schemas.campaign import (
+from app.schemas.studio import (
     AssetBundle,
     CampaignInput,
     CampaignPlan,

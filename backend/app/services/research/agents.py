@@ -54,14 +54,25 @@ def _followup_or_disclose(client: RawModelClient, *, phase: str, on_progress=Non
 @dataclass
 class ExaResearchAgent:
     client: RawModelClient
-    def run(self, brief: str, supplied_evidence: str, *, images=None, on_progress=None) -> tuple[str, list[str]]:
+    def run(self, brief: str, supplied_evidence: str, *, max_discovery_searches: int = 3,
+            images=None, on_progress=None) -> tuple[str, list[str]]:
         discoveries: list[str] = []
         discovery_calls: list[str] = []
-        branches = {
-            "market": "MARKET: xu hướng, giá, đối thủ, mùa vụ và dữ liệu nền tảng.",
-            "scientific/official": "SCIENTIFIC/OFFICIAL: bằng chứng cho thành phần, claim, an toàn và hiệu quả.",
-            "social/consumer": "SOCIAL/CONSUMER: review, thảo luận, pain point, ngôn ngữ và content format.",
+        branch_sets = {
+            1: {
+                "combined": "MARKET + SCIENTIFIC/OFFICIAL + SOCIAL/CONSUMER: tìm ngắn gọn nguồn mạnh nhất cho cả ba nhóm.",
+            },
+            2: {
+                "market/social": "MARKET + SOCIAL/CONSUMER: xu hướng, giá, đối thủ, review, pain point và content format.",
+                "scientific/official": "SCIENTIFIC/OFFICIAL: bằng chứng cho thành phần, claim, an toàn và hiệu quả.",
+            },
+            3: {
+                "market": "MARKET: xu hướng, giá, đối thủ, mùa vụ và dữ liệu nền tảng.",
+                "scientific/official": "SCIENTIFIC/OFFICIAL: bằng chứng cho thành phần, claim, an toàn và hiệu quả.",
+                "social/consumer": "SOCIAL/CONSUMER: review, thảo luận, pain point, ngôn ngữ và content format.",
+            },
         }
+        branches = branch_sets[max(1, min(3, max_discovery_searches))]
         for phase, assignment in branches.items():
             try:
                 discovery, calls = _exa_with_retry(
@@ -115,7 +126,12 @@ class ExaResearchAgent:
 @dataclass
 class PositioningAgent:
     client: RawModelClient
-    def run(self, context: str, *, images=None, on_progress=None) -> tuple[str, list[str]]:
+    def run(self, context: str, *, enable_search: bool = True, images=None, on_progress=None) -> tuple[str, list[str]]:
+        if not enable_search:
+            return self.client.ask(
+                system=POSITIONING_SYSTEM,
+                user=context + "\nKhông có tìm kiếm bổ sung. Chỉ soạn phần định vị.", images=images,
+            ), []
         research, calls = _followup_or_disclose(
             self.client, phase="kiểm tra định vị", on_progress=on_progress,
             system=FOLLOWUP_SEARCH_SYSTEM,
@@ -133,7 +149,14 @@ class PositioningAgent:
 @dataclass
 class CreativeRoutesAgent:
     client: RawModelClient
-    def run(self, context: str, positioning: str, *, images=None, on_progress=None) -> tuple[str, list[str]]:
+    def run(self, context: str, positioning: str, *, enable_search: bool = True,
+            images=None, on_progress=None) -> tuple[str, list[str]]:
+        if not enable_search:
+            return self.client.ask(
+                system=CREATIVE_SYSTEM,
+                user=f"{context}\n\nĐỊNH VỊ:\n{positioning}\n\nSoạn hai creative routes A/B.",
+                images=images,
+            ), []
         research, calls = _followup_or_disclose(
             self.client, phase="kiểm tra hướng sáng tạo", on_progress=on_progress,
             system=FOLLOWUP_SEARCH_SYSTEM,
@@ -153,7 +176,14 @@ class CreativeRoutesAgent:
 @dataclass
 class EvidenceAuditorAgent:
     client: RawModelClient
-    def run(self, context: str, positioning: str, creative: str, *, images=None, on_progress=None) -> tuple[str, list[str]]:
+    def run(self, context: str, positioning: str, creative: str, *, enable_search: bool = True,
+            images=None, on_progress=None) -> tuple[str, list[str]]:
+        if not enable_search:
+            return self.client.ask(
+                system=EVIDENCE_AUDITOR_SYSTEM,
+                user=f"{context}\n\nĐỊNH VỊ:\n{positioning}\n\nSÁNG TẠO:\n{creative}\n\nChỉ trả evidence audit.",
+                max_output_tokens=1800, images=images,
+            ), []
         research, calls = _followup_or_disclose(
             self.client, phase="kiểm tra bằng chứng", on_progress=on_progress,
             system=FOLLOWUP_SEARCH_SYSTEM,

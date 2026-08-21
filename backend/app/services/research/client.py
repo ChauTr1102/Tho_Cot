@@ -33,10 +33,12 @@ def extract_output_text(response: dict[str, Any]) -> str:
 class RawModelClient:
     def __init__(self, api_key: str, *, base_url: str = DEFAULT_BASE_URL,
                  model: str = DEFAULT_MODEL, timeout: float = 420,
+                 exa_api_key: str | None = None,
                  post: Callable[..., Any] | None = None) -> None:
         if not api_key:
             raise ValueError("Bắt buộc phải có ARK_API_KEY")
         self.api_key, self.base_url, self.model, self.timeout = api_key, base_url.rstrip("/"), model, timeout
+        self.exa_api_key = exa_api_key
         self.post = post or requests.post
 
     @staticmethod
@@ -100,6 +102,13 @@ class RawModelClient:
             "research_client.request_started mode=exa model=%s images=%d required_tool=%s max_output_tokens=%d",
             self.model, len(images or []), required_tool or "none", max_output_tokens,
         )
+        exa_tool: dict[str, Any] = {
+            "type": "mcp", "server_label": "exa", "server_url": EXA_MCP_URL,
+            "require_approval": "never",
+        }
+        if self.exa_api_key:
+            exa_tool["headers"] = {"x-api-key": self.exa_api_key}
+
         response = self.post(
             f"{self.base_url}/responses",
             headers={
@@ -111,10 +120,7 @@ class RawModelClient:
                 "model": self.model,
                 "stream": True,
                 "max_output_tokens": max_output_tokens,
-                "tools": [{
-                    "type": "mcp", "server_label": "exa", "server_url": EXA_MCP_URL,
-                    "require_approval": "never",
-                }],
+                "tools": [exa_tool],
                 "input": [
                     {"role": "system", "content": system},
                     {"role": "user", "content": self._user_content(user, images)},

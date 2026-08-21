@@ -26,7 +26,7 @@ from pathlib import Path
 
 import pytest
 
-from app.schemas.campaign import (
+from app.schemas.studio import (
     ABTestPlan,
     AudienceBrief,
     BrandKit,

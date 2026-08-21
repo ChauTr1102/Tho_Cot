@@ -3,7 +3,7 @@ existing consumers: every new field is optional with a default, and the old
 call shape must keep working."""
 import inspect
 
-from app.schemas.campaign import AssetOrigin, ImageAsset, ImageKind, Platform
+from app.schemas.studio import AssetOrigin, ImageAsset, ImageKind, Platform
 from app.services.campaign import gen_assets_agent
 
 

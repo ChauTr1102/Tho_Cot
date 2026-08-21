@@ -34,7 +34,7 @@ import json
 from dataclasses import dataclass, field
 from typing import Any
 
-from app.schemas.campaign import CampaignInput, CampaignPlan, Platform
+from app.schemas.studio import CampaignInput, CampaignPlan, Platform
 from app.services.studio import ark
 
 # The closed vocabulary. Each maps to a node builder in `pipeline`.

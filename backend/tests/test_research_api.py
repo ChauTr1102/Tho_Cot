@@ -56,10 +56,21 @@ def test_research_run_accepts_g7_contract_and_returns_frontend_payload(client, m
     assert body["schema_version"] == "1.0"
     assert body["creative_routes"][0]["route_name"] == "A"
     assert captured["research_input"]["brand_kit"]["product_photos"] == ["product_01.jpg", "product_02.jpg"]
+    assert callable(captured["on_progress"])
     image_urls, manifest = captured["visual_assets"]
     assert len(image_urls) == 3
     assert all(url.startswith("data:image/") for url in image_urls)
     assert [item["source"] for item in manifest] == ["logo.png", "product_01.jpg", "product_02.jpg"]
+
+    campaign = client.get("/api/campaigns/trung-nguyen-g7-cross-border-9-9")
+    assert campaign.status_code == 200
+    saved = campaign.json()["data"]
+    assert saved["status"] == "researched"
+    assert saved["research_input"]["product_brief"]["product_name"]
+    assert saved["research_result"]["plan"] == body
+
+    listed = client.get("/api/campaigns").json()["data"]
+    assert listed[0]["has_research_result"] is True
 
 
 def test_research_run_rejects_unknown_campaign_objective(client):
@@ -69,21 +80,3 @@ def test_research_run_rejects_unknown_campaign_objective(client):
     response = client.post("/api/research/run", data=data, files=files)
     assert response.status_code == 400
     assert response.json()["success"] is False
-
-
-def test_research_run_can_return_previously_generated_result(client, monkeypatch):
-    monkeypatch.setattr(
-        research_endpoint.research_service,
-        "run",
-        lambda **_kwargs: (_ for _ in ()).throw(AssertionError("live flow must not run")),
-    )
-    data, files = _g7_multipart()
-    data["mock_response"] = "true"
-
-    response = client.post("/api/research/run", data=data, files=files)
-
-    assert response.status_code == 200
-    plan = response.json()
-    assert plan["schema_version"] == "1.0"
-    assert len(plan["creative_routes"]) == 2
-    assert len(plan["source_summary"]["sources"]) == 10

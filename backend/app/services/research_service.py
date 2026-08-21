@@ -22,6 +22,8 @@ from app.services.research.prompts import EVIDENCE_POLICY
 
 _BACKEND_DIR = pathlib.Path(__file__).resolve().parents[2]
 _WORKSPACE_ROOT = _BACKEND_DIR.parent
+EXA_DISCOVERY_SEARCHES = 1
+EXA_FOLLOWUP_SEARCHES = 0
 logger = logging.getLogger(__name__)
 
 
@@ -50,7 +52,7 @@ class ResearchService:
             raise RuntimeError("Thiếu ARK_API_KEY trong environment hoặc backend/.env")
         return RawModelClient(
             api_key, base_url=_env("ARK_BASE_URL", DEFAULT_BASE_URL) or DEFAULT_BASE_URL,
-            model=model, timeout=timeout,
+            model=model, timeout=timeout, exa_api_key=_env("EXA_API_KEY"),
         )
 
     def run(
@@ -108,6 +110,7 @@ class ResearchService:
             on_progress("Exa tìm nguồn thị trường và người dùng")
         exa_research, research_tool_calls = ExaResearchAgent(client).run(
             brief_text, evidence_text, images=image_urls,
+            max_discovery_searches=EXA_DISCOVERY_SEARCHES,
             on_progress=(lambda name: on_progress(f"Exa gọi {name}")) if on_progress else None,
         )
         logger.info(
@@ -143,6 +146,7 @@ EXA RESEARCH (NGUỒN BẮT BUỘC CHO CURRENT-MARKET CLAIMS):
             on_progress("chuyên gia định vị")
         positioning, positioning_calls = positioning_agent.run(
             context, images=image_urls,
+            enable_search=EXA_FOLLOWUP_SEARCHES >= 2,
             on_progress=(lambda name: on_progress(f"định vị gọi {name}")) if on_progress else None,
         )
         logger.info(
@@ -153,6 +157,7 @@ EXA RESEARCH (NGUỒN BẮT BUỘC CHO CURRENT-MARKET CLAIMS):
             on_progress("chuyên gia hướng sáng tạo")
         creative, creative_calls = creative_agent.run(
             context, positioning, images=image_urls,
+            enable_search=EXA_FOLLOWUP_SEARCHES >= 3,
             on_progress=(lambda name: on_progress(f"sáng tạo gọi {name}")) if on_progress else None,
         )
         logger.info(
@@ -163,6 +168,7 @@ EXA RESEARCH (NGUỒN BẮT BUỘC CHO CURRENT-MARKET CLAIMS):
             on_progress("chuyên gia kiểm định bằng chứng")
         audit, audit_calls = auditor_agent.run(
             context, positioning, creative, images=image_urls,
+            enable_search=EXA_FOLLOWUP_SEARCHES >= 1,
             on_progress=(lambda name: on_progress(f"kiểm định gọi {name}")) if on_progress else None,
         )
         logger.info(

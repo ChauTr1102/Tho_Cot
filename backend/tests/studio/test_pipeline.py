@@ -17,7 +17,7 @@ import re
 
 import pytest
 
-from app.schemas.campaign import AssetOrigin, Platform
+from app.schemas.studio import AssetOrigin, Platform
 from app.services.studio import demo_briefs, pipeline
 
 BOTH = [Platform.TIKTOK_SHOP, Platform.SHOPEE]

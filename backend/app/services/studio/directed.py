@@ -23,7 +23,7 @@ import threading
 from pathlib import Path
 from typing import Any, Callable, Sequence
 
-from app.schemas.campaign import AssetOrigin, ImageKind, Platform
+from app.schemas.studio import AssetOrigin, ImageKind, Platform
 from app.services.studio import assemble, director, inventory, motion, qa_visual, render
 from app.services.studio.config import studio_settings
 from app.services.studio.graph import GraphEvent, Node, NodeState, degraded

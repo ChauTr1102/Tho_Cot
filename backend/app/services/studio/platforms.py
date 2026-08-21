@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from app.schemas.campaign import AssetOrigin, ImageKind, Platform
+from app.schemas.studio import AssetOrigin, ImageKind, Platform
 
 
 @dataclass(frozen=True)

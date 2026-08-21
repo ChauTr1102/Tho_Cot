@@ -3,7 +3,7 @@ The studio's front door: adapts whatever the planning agent actually emits into
 the Pydantic contracts the rest of the graph is written against.
 
 Every other studio module (`direct`, `prompts`, `render`, `motion`, `qa_visual`)
-consumes `CampaignPlan` and `CampaignInput` from `app.schemas.campaign`. The
+consumes `CampaignPlan` and `CampaignInput` from `app.schemas.studio`. The
 upstream planning and research agents, however, emit a *research* shape: nested
 `{decision, rationale, evidence[]}` objects instead of plain strings, a ranked
 `benefit_hierarchy` instead of a flat list, `route_name` instead of `route_id`,
@@ -68,7 +68,7 @@ from typing import Any, Iterable, Sequence
 
 from pydantic import BaseModel, Field
 
-from app.schemas.campaign import (
+from app.schemas.studio import (
     ABTestPlan,
     AudienceBrief,
     BrandKit,

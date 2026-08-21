@@ -30,7 +30,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from app.schemas.campaign import (
+from app.schemas.studio import (
     ABTestPlan,
     AssetBundle,
     AudienceBrief,

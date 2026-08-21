@@ -35,7 +35,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field, ValidationError
 
 from app.core.exceptions import BadRequestException, NotFoundException
-from app.schemas.campaign import AssetBundle, CommerceCopy, Platform
+from app.schemas.studio import AssetBundle, CommerceCopy, Platform
 from app.schemas.campaign_dto import (
     CampaignInputDTO,
     ProductCollectionImageSet,

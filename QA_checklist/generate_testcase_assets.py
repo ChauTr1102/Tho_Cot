@@ -86,9 +86,9 @@ def main() -> int:
     print("\nGenerated files:")
     print(json.dumps(generated, indent=2, ensure_ascii=False))
     print(
-        "\nUpdate this testcase's user_input.json brand_kit fields to point at these "
-        "local paths (e.g. brand_kit.logo_url -> './brand_assets/brand_logo.jpg', "
-        "brand_kit.product_photo_urls -> ['./brand_assets/product_photo_studio.jpg', "
+        "\nUpdate this testcase's user_input.json brandKit fields to point at these "
+        "local paths (e.g. brandKit.logo.path -> './brand_assets/brand_logo.jpg', "
+        "brandKit.productPhotos -> ['./brand_assets/product_photo_studio.jpg', "
         "'./brand_assets/product_photo_lifestyle.jpg'])."
     )
     return 0

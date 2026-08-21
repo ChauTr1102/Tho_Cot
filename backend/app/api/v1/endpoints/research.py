@@ -3,32 +3,24 @@ from __future__ import annotations
 
 import json
 import logging
-import pathlib
 import time
 from typing import Any, Literal
 
-from fastapi import APIRouter, File, Form, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, UploadFile, status
 from pydantic import ValidationError
+from sqlalchemy.orm import Session
 from starlette.concurrency import run_in_threadpool
 
 from app.core.exceptions import BadRequestException
+from app.api.deps import get_db
 from app.schemas.research import ResearchInput
-from app.services.research import ResearchOutputError, validate_campaign_plan
+from app.services.research import ResearchOutputError
 from app.services.research.input import encode_uploaded_visual_assets
 from app.services.research_service import research_service
+from app.services.campaign_service import campaign_service
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
-_GENERATED_MOCK_PLAN = pathlib.Path(__file__).resolve().parents[4] / "ark_out/g7_campaign_plan.json"
-
-
-def _load_generated_mock_plan() -> dict[str, Any]:
-    try:
-        plan = json.loads(_GENERATED_MOCK_PLAN.read_text(encoding="utf-8"))
-        validate_campaign_plan(plan)
-    except (OSError, json.JSONDecodeError, ResearchOutputError) as exc:
-        raise ResearchOutputError(f"Không thể tải generated research result: {exc}") from exc
-    return plan
 
 
 def _json_object(value: str, field_name: str) -> dict[str, Any]:
@@ -77,7 +69,7 @@ async def run_research(
     existing_product_visuals: list[UploadFile] | None = File(default=None),
     schema_version: Literal["1.0"] = Form("1.0"),
     evidence: str | None = Form(default=None),
-    mock_response: bool = Form(default=False),
+    db: Session = Depends(get_db),
 ):
     """Accept real images and return the raw campaign-plan JSON object."""
     started_at = time.monotonic()
@@ -110,30 +102,30 @@ async def run_research(
             "audience_brief": _json_object(audience_brief, "audience_brief"),
             "market_signal": _json_object(market_signal, "market_signal"),
         })
+        campaign_service.start_research(
+            db,
+            campaign_id=campaign_id,
+            research_input=payload.model_dump(mode="json"),
+        )
         visual_assets = encode_uploaded_visual_assets(uploaded)
         logger.info(
             "research_api.input_validated campaign_id=%s encoded_assets=%d",
             campaign_id,
             len(visual_assets[1]),
         )
-        if mock_response:
-            plan = _load_generated_mock_plan()
-            logger.info(
-                "research_api.mock_returned campaign_id=%s fixture=%s routes=%d sources=%d duration_ms=%d",
-                campaign_id,
-                _GENERATED_MOCK_PLAN.name,
-                len(plan.get("creative_routes", [])),
-                len(plan.get("source_summary", {}).get("sources", [])),
-                round((time.monotonic() - started_at) * 1000),
-            )
-            return plan
         result = await run_in_threadpool(
             research_service.run,
             research_input=payload.model_dump(mode="json"),
             visual_assets=visual_assets,
             evidence=evidence,
+            on_progress=lambda message: logger.info(
+                "research_api.agent_progress campaign_id=%s message=%s",
+                campaign_id,
+                message,
+            ),
         )
     except BadRequestException as exc:
+        campaign_service.mark_research_failed(db, campaign_id=campaign_id)
         logger.warning(
             "research_api.input_rejected campaign_id=%s error=%s",
             campaign_id,
@@ -148,6 +140,7 @@ async def run_research(
         )
         raise BadRequestException("Research input không đúng contract", error=exc.errors()) from exc
     except (ResearchOutputError, ValueError) as exc:
+        campaign_service.mark_research_failed(db, campaign_id=campaign_id)
         logger.warning(
             "research_api.run_failed campaign_id=%s error_type=%s error=%s",
             campaign_id,
@@ -156,8 +149,10 @@ async def run_research(
         )
         raise BadRequestException(message=str(exc)) from exc
     except Exception:
+        campaign_service.mark_research_failed(db, campaign_id=campaign_id)
         logger.exception("research_api.unexpected_error campaign_id=%s", campaign_id)
         raise
+    campaign_service.save_research_result(db, campaign_id=campaign_id, result=result)
     logger.info(
         "research_api.request_completed campaign_id=%s duration_ms=%d sources=%d tool_calls=%d",
         campaign_id,

@@ -34,7 +34,7 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Any, Callable, Sequence
 
-from app.schemas.campaign import (
+from app.schemas.studio import (
     AssetBundle,
     AssetOrigin,
     CampaignInput,

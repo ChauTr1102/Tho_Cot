@@ -19,7 +19,7 @@ import zipfile
 from pathlib import Path
 from typing import Iterable
 
-from app.schemas.campaign import AssetBundle, AssetOrigin, ImageAsset, VideoAsset
+from app.schemas.studio import AssetBundle, AssetOrigin, ImageAsset, VideoAsset
 
 ORIGIN_LABEL = {
     AssetOrigin.REUSE: "ảnh thật của thương hiệu",

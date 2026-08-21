@@ -5,8 +5,8 @@ import { Rocket } from "lucide-react";
 
 export default function DeploymentsPage() {
   return (
-    <div className="min-h-screen flex flex-col bg-transparent pt-7 pb-6 relative text-foreground">
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-8 flex flex-col mt-10">
+    <div className="min-h-screen flex flex-col bg-transparent py-8 relative text-foreground">
+      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-8 flex flex-col">
         <div className="space-y-6 animate-in fade-in flex-1">
           <div className="space-y-2">
             <div className="flex items-center gap-2 opacity-40">

@@ -7,7 +7,7 @@ export const StageFinalOutput: React.FC = () => {
   return (
     <div className="space-y-6 h-full flex flex-col animate-in fade-in duration-500">
       <div className="space-y-2 border-b border-foreground/10 pb-4 shrink-0">
-        <h2 className="text-lg font-bold font-mono tracking-wider text-foreground">TÀI SẢN CHIẾN DỊCH (OUTPUT DTO)</h2>
+        <h2 className="text-lg font-bold font-mono tracking-wider text-foreground">TÀI SẢN CHIẾN DỊCH</h2>
         <p className="text-sm font-mono text-foreground/40">
           Hiển thị dữ liệu Short-form Video Asset & Product Collection Image Set.
         </p>
@@ -21,7 +21,7 @@ export const StageFinalOutput: React.FC = () => {
           <div className="space-y-2">
             <h3 className="text-[14px] font-mono font-bold text-foreground tracking-widest">CHIẾN DỊCH: CÀ PHÊ G7 - CHINA 9.9</h3>
             <p className="text-sm font-mono text-foreground/70 leading-relaxed max-w-2xl">
-              Campaign Output DTO đã được render hoàn chỉnh. Các tài sản có thể được tải xuống trực tiếp hoặc chuyển sang luồng Deploy.
+              Tài sản chiến dịch đã được render hoàn chỉnh. Các tài sản có thể được tải xuống trực tiếp hoặc chuyển sang luồng Deploy.
             </p>
             <div className="flex gap-2 mt-2">
               <span className="px-2 py-0.5 border border-[#35ea52]/30 text-[#35ea52] text-[11px] font-mono">2 VIDEO</span>

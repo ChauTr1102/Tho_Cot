@@ -12,8 +12,7 @@ import re
 
 import pytest
 
-from app.schemas.campaign import AssetOrigin, ImageKind, Platform
-from app.services.campaign import qa_review_agent
+from app.schemas.studio import AssetOrigin, ImageKind, Platform
 from app.services.studio.config import studio_settings
 from app.services.studio.looks import (
     AXES,
@@ -23,6 +22,15 @@ from app.services.studio.looks import (
     pick_looks,
 )
 from app.services.studio.platforms import KITS
+# BP-01's own minimums, quoted from the brief rather than imported. They used to
+# come from `qa_review_agent`, which the team replaced with `verify_checklist`;
+# tying this file to whichever module currently enforces them is what broke it.
+#   "At least 4 generated product / marketplace images"
+#   "15-30 seconds, 9:16 vertical format"
+MIN_PRODUCT_IMAGES = 4
+MIN_VIDEO_SECONDS = 15
+MAX_VIDEO_SECONDS = 30
+
 from app.services.studio.slots import SHOT_TEMPLATES, SLOT_SCENES, TEXT_KEYS
 
 
@@ -246,7 +254,7 @@ def test_shopee_main_image_demands_a_white_background_and_prefers_a_real_photo()
 def test_the_kits_together_produce_enough_images_for_qa():
     """qa_review_agent blocks a bundle with fewer than MIN_PRODUCT_IMAGES."""
     total = sum(len(kit.slots) for kit in KITS.values())
-    assert total >= qa_review_agent.MIN_PRODUCT_IMAGES
+    assert total >= MIN_PRODUCT_IMAGES
 
 
 def test_slot_ids_are_unique_across_every_kit():
@@ -384,14 +392,14 @@ def test_every_other_scene_inherits_the_route_look():
 
 def test_storyboard_is_hook_product_benefit_cta():
     assert [s.role for s in SHOT_TEMPLATES] == ["hook", "product", "benefit", "cta"]
-    assert sum(s.seconds for s in SHOT_TEMPLATES) >= 15   # qa_review_agent's floor
+    assert sum(s.seconds for s in SHOT_TEMPLATES) >= 15   # BP-01's floor
 
 
 def test_storyboard_fits_inside_the_qa_duration_window():
     """Too short is a blocker's worth of warnings; too long and the QA agent
     flags every video the studio makes."""
     total = sum(s.seconds for s in SHOT_TEMPLATES)
-    assert qa_review_agent.VIDEO_MIN_DURATION_SEC <= total <= qa_review_agent.VIDEO_MAX_DURATION_SEC
+    assert MIN_VIDEO_SECONDS <= total <= MAX_VIDEO_SECONDS
 
 
 def test_every_shot_is_a_length_the_video_model_accepts():
