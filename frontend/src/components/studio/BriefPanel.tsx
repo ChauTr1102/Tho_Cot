@@ -231,7 +231,12 @@ export function BriefPanel({
                 </span>
                 <span className="min-w-0 flex-1 leading-tight">
                   <span className="flex min-w-0 items-baseline gap-2">
-                    <span className="truncate text-[13px] font-medium">
+                    {/* `truncate` sets overflow and white-space; it does not set
+                        `min-width: 0`, and a flex item without that will not
+                        shrink below its content. Without this the marketplace
+                        name held the row open and pushed the selection tick past
+                        the rail, where `overflow-hidden` cut it off. */}
+                    <span className="min-w-0 truncate text-[13px] font-medium">
                       {kit.name}
                     </span>
                     {/* The counts are the reason to read this row, so they keep

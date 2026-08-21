@@ -263,7 +263,7 @@ export default function CampaignsPage() {
     <div className="min-h-screen bg-transparent text-foreground/80 flex relative">
       {/* Main Workspace Area */}
       <main className="flex-1 min-w-0 flex flex-col min-h-screen bg-transparent py-6">
-        <div className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-8 flex flex-col">
+        <div className="flex-1 max-w-[1760px] w-full mx-auto p-4 sm:p-8 flex flex-col">
 
           {/* TAB: CAMPAIGNS */}
           {!isCreatingCampaign && (
