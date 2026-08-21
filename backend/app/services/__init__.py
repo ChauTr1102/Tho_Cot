@@ -1,5 +1,5 @@
 from app.services.item_service import item_service
-from app.services.campaign_service import campaign_service
 from app.services.research_service import research_service
+from app.services.qa_checklist_service import qa_checklist_service
 
-__all__ = ["item_service", "campaign_service", "research_service"]
+__all__ = ["item_service", "research_service", "qa_checklist_service"]
