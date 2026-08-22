@@ -19,6 +19,7 @@ Files referenced by the deck (must be uploaded):
 
 - index.html
 - presentation-assets/book-tavern/printway-book-tavern.jpg (slide 4 demo image)
+- qrcode.jpg (slide 4 and final slide website QR code)
 - frontend/public/sponsors/event-logo-header.png (fixed header logo)
 - frontend/public/sponsors/event-logo-horizontal.png (cover logo)
 
