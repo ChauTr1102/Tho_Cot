@@ -181,8 +181,9 @@
   .qr-copy b{font:600 16px var(--font-display);color:var(--accent)}
   .qr-copy span{font-size:13px;line-height:1.35;color:var(--muted-fg)}
   .product-demo .qr-block{justify-content:center;margin-top:12px}
-  .thankyou-inner .qr-block{margin-top:24px}
-  .thankyou-inner .qr-block img{width:150px;height:150px}
+  .thankyou-inner .qr-block{flex-direction:column;align-items:center;justify-self:center;gap:14px;margin:0;text-align:center}
+  .thankyou-inner .qr-block img{width:clamp(220px,38vh,320px);height:clamp(220px,38vh,320px)}
+  .thankyou-inner .qr-copy{align-items:center}
   .platform-line{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
   .platform-line span{padding:7px 10px;border-bottom:1px solid var(--border);font:600 11px var(--font-display);color:#d6e8d9}
   .reality-compare{display:grid;grid-template-columns:1fr 1fr;margin-top:26px;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
@@ -225,7 +226,8 @@
   .show-test{margin-top:12px;padding:11px 16px;border-left:2px solid var(--accent);font-size:12.5px;line-height:1.5;color:#dce9de}
   .show-test b{color:var(--accent)}
 
-  .thankyou-inner{display:flex;flex-direction:column;justify-content:center;height:100%}
+  .thankyou-inner{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(280px,.9fr);align-items:center;gap:clamp(30px,5vw,80px);height:100%}
+  .thankyou-copy{min-width:0}
   .thankyou{font:700 clamp(64px,9vw,120px) var(--font-display);line-height:1;margin:18px 0 10px;color:var(--fg)}
   .thankyou-sub{font-size:clamp(16px,1.6vw,20px);color:var(--muted-fg)}
 
@@ -354,6 +356,8 @@
     .saving-band>div{padding:14px 0}.saving-band>div+div{border-left:0;border-top:1px solid var(--border)}
     .qa-case{margin-bottom:8px}
     .show-wrap{grid-template-columns:1fr;gap:20px}.show-video{margin:0 auto;width:min(62vw,240px)}
+    .thankyou-inner{grid-template-columns:1fr;gap:22px;height:auto;min-height:100%}
+    .thankyou-inner .qr-block{justify-self:start}
     .cover{height:100dvh!important;overflow-y:auto!important}
     .cover-inner{height:auto;min-height:100%;padding:22px 22px 104px}
     .cover-spon{padding-bottom:14px}.cover-spon .row:nth-child(2){display:none}
@@ -439,11 +443,10 @@
       <section class="slide">
         <div class="inner">
           <div class="skick anim"><span class="num">01</span><span class="sep">·</span><span class="lbl">Vấn đề</span></div>
-          <h2 class="anim" style="max-width:25ch">Seller không thiếu công cụ tạo ảnh. Họ thiếu một quy trình để ra mắt đúng và đủ nhanh.</h2>
+          <h2 class="anim" style="max-width:25ch">Seller không thiếu công cụ tạo ảnh. Họ thiếu một quy trình đúng và đủ tiện.</h2>
           <div class="problem-stats anim">
             <div class="problem-stat"><strong>7+</strong><b>đầu việc rời rạc cho một lần launch</b><p>Research, insight, ảnh, video, listing copy, localization và QA thường nằm ở nhiều người hoặc nhiều tool.</p></div>
             <div class="problem-stat"><strong>2–3 ngày</strong><b>cho một video ngắn theo rate card</b><p>Chưa tính trọn bộ ảnh listing, bản địa hoá từng thị trường và vòng sửa lỗi sản phẩm.</p></div>
-            <div class="problem-stat"><strong>40%</strong><b>không mua bằng ngôn ngữ khác</b><p>76% người mua muốn thông tin sản phẩm bằng ngôn ngữ mẹ đẻ.</p></div>
           </div>
           <div class="problem-equation anim">
             <div class="eq">creative <span class="x">×</span> platform <span class="x">×</span> market <span class="x">×</span> language</div>
@@ -488,12 +491,11 @@
           <div class="product-demo anim">
             <img src="presentation-assets/book-tavern/printway-book-tavern.jpg" alt="Book Tavern Sign with Custom Shape Wooden Tag and LED Lamp của Printway">
             <span class="sponsor-tag">Sản phẩm thật · Printway</span>
-            <div class="qr-block"><img src="qrcode.jpg" alt="QR code đến website của Team Thợ Cốt"><div class="qr-copy"><b>Quét để xem website</b><span>Book Tavern Sign · Printway</span></div></div>
           </div>
         </div>
       </section>
 
-      <!-- 5 · PROOF + DIFFERENTIATION — 2:35–3:30 -->
+      <!-- Temporarily hidden slide 5 · Bằng chứng & khác biệt
       <section class="slide proof-slide">
         <div class="inner">
           <div class="skick anim"><span class="num">05</span><span class="sep">·</span><span class="lbl">Bằng chứng &amp; khác biệt</span></div>
@@ -509,7 +511,9 @@
         </div>
       </section>
 
-      <!-- 6 · CLOSE — 3:30–4:00 -->
+      -->
+
+      <!-- Temporarily hidden slide 6 · Từ prototype đến pilot
       <section class="slide">
         <div class="inner">
           <div class="skick anim"><span class="num">06</span><span class="sep">·</span><span class="lbl">Từ prototype đến pilot</span></div>
@@ -523,7 +527,9 @@
         </div>
       </section>
 
-      <!-- 7 · MODEL USAGE + HANDOFF -->
+      -->
+
+      <!-- Temporarily hidden slide 7 · Mô hình sử dụng & bàn giao
       <section class="slide">
         <div class="inner">
           <div class="skick anim"><span class="num">07</span><span class="sep">·</span><span class="lbl">Mô hình sử dụng &amp; bàn giao</span></div>
@@ -540,16 +546,20 @@
         </div>
       </section>
 
-      <!-- 8 · THANK YOU -->
+      -->
+
+      <!-- 5 · THANK YOU -->
       <section class="slide">
         <div class="inner thankyou-inner">
-          <div class="skick anim"><span class="num">08</span><span class="sep">·</span><span class="lbl">Q/A</span></div>
-          <h1 class="thankyou anim">Thanks for listening!</h1>
-          <p class="thankyou-sub anim">Campaign Copilot · Team Thợ Cốt<span style="color:var(--accent)">.</span></p>
-           <div class="handoff anim">
-             <a class="btn" href="https://github.com/ChauTr1102/Tho_Cot" target="_blank" rel="noreferrer">GitHub repo →</a>
-            <div class="qr-block"><img src="qrcode.jpg" alt="QR code đến website của Team Thợ Cốt"><div class="qr-copy"><b>Quét để xem website</b><span>Campaign Copilot · Team Thợ Cốt</span></div></div>
-           </div>
+          <div class="thankyou-copy">
+            <div class="skick anim"><span class="num">04</span><span class="sep">·</span><span class="lbl">Q/A</span></div>
+            <h1 class="thankyou anim">Thanks for listening!</h1>
+            <p class="thankyou-sub anim">Campaign Copilot · Team Thợ Cốt<span style="color:var(--accent)">.</span></p>
+            <div class="handoff anim">
+              <a class="btn" href="https://github.com/ChauTr1102/Tho_Cot" target="_blank" rel="noreferrer">GitHub repo →</a>
+            </div>
+          </div>
+          <div class="qr-block anim"><img src="qrcode.jpg" alt="QR code đến website của Team Thợ Cốt"><div class="qr-copy"><b>Quét để xem website</b></div></div>
         </div>
       </section>
 
@@ -559,7 +569,7 @@
   <div class="hint" id="hint">← → hoặc Space để chuyển slide · F: toàn màn hình · P: in ra PDF</div>
   <footer>
     <div class="dots" id="dots"></div>
-    <div class="counter"><b id="cur">01</b> / <span id="total">08</span></div>
+    <div class="counter"><b id="cur">01</b> / <span id="total">05</span></div>
   </footer>
   <div class="arrows">
     <button id="prev" aria-label="Trước">‹</button>
