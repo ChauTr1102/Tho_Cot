@@ -12,10 +12,19 @@ Quick options:
 
 Required server behavior:
 
-- Serve .html, .jpg, .png and .mp4 files normally.
-- Support byte-range requests for smooth MP4 seeking (standard on the hosts
-  above).
-- Do not flatten or rename the assets-gen and frontend subfolders.
+- Serve .html, .jpg and .png files normally.
+- Do not flatten or rename the presentation-assets and frontend subfolders.
 
-After deployment, open the site root. Verify slide 4 plays the video and slide
-5 displays all four product images.
+Files referenced by the deck (must be uploaded):
+
+- index.html
+- presentation-assets/burgerprints-accent-mug.jpg (slide 4 demo image)
+- frontend/public/sponsors/event-logo-header.png (fixed header logo)
+- frontend/public/sponsors/event-logo-horizontal.png (cover logo)
+
+The assets-gen subfolder is no longer referenced by any slide; it can be
+omitted from the upload if you want the smallest possible package.
+
+After deployment, open the site root. Verify slide 1 shows both event logos,
+slide 4 displays the BurgerPrints mug image with the EN/VI/TH/ID locale pack,
+and Google Fonts load (Space Grotesk / Inter) when online.
