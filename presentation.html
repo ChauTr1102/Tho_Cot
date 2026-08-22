@@ -139,8 +139,8 @@
   .metric strong{display:block;font:700 clamp(28px,3.2vw,42px) var(--font-display);color:var(--accent);line-height:1}
   .metric span{display:block;margin-top:8px;color:var(--muted-fg);font-size:13px;line-height:1.4}
 
-  .platform-strip{display:flex;align-items:center;gap:16px;margin-top:28px;flex-wrap:wrap}
-  .platform-strip img{height:46px;width:auto;border-radius:10px;opacity:.94;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+  .metric-logos{display:flex;align-items:center;gap:10px;margin-top:16px}
+  .metric-logos img{height:32px;width:auto;border-radius:7px;opacity:.94;box-shadow:0 4px 14px rgba(0,0,0,.35)}
   .problem-stats{display:grid;grid-template-columns:repeat(3,1fr);margin-top:clamp(28px,4.5vh,44px);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
   .problem-stat{padding:24px 28px 22px}.problem-stat:first-child{padding-left:0}.problem-stat+.problem-stat{border-left:1px solid var(--border)}
   .problem-stat strong{display:block;font:700 clamp(42px,5vw,66px) var(--font-display);line-height:.92;color:var(--accent)}
@@ -203,6 +203,26 @@
   .model .how{display:block;margin-top:7px;font-size:12px;line-height:1.4;color:var(--muted-fg)}
   .handoff{margin-top:clamp(26px,4vh,38px);display:flex;align-items:center;gap:22px;flex-wrap:wrap}
   .handoff .lead{margin:0;font-size:15px}
+
+  /* showcase: real run outputs */
+  .show-wrap{display:grid;grid-template-columns:auto 1fr;gap:clamp(26px,3.5vw,48px);align-items:center;margin-top:clamp(18px,2.8vh,28px)}
+  .show-video{width:min(30vh,230px)}
+  .show-video .video-shell{width:100%}
+  .show-src{margin-top:10px;font:600 10.5px var(--font-display);letter-spacing:.08em;color:var(--muted-fg);text-align:center}
+  .route{border:1px solid var(--border);border-radius:var(--radius);padding:13px 18px;background:linear-gradient(180deg,rgba(0,34,14,.6),rgba(0,28,11,.28))}
+  .route+.route{margin-top:10px}
+  .route header{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:700;font-size:clamp(13px,1.25vw,16px)}
+  .route .tag{padding:3px 9px;border-radius:999px;font-size:10px;letter-spacing:.12em;white-space:nowrap}
+  .route.a .tag{color:var(--accent);border:1px solid rgba(53,234,82,.45)}
+  .route.b .tag{color:var(--gold);border:1px solid rgba(252,187,0,.45)}
+  .route .hook{margin-top:7px;font-size:clamp(13px,1.2vw,15.5px);line-height:1.4;color:var(--fg);font-style:italic}
+  .route .dir{margin-top:5px;font-size:12px;line-height:1.45;color:var(--muted-fg)}
+  .show-test{margin-top:12px;padding:11px 16px;border-left:2px solid var(--accent);font-size:12.5px;line-height:1.5;color:#dce9de}
+  .show-test b{color:var(--accent)}
+
+  .thankyou-inner{display:flex;flex-direction:column;justify-content:center;height:100%}
+  .thankyou{font:700 clamp(64px,9vw,120px) var(--font-display);line-height:1;margin:18px 0 10px;color:var(--fg)}
+  .thankyou-sub{font-size:clamp(16px,1.6vw,20px);color:var(--muted-fg)}
 
   /* timeline (roadmap sequence) */
   .timeline{display:grid;grid-template-columns:repeat(4,1fr);position:relative;margin-top:clamp(22px,3.4vh,34px);gap:18px}
@@ -328,6 +348,7 @@
     .reality-compare,.saving-band{grid-template-columns:1fr}.reality-side{padding:18px 0}.reality-side+.reality-side{border-left:0;border-top:1px solid var(--border)}
     .saving-band>div{padding:14px 0}.saving-band>div+div{border-left:0;border-top:1px solid var(--border)}
     .qa-case{margin-bottom:8px}
+    .show-wrap{grid-template-columns:1fr;gap:20px}.show-video{margin:0 auto;width:min(62vw,240px)}
     .model-map{grid-template-columns:1fr;margin-top:22px}.model{padding:16px 0}.model+.model{border-left:0;border-top:1px solid var(--border)}
     .handoff{margin-top:24px;gap:14px}
     .cover{height:100dvh!important;overflow-y:auto!important}
@@ -442,7 +463,7 @@
             <div class="ev-stage gate"><span class="ev-num">05 · QUALITY GATE</span><h3>Chỉ PASS mới đóng gói</h3><p>Kiểm product, label, forbidden claim, ngôn ngữ và chuẩn platform.</p><div class="gate-branch"><span class="pass">PASS → multilingual pack</span><span class="fail">FAIL ↺ sửa đúng asset</span></div></div>
           </div>
           <div class="flow-proof anim">
-            <p><b>Deep Research có dấu vết:</b> mỗi campaign angle gắn với market signal và product evidence, thay vì để model tự bịa insight.</p>
+            <p><b>Nghiên cứu có dẫn chứng:</b> mỗi campaign angle gắn với market signal và product evidence, thay vì để model tự bịa insight.</p>
             <p class="qa"><b>QA là gate, không phải checklist cuối:</b> asset lỗi bị chặn và regenerate có mục tiêu trước khi sang bước package.</p>
           </div>
         </div>
@@ -469,10 +490,42 @@
         </div>
       </section>
 
+      <!-- 4 · SHOWCASE — launch pack từ run thật -->
+      <section class="slide proof-slide">
+        <div class="inner">
+          <div class="skick anim"><span class="num">04</span><span class="sep">·</span><span class="lbl">Showcase · pack từ run thật</span></div>
+          <h2 class="anim" style="max-width:30ch">Một brief → trọn pack ra mắt, QA đạt ngay vòng 1.</h2>
+          <div class="show-wrap anim">
+            <div class="show-video">
+              <div class="video-shell"><video src="presentation-assets/book-tavern/master_15s.mp4" poster="presentation-assets/book-tavern/keyframe_0.jpg" autoplay muted loop playsinline preload="metadata"></video></div>
+              <div class="show-src">MASTER_15S.MP4 · 15s · 9:16</div>
+            </div>
+            <div>
+              <div class="route a"><header><span class="tag">ROUTE A · CẢM XÚC</span>Cozy Tavern Nook Transformation</header>
+                <p class="hook">&ldquo;If your bookshelf feels boring&hellip; this turns it into a cozy fantasy tavern.&rdquo;</p>
+                <p class="dir">Before/after: kệ sách đơn điệu → góc đọc ấm LED buổi tối · TikTok Shop US.</p>
+              </div>
+              <div class="route b"><header><span class="tag">ROUTE B · GIÁ TRỊ</span>2-in-1 Custom Decor + LED Under $20</header>
+                <p class="hook">&ldquo;Instead of paying $43.50 for a custom sign — get custom sign + warm LED for $18.&rdquo;</p>
+                <p class="dir">Demo chi tiết + so sánh giá đối thủ không có LED ($13.99).</p>
+              </div>
+              <div class="show-test"><b>Kế hoạch A/B:</b> cùng sản phẩm, khác thông điệp · đo View-through → CTR → Add-to-cart · bài học kỳ vọng: cảm xúc hay giá trị thắng ở TikTok Shop US.</div>
+            </div>
+          </div>
+          <div class="asset-strip anim">
+            <figure><img src="presentation-assets/book-tavern/ab_poster_a.jpg" alt="Poster A/B phương án A"><figcaption>Poster A/B · A</figcaption></figure>
+            <figure><img src="presentation-assets/book-tavern/ab_poster_b.jpg" alt="Poster A/B phương án B"><figcaption>Poster A/B · B</figcaption></figure>
+            <figure><img src="presentation-assets/book-tavern/tiktok_sale_poster.jpg" alt="Sale poster TikTok Shop"><figcaption>Sale poster · TikTok</figcaption></figure>
+            <figure><img src="presentation-assets/book-tavern/tiktok_detail_closeup_image.jpg" alt="Ảnh detail cận cảnh"><figcaption>Detail · cận cảnh</figcaption></figure>
+          </div>
+          <p class="note qa-case anim"><b>QA PASS · vòng 1:</b> gate bắt được mô tả chưa khớp ngôn ngữ thị trường Mỹ → tự regenerate trước khi đóng gói. Mỗi góc bán hàng đều gắn evidence nguồn công khai.</p>
+        </div>
+      </section>
+
       <!-- 5 · PROOF + DIFFERENTIATION — 2:35–3:30 -->
       <section class="slide proof-slide">
         <div class="inner">
-          <div class="skick anim"><span class="num">04</span><span class="sep">·</span><span class="lbl">Bằng chứng &amp; khác biệt</span></div>
+          <div class="skick anim"><span class="num">05</span><span class="sep">·</span><span class="lbl">Bằng chứng &amp; khác biệt</span></div>
           <h2 class="anim">Từ 2–3 ngày xuống ~12 phút cho một route sẵn QA.</h2>
           <div class="reality-compare anim">
             <div class="reality-side"><span class="eyebrow">HIỆN TẠI · QUY TRÌNH RỜI RẠC</span><strong>2–3 ngày</strong><p>Một video ngắn; sau đó vẫn cần ảnh listing, copy, localization, resize theo sàn và vòng duyệt.</p></div>
@@ -488,21 +541,13 @@
       <!-- 6 · CLOSE — 3:30–4:00 -->
       <section class="slide">
         <div class="inner">
-          <div class="skick anim"><span class="num">05</span><span class="sep">·</span><span class="lbl">Từ prototype đến pilot</span></div>
+          <div class="skick anim"><span class="num">06</span><span class="sep">·</span><span class="lbl">Từ prototype đến pilot</span></div>
           <h2 class="anim">Tích hợp vào nền tảng đang có seller — thay vì bán thêm một tool rời.</h2>
           <p class="lead anim" style="margin-top:20px;max-width:62ch">Campaign Copilot có thể trở thành API/white-label module cho nền tảng commerce, POD và seller enablement: người bán tạo campaign ngay nơi họ quản lý catalog.</p>
           <div class="metric-line anim">
-            <div class="metric"><strong>NOW</strong><span>TikTok Shop · Shopee · output VI/EN/TH/ID</span></div>
-            <div class="metric"><strong>NEXT</strong><span>Amazon · Shopify · marketplace adapters mới</span></div>
+            <div class="metric"><strong>NOW</strong><span>TikTok Shop · Shopee · output VI/EN/TH/ID</span><div class="metric-logos"><img src="frontend/public/platform-logos/tiktok-shop.svg" alt="TikTok Shop" /><img src="frontend/public/platform-logos/shopee.svg" alt="Shopee" /></div></div>
+            <div class="metric"><strong>NEXT</strong><span>Amazon · Shopify · Tmall · Taobao · marketplace adapters mới</span><div class="metric-logos"><img src="frontend/public/platform-logos/amazon.svg" alt="Amazon" /><img src="frontend/public/platform-logos/shopify.svg" alt="Shopify" /><img src="frontend/public/platform-logos/tmall.svg" alt="Tmall" /><img src="frontend/public/platform-logos/taobao.svg" alt="Taobao" /></div></div>
             <div class="metric"><strong>B2B2S</strong><span>Tích hợp với doanh nghiệp để tạo lợi thế cho seller của họ</span></div>
-          </div>
-          <div class="platform-strip anim">
-            <img src="frontend/public/platform-logos/tiktok-shop.svg" alt="TikTok Shop" />
-            <img src="frontend/public/platform-logos/shopee.svg" alt="Shopee" />
-            <img src="frontend/public/platform-logos/amazon.svg" alt="Amazon" />
-            <img src="frontend/public/platform-logos/shopify.svg" alt="Shopify" />
-            <img src="frontend/public/platform-logos/tmall.svg" alt="Tmall" />
-            <img src="frontend/public/platform-logos/taobao.svg" alt="Taobao" />
           </div>
         </div>
       </section>
@@ -510,7 +555,7 @@
       <!-- 7 · MODEL USAGE + HANDOFF -->
       <section class="slide">
         <div class="inner">
-          <div class="skick anim"><span class="num">06</span><span class="sep">·</span><span class="lbl">Mô hình sử dụng &amp; bàn giao</span></div>
+          <div class="skick anim"><span class="num">07</span><span class="sep">·</span><span class="lbl">Mô hình sử dụng &amp; bàn giao</span></div>
           <h2 class="anim" style="max-width:24ch">Bốn model, một pipeline có QA.</h2>
           <div class="model-map anim">
             <div class="model"><b>Seedance 2.5</b><span class="use">Video quảng cáo dọc 9:16 · 15s</span><span class="how">Tạo video chính và các cut theo sàn.</span></div>
@@ -527,7 +572,7 @@
       <!-- 8 · THANK YOU -->
       <section class="slide">
         <div class="inner thankyou-inner">
-          <div class="skick anim"><span class="num">07</span><span class="sep">·</span><span class="lbl">Q/A</span></div>
+          <div class="skick anim"><span class="num">08</span><span class="sep">·</span><span class="lbl">Q/A</span></div>
           <h1 class="thankyou anim">Cảm ơn!</h1>
           <p class="thankyou-sub anim">Campaign Copilot · Team Thợ Cốt<span style="color:var(--accent)">.</span></p>
           <div class="handoff anim">
@@ -542,7 +587,7 @@
   <div class="hint" id="hint">← → hoặc Space để chuyển slide · F: toàn màn hình · P: in ra PDF</div>
   <footer>
     <div class="dots" id="dots"></div>
-    <div class="counter"><b id="cur">01</b> / <span id="total">07</span></div>
+    <div class="counter"><b id="cur">01</b> / <span id="total">09</span></div>
   </footer>
   <div class="arrows">
     <button id="prev" aria-label="Trước">‹</button>

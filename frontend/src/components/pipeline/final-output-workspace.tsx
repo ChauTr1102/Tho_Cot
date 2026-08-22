@@ -4,7 +4,7 @@ import * as React from "react";
 import Image from "next/image";
 import {
   BarChart3, Check, ChevronRight, Download, ExternalLink, FileText,
-  FlaskConical, Image as ImageIcon, LayoutTemplate, PackageCheck, Rocket,
+  FlaskConical, Image as ImageIcon, LayoutTemplate, Maximize2, PackageCheck, Rocket,
   ShieldAlert, ShieldCheck, Sparkles, Target, Video,
 } from "lucide-react";
 import type { ResearchCampaignPlan, ResearchEvidence, ResearchInput } from "@/types/research";
@@ -14,6 +14,7 @@ import { ProductPdpPreview } from "./product-pdp-preview";
 import { PlatformVideoPlayer } from "./platform-video-player";
 import { StagePackage } from "./stage-package";
 import { StageDeploy } from "./stage-deploy";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 interface Props {
   plan?: ResearchCampaignPlan | null;
@@ -91,6 +92,7 @@ export function FinalOutputWorkspace({ plan, input, campaignOutput, qaResult }: 
   const [routeIndex, setRouteIndex] = React.useState<0 | 1>(0);
   const [mobilePane, setMobilePane] = React.useState<"preview" | "content">("preview");
   const [savedAssets, setSavedAssets] = React.useState<SavedAsset[]>([]);
+  const [viewingAsset, setViewingAsset] = React.useState<{ url: string; label: string } | null>(null);
   const campaignId = input?.campaign_id;
 
   React.useEffect(() => {
@@ -176,7 +178,7 @@ export function FinalOutputWorkspace({ plan, input, campaignOutput, qaResult }: 
         <section>
           <div className="mb-3 flex items-center justify-between"><h3 className="text-sm font-semibold text-foreground">Bộ ảnh chính</h3><span className="text-[10px] text-foreground/40">4 tài sản</span></div>
           <div className="grid grid-cols-2 gap-3">{featuredAssets.map((asset, index) => <article key={asset.label} className="overflow-hidden border border-foreground/10 bg-foreground/[0.02] p-2">
-            <div className="relative aspect-square overflow-hidden bg-neutral-950">{asset.image ? <Image src={asset.image} alt={asset.label} fill unoptimized className="object-cover transition-transform duration-300 hover:scale-[1.03]" /> : <ImageIcon className="absolute inset-0 m-auto h-7 w-7 text-[#35ea52]/50" />}</div>
+            <button type="button" disabled={!asset.image} onClick={() => asset.image && setViewingAsset({ url: asset.image, label: asset.label })} aria-label={`Xem đầy đủ ${asset.label}`} className="group relative block aspect-square w-full overflow-hidden bg-neutral-950 disabled:cursor-default">{asset.image ? <><Image src={asset.image} alt={asset.label} fill unoptimized className="object-cover transition-transform duration-300 group-hover:scale-[1.03]" /><span className="absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/65 text-white opacity-0 transition-opacity group-hover:opacity-100"><Maximize2 className="h-4 w-4" /></span></> : <ImageIcon className="absolute inset-0 m-auto h-7 w-7 text-[#35ea52]/50" />}</button>
             <div className="flex items-center gap-2 px-1 pb-0.5 pt-2.5"><span className="text-[10px] font-semibold text-[#35ea52]">{String(index + 1).padStart(2, "0")}</span><p className="text-[11px] font-semibold text-foreground/75">{asset.label}</p></div>
           </article>)}</div>
         </section>
@@ -192,10 +194,10 @@ export function FinalOutputWorkspace({ plan, input, campaignOutput, qaResult }: 
 
         {[{ label: "TikTok Shop", assets: tiktokImages, accent: "#fe2c55" }, { label: "Shopee", assets: shopeeImages, accent: "#ee4d2d" }].map((group) => group.assets.length ? <section key={group.label} className="border border-foreground/10 p-4">
           <div className="mb-3 flex items-center justify-between"><h3 className="text-sm font-semibold text-foreground">{group.label}</h3><span className="text-[10px] text-foreground/40">{group.assets.length} ảnh</span></div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">{group.assets.map((image, index) => <article key={image} className="overflow-hidden border border-foreground/10 bg-foreground/[0.02]"><div className="relative aspect-square overflow-hidden bg-neutral-950"><Image src={image} alt={`${group.label} ${index + 1}`} fill unoptimized className="object-cover transition-transform duration-300 hover:scale-[1.03]" /></div><p className="truncate px-2 py-2 text-[10px] font-medium text-foreground/55">Ảnh {String(index + 1).padStart(2, "0")}</p><div className="h-0.5" style={{ backgroundColor: group.accent }} /></article>)}</div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">{group.assets.map((image, index) => <article key={image} className="overflow-hidden border border-foreground/10 bg-foreground/[0.02]"><button type="button" onClick={() => setViewingAsset({ url: image, label: `${group.label} · Ảnh ${index + 1}` })} aria-label={`Xem đầy đủ ảnh ${index + 1} của ${group.label}`} className="group relative block aspect-square w-full overflow-hidden bg-neutral-950"><Image src={image} alt={`${group.label} ${index + 1}`} fill unoptimized className="object-cover transition-transform duration-300 group-hover:scale-[1.03]" /><span className="absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/65 text-white opacity-0 transition-opacity group-hover:opacity-100"><Maximize2 className="h-4 w-4" /></span></button><p className="truncate px-2 py-2 text-[10px] font-medium text-foreground/55">Ảnh {String(index + 1).padStart(2, "0")}</p><div className="h-0.5" style={{ backgroundColor: group.accent }} /></article>)}</div>
         </section> : null)}
 
-        {!generatedImages.length && images.length ? <section className="border border-foreground/10 p-4"><h3 className="mb-3 text-sm font-semibold">Ảnh sản phẩm được cung cấp</h3><div className="grid grid-cols-2 gap-3 sm:grid-cols-3">{images.map((image, index) => <div key={image} className="relative aspect-square overflow-hidden border border-foreground/10"><Image src={image} alt={`Ảnh sản phẩm ${index + 1}`} fill unoptimized className="object-cover" /></div>)}</div></section> : null}
+        {!generatedImages.length && images.length ? <section className="border border-foreground/10 p-4"><h3 className="mb-3 text-sm font-semibold">Ảnh sản phẩm được cung cấp</h3><div className="grid grid-cols-2 gap-3 sm:grid-cols-3">{images.map((image, index) => <button type="button" key={image} onClick={() => setViewingAsset({ url: image, label: `Ảnh sản phẩm ${index + 1}` })} aria-label={`Xem đầy đủ ảnh sản phẩm ${index + 1}`} className="group relative aspect-square overflow-hidden border border-foreground/10"><Image src={image} alt={`Ảnh sản phẩm ${index + 1}`} fill unoptimized className="object-cover transition-transform duration-300 group-hover:scale-[1.03]" /><span className="absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/65 text-white opacity-0 transition-opacity group-hover:opacity-100"><Maximize2 className="h-4 w-4" /></span></button>)}</div></section> : null}
         <p className="flex items-center gap-2 text-[11px] text-foreground/40"><Sparkles className="h-3.5 w-3.5 text-[#35ea52]" /> Tài sản được tải trực tiếp từ thư mục media của campaign hiện tại.</p>
       </div>}
       {section === "qa" && <div className="space-y-4"><InspectorTitle eyebrow="05 · Handoff" title="QA & triển khai" description="Kiểm tra độ sẵn sàng, tải gói hoặc đưa nội dung lên nền tảng." /><div className={`flex items-start gap-3 border p-4 ${qaPassed ? "border-[#35ea52]/25 bg-[#35ea52]/[0.035]" : "border-amber-400/25 bg-amber-400/[0.035]"}`}>{qaPassed ? <ShieldCheck className="h-5 w-5 shrink-0 text-[#35ea52]" /> : <ShieldAlert className="h-5 w-5 shrink-0 text-amber-400" />}<div><b className={`text-xs ${qaPassed ? "text-[#35ea52]" : "text-amber-400"}`}>{qaPassed ? "ĐÃ SẴN SÀNG TRIỂN KHAI" : `${qaResult?.issues.length} LƯU Ý CẦN XEM`}</b><p className="mt-1 text-[10px] leading-5 text-foreground/45">{qaPassed ? "Nội dung và tài sản bắt buộc đã vượt qua kiểm tra." : qaResult?.issues[0]?.message}</p></div></div>{qaResult?.issues.map((issue) => <Field key={issue.rule_id} label={issue.rule_id}>{issue.message}</Field>)}<div className="border border-foreground/10 p-4"><div className="mb-3 flex items-center gap-2"><Download className="h-4 w-4 text-[#35ea52]" /><b className="text-xs">Gói bàn giao</b></div><StagePackage /></div><div className="border border-foreground/10 p-4"><div className="mb-3 flex items-center gap-2"><Rocket className="h-4 w-4 text-[#35ea52]" /><b className="text-xs">Đăng lên nền tảng</b></div><StageDeploy /></div></div>}
@@ -209,5 +211,13 @@ export function FinalOutputWorkspace({ plan, input, campaignOutput, qaResult }: 
       <section className={`self-start border-l border-foreground/10 ${mobilePane === "preview" ? "block" : "hidden"} lg:order-2 lg:block`}>{preview}</section>
       <section className={`min-h-full ${mobilePane === "content" ? "block" : "hidden"} lg:order-1 lg:block`}>{inspector}</section>
     </div>
+    <Dialog open={Boolean(viewingAsset)} onOpenChange={(open) => { if (!open) setViewingAsset(null); }}>
+      <DialogContent className="h-[92vh] max-w-[min(96vw,1200px)] grid-rows-[auto_minmax(0,1fr)] overflow-hidden rounded-lg bg-black p-3 text-white sm:max-w-[min(96vw,1200px)]">
+        <DialogTitle className="pr-12 text-sm font-semibold text-white">{viewingAsset?.label ?? "Xem đầy đủ hình ảnh"}</DialogTitle>
+        <div className="relative min-h-0 flex-1 overflow-hidden rounded bg-neutral-950">
+          {viewingAsset ? <Image src={viewingAsset.url} alt={viewingAsset.label} fill unoptimized sizes="96vw" className="object-contain" /> : null}
+        </div>
+      </DialogContent>
+    </Dialog>
   </div>;
 }

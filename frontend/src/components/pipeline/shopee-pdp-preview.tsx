@@ -69,7 +69,7 @@ export function ShopeePdpPreview({
           <div className="flex gap-2"><button type="button" aria-label="Giỏ hàng" className="flex h-8 w-8 items-center justify-center rounded-full bg-black/35"><ShoppingCart className="h-5 w-5" /></button><button type="button" aria-label="Thêm" className="flex h-8 w-8 items-center justify-center rounded-full bg-black/35"><MoreHorizontal className="h-5 w-5" /></button></div>
         </header>
         <div className="relative aspect-square bg-white">
-          {showVideo && videos[0] ? <PlatformVideoPlayer src={videos[0]} poster={activeImage ?? undefined} title={productName} platform="shopee" /> : activeImage ? <Image src={activeImage} alt={productName} fill unoptimized className="object-cover" /> : <div className="flex h-full items-center justify-center"><ImageOff className="h-9 w-9 text-neutral-300" /></div>}
+          {showVideo && videos[0] ? <PlatformVideoPlayer src={videos[0]} poster={activeImage ?? undefined} title={productName} platform="shopee" /> : activeImage ? <Image src={activeImage} alt={productName} fill unoptimized className="object-cover object-top" /> : <div className="flex h-full items-center justify-center"><ImageOff className="h-9 w-9 text-neutral-300" /></div>}
           {!showVideo ? <span className="absolute bottom-3 right-3 rounded-full bg-black/50 px-2 py-1 text-[9px] text-white">{Math.min(selectedImage + 1, Math.max(images.length, 1))}/{Math.max(images.length, 1)}</span> : null}
         </div>
         {videos.length || images.length > 1 ? <div className="flex gap-2 overflow-x-auto border-b border-neutral-100 bg-white px-3 py-2">{videos[0] ? <button type="button" aria-label="Xem video sản phẩm" onClick={() => setShowVideo(true)} className={`relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden border-2 bg-black ${showVideo ? "border-[#ee4d2d]" : "border-neutral-200"}`}><Play className="h-4 w-4 fill-white text-white" /></button> : null}{images.slice(0, 6).map((image, index) => <button key={`${image}-${index}`} type="button" aria-label={`Xem ảnh ${index + 1}`} onClick={() => { setSelectedImage(index); setShowVideo(false); }} className={`relative h-11 w-11 shrink-0 overflow-hidden border-2 ${!showVideo && selectedImage === index ? "border-[#ee4d2d]" : "border-neutral-200"}`}><Image src={image} alt={`${productName} ${index + 1}`} fill unoptimized className="object-cover" /></button>)}</div> : null}
@@ -121,7 +121,7 @@ export function ShopeePdpPreview({
               {showVideo && videos[0] ? (
                 <PlatformVideoPlayer src={videos[0]} poster={activeImage ?? undefined} title={productName} platform="shopee" />
               ) : activeImage ? (
-                <Image src={activeImage} alt={productName} fill unoptimized className="object-cover" />
+                <Image src={activeImage} alt={productName} fill unoptimized className="object-cover object-top" />
               ) : (
                 <div className="flex flex-col items-center gap-2 text-neutral-300"><ImageOff className="h-9 w-9" /><span className="text-[10px]">Chưa có hình ảnh</span></div>
               )}

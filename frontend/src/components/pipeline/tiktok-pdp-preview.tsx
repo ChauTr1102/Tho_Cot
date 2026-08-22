@@ -60,7 +60,7 @@ export function TiktokPdpPreview({
           <ArrowLeft className="h-5 w-5" /><div className="flex h-8 flex-1 items-center gap-2 rounded-sm bg-neutral-100 px-3 text-[10px] text-neutral-400"><Search className="h-3.5 w-3.5" /> Tìm kiếm trong TikTok Shop</div><Share2 className="h-5 w-5" /><ShoppingBag className="h-5 w-5" />
         </header>
         <div className="relative aspect-square bg-white">
-          {showVideo && videos[0] ? <PlatformVideoPlayer src={videos[0]} poster={activeImage ?? undefined} title={productName} platform="tiktok" /> : activeImage ? <Image src={activeImage} alt={productName} fill unoptimized className="object-cover" /> : <div className="flex h-full items-center justify-center"><ImageOff className="h-8 w-8 text-neutral-300" /></div>}
+          {showVideo && videos[0] ? <PlatformVideoPlayer src={videos[0]} poster={activeImage ?? undefined} title={productName} platform="tiktok" /> : activeImage ? <Image src={activeImage} alt={productName} fill unoptimized className="object-cover object-top" /> : <div className="flex h-full items-center justify-center"><ImageOff className="h-8 w-8 text-neutral-300" /></div>}
           {promotion ? <span className="absolute bottom-3 left-3 rounded-sm bg-[#FE2C55] px-2 py-1 text-[9px] font-bold text-white">{promotion}</span> : null}
           {!showVideo ? <span className="absolute bottom-3 right-3 rounded-full bg-black/60 px-2 py-1 text-[9px] text-white">{Math.min(selectedImage + 1, Math.max(images.length, 1))}/{Math.max(images.length, 1)}</span> : null}
         </div>
@@ -105,7 +105,7 @@ export function TiktokPdpPreview({
                 alt={productName}
                 fill
                 unoptimized
-                className="object-cover"
+                className="object-cover object-top"
               />
             ) : (
               <div className="flex flex-col items-center gap-2 text-neutral-300">
