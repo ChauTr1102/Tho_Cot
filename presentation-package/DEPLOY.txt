@@ -18,7 +18,7 @@ Required server behavior:
 Files referenced by the deck (must be uploaded):
 
 - index.html
-- presentation-assets/burgerprints-accent-mug.jpg (slide 4 demo image)
+- presentation-assets/book-tavern/printway-book-tavern.jpg (slide 4 demo image)
 - frontend/public/sponsors/event-logo-header.png (fixed header logo)
 - frontend/public/sponsors/event-logo-horizontal.png (cover logo)
 
@@ -26,5 +26,5 @@ The assets-gen subfolder is no longer referenced by any slide; it can be
 omitted from the upload if you want the smallest possible package.
 
 After deployment, open the site root. Verify slide 1 shows both event logos,
-slide 4 displays the BurgerPrints mug image with the EN/VI/TH/ID locale pack,
-and Google Fonts load (Space Grotesk / Inter) when online.
+slide 4 displays the Printway Book Tavern Sign image with the EN/VI/TH/ID locale
+pack, and Google Fonts load (Space Grotesk / Inter) when online.
