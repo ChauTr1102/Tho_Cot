@@ -64,7 +64,7 @@ export function TiktokPdpPreview({
           {promotion ? <span className="absolute bottom-3 left-3 rounded-sm bg-[#FE2C55] px-2 py-1 text-[9px] font-bold text-white">{promotion}</span> : null}
           {!showVideo ? <span className="absolute bottom-3 right-3 rounded-full bg-black/60 px-2 py-1 text-[9px] text-white">{Math.min(selectedImage + 1, Math.max(images.length, 1))}/{Math.max(images.length, 1)}</span> : null}
         </div>
-        {videos.length || images.length > 1 ? <div className="flex gap-2 overflow-x-auto border-b border-neutral-100 bg-white px-3 py-2">{videos[0] ? <button type="button" aria-label="Xem video sản phẩm" onClick={() => setShowVideo(true)} className={`relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-sm border-2 bg-black ${showVideo ? "border-[#FE2C55]" : "border-neutral-200"}`}><Play className="h-4 w-4 fill-white text-white" /></button> : null}{images.slice(0, 6).map((image, index) => <button key={`${image}-${index}`} type="button" aria-label={`Xem ảnh ${index + 1}`} onClick={() => { setSelectedImage(index); setShowVideo(false); }} className={`relative h-11 w-11 shrink-0 overflow-hidden rounded-sm border-2 ${!showVideo && selectedImage === index ? "border-[#FE2C55]" : "border-neutral-200"}`}><Image src={image} alt={`${productName} ${index + 1}`} fill unoptimized className="object-cover" /></button>)}</div> : null}
+        {videos.length || images.length > 1 ? <div className="flex gap-2 overflow-x-auto border-b border-neutral-100 bg-white px-3 py-2">{videos[0] ? <button type="button" aria-label="Xem video sản phẩm" onClick={() => setShowVideo(true)} className={`relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-sm border-2 bg-black ${showVideo ? "border-[#FE2C55]" : "border-neutral-200"}`}><Play className="h-4 w-4 fill-white text-white" /></button> : null}{images.slice(0, 6).map((image, index) => <button key={`${image}-${index}`} type="button" aria-label={`Xem ảnh ${index + 1}`} onClick={() => { setSelectedImage(index); setShowVideo(false); }} className={`relative h-11 w-11 shrink-0 overflow-hidden rounded-sm border-2 ${!showVideo && selectedImage === index ? "border-[#FE2C55]" : "border-neutral-200"}`}><Image src={image} alt={`${productName} ${index + 1}`} fill unoptimized className="object-cover object-top" /></button>)}</div> : null}
         <section className="border-b-8 border-[#f5f5f5] bg-white p-4">
           {price ? <div className="flex items-end gap-2"><b className="text-2xl text-[#FE2C55]">{formatCurrency(price.amount, price.currency)}</b></div> : null}
           <h1 className="mt-2 text-sm font-semibold leading-5">{productName}</h1>
@@ -132,7 +132,7 @@ export function TiktokPdpPreview({
                   }`}
                   aria-label={`Xem ảnh ${index + 1}`}
                 >
-                  <Image src={image} alt={`${productName} ${index + 1}`} fill unoptimized className="object-cover" />
+                  <Image src={image} alt={`${productName} ${index + 1}`} fill unoptimized className="object-cover object-top" />
                 </button>
               ))}
             </div>
@@ -231,7 +231,7 @@ export function TiktokPdpPreview({
         <div className="grid grid-cols-1 sm:grid-cols-[160px_minmax(0,1fr)] gap-4">
           <div className="aspect-square relative rounded-sm border border-neutral-200 bg-neutral-50 overflow-hidden flex items-center justify-center">
             {activeImage ? (
-              <Image src={activeImage} alt={`${productName} mô tả`} fill unoptimized className="object-cover" />
+              <Image src={activeImage} alt={`${productName} mô tả`} fill unoptimized className="object-cover object-top" />
             ) : (
               <ImageOff className="h-6 w-6 text-neutral-300" />
             )}
